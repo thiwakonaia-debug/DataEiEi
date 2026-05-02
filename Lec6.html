@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>สรุป Sorting Algorithms — ITDS 122</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #f8f7f4;
+    --surface: #ffffff;
+    --border: rgba(0,0,0,0.1);
+    --border-strong: rgba(0,0,0,0.2);
+    --text: #1a1a1a;
+    --text-2: #555;
+    --text-3: #888;
+    --purple-bg: #EEEDFE; --purple-text: #3C3489;
+    --teal-bg: #E1F5EE; --teal-text: #085041;
+    --coral-bg: #FAECE7; --coral-text: #712B13;
+    --blue-bg: #E6F1FB; --blue-text: #0C447C;
+    --amber-bg: #FAEEDA; --amber-text: #633806;
+    --green-bg: #EAF3DE; --green-text: #27500A;
+    --red-bg: #FCEBEB; --red-text: #A32D2D;
+    --accent: #1D9E75;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 15px;
+  }
+
+  .header {
+    background: var(--surface);
+    border-bottom: 0.5px solid var(--border);
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+  .header-inner { max-width: 760px; margin: 0 auto; padding: 0 1.5rem; }
+  .header-tag {
+    display: inline-block;
+    background: var(--coral-bg);
+    color: var(--coral-text);
+    font-size: 11px; font-weight: 600;
+    padding: 3px 10px; border-radius: 20px;
+    letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: .75rem;
+  }
+  h1 { font-size: 26px; font-weight: 600; color: var(--text); margin-bottom: .35rem; }
+  .subtitle { font-size: 14px; color: var(--text-3); }
+
+  .container { max-width: 760px; margin: 0 auto; padding: 0 1.5rem 4rem; }
+  .chapter { margin-bottom: 2.5rem; }
+  .ch-header { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; }
+  .ch-num {
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600; flex-shrink: 0;
+  }
+  .ch-title { font-size: 17px; font-weight: 600; color: var(--text); }
+
+  .card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    padding: 1.1rem 1.3rem;
+    margin-bottom: .75rem;
+  }
+
+  .badge {
+    display: inline-block;
+    font-size: 11px; font-weight: 600;
+    padding: 2px 9px; border-radius: 20px;
+    margin-bottom: .6rem; margin-right: 4px;
+  }
+  .b-exam { background: var(--coral-bg); color: var(--coral-text); }
+  .b-code { background: var(--green-bg); color: var(--green-text); }
+  .b-tip  { background: var(--purple-bg); color: var(--purple-text); }
+  .b-warn { background: var(--amber-bg); color: var(--amber-text); }
+
+  .pt {
+    font-size: 14px; color: var(--text-2); line-height: 1.75;
+    margin-bottom: .4rem; padding-left: 1rem; position: relative;
+  }
+  .pt::before { content: "—"; position: absolute; left: 0; color: var(--text-3); }
+  .hl { color: var(--text); font-weight: 600; }
+
+  .eg {
+    background: var(--bg);
+    border-left: 3px solid #378ADD;
+    border-radius: 0 8px 8px 0;
+    padding: .75rem 1rem;
+    margin: .75rem 0;
+    font-size: 13px; color: var(--text-2); line-height: 1.75;
+  }
+
+  .code-block {
+    background: #1e1e2e;
+    border-radius: 8px;
+    padding: .85rem 1rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px; color: #cdd6f4;
+    line-height: 1.9; margin: .75rem 0; overflow-x: auto;
+  }
+  .kw { color: #89b4fa; } .fn { color: #a6e3a1; }
+  .cm { color: #6c7086; } .st { color: #f38ba8; } .num { color: #fab387; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: .65rem; margin: .75rem 0; }
+  .mini-card {
+    background: var(--bg); border-radius: 8px;
+    padding: .7rem .9rem; border: 0.5px solid var(--border);
+  }
+  .mini-title { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: .25rem; }
+  .mini-body  { font-size: 12px; color: var(--text-2); line-height: 1.6; }
+
+  .compare-row { display: grid; grid-template-columns: 1fr 1fr; gap: .65rem; margin: .75rem 0; }
+  .compare-card { border-radius: 8px; padding: .75rem 1rem; }
+  .compare-card.bad     { background: var(--red-bg);    border: 0.5px solid #F09595; }
+  .compare-card.good    { background: var(--green-bg);  border: 0.5px solid #97C459; }
+  .compare-card.neutral { background: var(--blue-bg);   border: 0.5px solid #82B8E8; }
+  .compare-card.amber   { background: var(--amber-bg);  border: 0.5px solid #E5C06A; }
+  .compare-card.purple  { background: var(--purple-bg); border: 0.5px solid #A9A3F0; }
+  .compare-title { font-size: 12px; font-weight: 600; margin-bottom: .35rem; }
+  .compare-card.bad     .compare-title { color: var(--red-text); }
+  .compare-card.good    .compare-title { color: var(--green-text); }
+  .compare-card.neutral .compare-title { color: var(--blue-text); }
+  .compare-card.amber   .compare-title { color: var(--amber-text); }
+  .compare-card.purple  .compare-title { color: var(--purple-text); }
+  .compare-body { font-size: 12px; color: var(--text-2); line-height: 1.65; }
+
+  .flow-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: .6rem 0; }
+  .flow-box {
+    background: var(--bg); border: 0.5px solid var(--border-strong);
+    border-radius: 6px; padding: 4px 10px; font-size: 12px; color: var(--text);
+  }
+  .flow-arr { font-size: 12px; color: var(--text-3); }
+
+  .divider { height: 0.5px; background: var(--border); margin: 2rem 0; }
+
+  .tbl { width: 100%; border-collapse: collapse; font-size: 13px; margin: .75rem 0; }
+  .tbl th {
+    background: var(--bg); color: var(--text); font-weight: 600;
+    padding: 8px 12px; border: 0.5px solid var(--border); text-align: left;
+  }
+  .tbl td {
+    padding: 7px 12px; border: 0.5px solid var(--border);
+    color: var(--text-2); background: var(--surface);
+  }
+  .tbl tr:hover td { background: var(--bg); }
+  .tbl .best  { color: var(--green-text); font-weight: 600; }
+  .tbl .worst { color: var(--red-text); font-weight: 600; }
+  .tbl .mid   { color: var(--amber-text); font-weight: 600; }
+
+  /* Array visualizer */
+  .arr-demo { display: flex; gap: 4px; flex-wrap: wrap; margin: .6rem 0; align-items: flex-end; }
+  .arr-cell {
+    width: 36px; height: 36px;
+    border: 1.5px solid var(--border-strong);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px; font-weight: 600;
+    background: var(--surface); color: var(--text);
+  }
+  .arr-cell.sorted { background: var(--green-bg); border-color: #97C459; color: var(--green-text); }
+  .arr-cell.active { background: var(--coral-bg); border-color: #E8856A; color: var(--coral-text); }
+  .arr-cell.min    { background: var(--amber-bg); border-color: #E5C06A; color: var(--amber-text); }
+
+  /* round label */
+  .round-label { font-size: 11px; color: var(--text-3); font-weight: 600; margin-bottom: 4px; letter-spacing: .04em; }
+
+  /* Quiz */
+  .quiz-wrap {
+    background: var(--surface); border: 0.5px solid var(--border);
+    border-radius: 12px; padding: 1.3rem;
+  }
+  .progress-bar { height: 3px; background: var(--bg); border-radius: 2px; margin-bottom: 1rem; overflow: hidden; border: 0.5px solid var(--border); }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width .4s ease; }
+  .qnum  { font-size: 11px; font-weight: 600; color: var(--text-3); margin-bottom: .5rem; letter-spacing: .04em; text-transform: uppercase; }
+  .qtxt  { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: .85rem; line-height: 1.65; white-space: pre-line; }
+  .qopts { display: flex; flex-direction: column; gap: 7px; margin-bottom: .85rem; }
+  .qopt {
+    text-align: left; background: var(--bg); border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 9px 13px; font-size: 13px;
+    font-family: 'Sarabun', sans-serif; color: var(--text); cursor: pointer;
+    line-height: 1.55; transition: border-color .15s, background .15s;
+  }
+  .qopt:hover:not(:disabled) { border-color: var(--border-strong); background: var(--surface); }
+  .qopt.correct { background: var(--green-bg); border-color: #97C459; color: var(--green-text); }
+  .qopt.wrong   { background: var(--red-bg);   border-color: #F09595; color: var(--red-text); }
+  .qfb { font-size: 13px; min-height: 18px; line-height: 1.65; padding: .1rem 0; }
+  .qfb.ok { color: var(--green-text); } .qfb.no { color: var(--red-text); }
+  .qnav {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 1.1rem; padding-top: 1rem; border-top: 0.5px solid var(--border);
+  }
+  .qbtn {
+    font-size: 13px; font-family: 'Sarabun', sans-serif; background: transparent;
+    border: 0.5px solid var(--border-strong); border-radius: 7px;
+    padding: 6px 16px; color: var(--text); cursor: pointer; transition: background .15s;
+  }
+  .qbtn:hover:not(:disabled) { background: var(--bg); }
+  .qbtn:disabled { opacity: .3; cursor: default; }
+  .qctr { font-size: 12px; color: var(--text-3); }
+  .score-card {
+    background: var(--teal-bg); border: 0.5px solid #5DCAA5;
+    border-radius: 10px; padding: 1rem 1.25rem; text-align: center; margin-top: 1rem;
+  }
+  .score-num   { font-size: 32px; font-weight: 600; color: var(--teal-text); }
+  .score-label { font-size: 13px; color: #085041; margin-top: .25rem; }
+
+  @media (max-width: 540px) {
+    .grid2, .compare-row { grid-template-columns: 1fr; }
+    h1 { font-size: 21px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-tag">ITDS 122 — Data Structures</div>
+    <h1>สรุป Sorting Algorithms ฉบับละเอียด</h1>
+    <div class="subtitle">Lecture 14 · Bubble · Selection · Insertion · อ่านรอบเดียวเข้าใจ · มี Quiz 3 ข้อ</div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- CH1: ทำไมต้อง Sort -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--coral-bg);color:var(--coral-text)">1</div>
+    <div class="ch-title">ทำไมต้อง Sort — และ Swap คืออะไร</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">concept</span>
+    <div class="pt"><span class="hl">Sorting</span> = การจัดเรียงข้อมูลให้อยู่ในลำดับที่กำหนด (น้อยไปมาก หรือมากไปน้อย)</div>
+    <div class="pt">หัวใจของทุก sort คือ 2 operation: <span class="hl">Comparison (เปรียบเทียบ)</span> และ <span class="hl">Swap (สับเปลี่ยน)</span></div>
+    <div class="pt">การวัดประสิทธิภาพ sort = นับ <span class="hl">จำนวน comparison + swap</span> ที่เกิดขึ้น</div>
+    <div class="eg">
+      ตัวอย่าง array ที่ใช้ตลอด lecture นี้:<br>
+      เริ่มต้น: [45, 23, 87, 12, 32, 4] → เป้าหมาย: [4, 12, 23, 32, 45, 87]
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-code">Swap ใน Python — จำให้ได้</span>
+    <div class="pt">ภาษาอื่นต้องใช้ temp variable แต่ <span class="hl">Python ทำได้ 1 บรรทัด</span></div>
+    <div class="code-block"><span class="cm"># วิธีทั่วไป (ต้องใช้ temp)</span><br>temp = A[i]<br>A[i] = A[j]<br>A[j] = temp<br><br><span class="cm"># Python shortcut — ใช้บรรทัดเดียว!</span><br>A[i], A[j] = A[j], A[i]</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- CH2: Bubble Sort -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--blue-bg);color:var(--blue-text)">2</div>
+    <div class="ch-title">Bubble Sort — เรียงแบบฟอง ไหลขึ้นทีละฟอง</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">intuition — เข้าใจก่อนจำ</span>
+    <div class="pt">Bubble Sort = ค่า<span class="hl">ที่มากที่สุดจะ "ลอย" ไปสุดขวา</span>ทุก round เหมือนฟองอากาศลอยขึ้น</div>
+    <div class="pt">ทุกรอบ เปรียบเทียบคู่ข้างๆ กัน → swap ถ้าซ้าย > ขวา → ขยับขวา → ทำซ้ำ</div>
+    <div class="pt">จบ 1 รอบ = <span class="hl">ตัวใหญ่สุดไปนอนสุดขวาแล้ว</span> → รอบต่อไปไม่ต้องสนมันอีก</div>
+    <div class="eg">
+      จำง่าย: "ฟองใหญ่ลอยขึ้นเร็ว" — ทุก round ตัวใหญ่สุดใน unsorted ไปอยู่ที่ถูกต้องเสมอ
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบ — ตัวอย่าง Round by Round</span>
+    <div class="round-label">เริ่มต้น</div>
+    <div class="arr-demo">
+      <div class="arr-cell">45</div><div class="arr-cell">23</div><div class="arr-cell">87</div>
+      <div class="arr-cell">12</div><div class="arr-cell">32</div><div class="arr-cell">4</div>
+    </div>
+    <div class="round-label">หลัง Round 1 — 87 ลอยไปสุดขวา ✓</div>
+    <div class="arr-demo">
+      <div class="arr-cell">23</div><div class="arr-cell">45</div><div class="arr-cell">12</div>
+      <div class="arr-cell">32</div><div class="arr-cell">4</div><div class="arr-cell sorted">87</div>
+    </div>
+    <div class="round-label">หลัง Round 2 — 45 ลอยไปที่ถูกต้อง ✓</div>
+    <div class="arr-demo">
+      <div class="arr-cell">23</div><div class="arr-cell">12</div><div class="arr-cell">32</div>
+      <div class="arr-cell">4</div><div class="arr-cell sorted">45</div><div class="arr-cell sorted">87</div>
+    </div>
+    <div class="round-label">หลัง Round 6 — เรียงสำเร็จ ✓</div>
+    <div class="arr-demo">
+      <div class="arr-cell sorted">4</div><div class="arr-cell sorted">12</div><div class="arr-cell sorted">23</div>
+      <div class="arr-cell sorted">32</div><div class="arr-cell sorted">45</div><div class="arr-cell sorted">87</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบ — ขั้นตอน Bubble Sort</span>
+    <div class="flow-row">
+      <div class="flow-box">1. เริ่มซ้ายสุด</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">2. เปรียบเทียบ A[i] กับ A[i+1]</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">3. ถ้าซ้าย > ขวา → Swap</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">4. เลื่อนขวา 1 ช่อง</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">5. ทำซ้ำจนถึงปลาย (ลดลงทุกรอบ)</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-code">Bubble Sort — Python</span>
+    <div class="code-block"><span class="kw">def</span> <span class="fn">bubble_sort</span>(A):<br>    n = <span class="fn">len</span>(A)<br>    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n - <span class="num">1</span>):           <span class="cm"># n-1 รอบ</span><br>        <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(n - <span class="num">1</span> - i):    <span class="cm"># ลดขอบขวาทุกรอบ</span><br>            <span class="kw">if</span> A[j] > A[j+<span class="num">1</span>]:<br>                A[j], A[j+<span class="num">1</span>] = A[j+<span class="num">1</span>], A[j]  <span class="cm"># Swap!</span><br>    <span class="kw">return</span> A<br><br><span class="cm"># Optimized: หยุดถ้าไม่มี swap เลย (Best Case O(n))</span><br><span class="kw">def</span> <span class="fn">bubble_sort_optimized</span>(A):<br>    n = <span class="fn">len</span>(A)<br>    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n - <span class="num">1</span>):<br>        swapped = <span class="kw">False</span><br>        <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(n - <span class="num">1</span> - i):<br>            <span class="kw">if</span> A[j] > A[j+<span class="num">1</span>]:<br>                A[j], A[j+<span class="num">1</span>] = A[j+<span class="num">1</span>], A[j]<br>                swapped = <span class="kw">True</span><br>        <span class="kw">if not</span> swapped: <span class="kw">break</span>   <span class="cm"># ไม่มี swap = เรียงแล้ว!</span><br>    <span class="kw">return</span> A</div>
+    <div class="eg">
+      เพิ่ม swapped flag → ถ้าทั้งรอบไม่มี swap เลย = array เรียงแล้ว → หยุดได้ทันที<br>
+      นี่คือเหตุผลที่ Bubble Sort Best Case = Ω(n) (ถ้าใช้ optimized version)
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- CH3: Selection Sort -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--green-bg);color:var(--green-text)">3</div>
+    <div class="ch-title">Selection Sort — หาตัวเล็กสุด แล้ว Swap ครั้งเดียว</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">intuition — เข้าใจก่อนจำ</span>
+    <div class="pt">Selection Sort = เหมือน<span class="hl">จัดแถวนักเรียนตามส่วนสูง</span> — วนดูทั้งแถว หาตัวเตี้ยสุด แล้ว swap มาหน้าสุด</div>
+    <div class="pt">ทุก round หา <span class="hl">minimum ของ unsorted part</span> → swap มาวางที่ตำแหน่งถูกต้อง → ส่วน sorted โตขึ้น 1</div>
+    <div class="pt">ข้อดีพิเศษ: <span class="hl">Swap น้อยมาก</span> — แต่ละรอบ swap ได้แค่ 1 ครั้ง = ทั้งหมดไม่เกิน n-1 ครั้ง</div>
+    <div class="eg">
+      จำง่าย: "คัดเลือกเตี้ยสุด แล้วจัดหน้า" — ต่างจาก Bubble ที่ swap ได้หลายครั้งต่อรอบ
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบ — ตัวอย่าง Round by Round</span>
+    <div class="round-label">เริ่มต้น</div>
+    <div class="arr-demo">
+      <div class="arr-cell">45</div><div class="arr-cell">23</div><div class="arr-cell">87</div>
+      <div class="arr-cell">12</div><div class="arr-cell">32</div><div class="arr-cell">4</div>
+    </div>
+    <div class="round-label">หลัง Round 1 — หา min=4, swap กับ 45 ✓</div>
+    <div class="arr-demo">
+      <div class="arr-cell sorted">4</div><div class="arr-cell">23</div><div class="arr-cell">87</div>
+      <div class="arr-cell">12</div><div class="arr-cell">32</div><div class="arr-cell">45</div>
+    </div>
+    <div class="round-label">หลัง Round 2 — หา min=12, swap กับ 23 ✓</div>
+    <div class="arr-demo">
+      <div class="arr-cell sorted">4</div><div class="arr-cell sorted">12</div><div class="arr-cell">87</div>
+      <div class="arr-cell">23</div><div class="arr-cell">32</div><div class="arr-cell">45</div>
+    </div>
+    <div class="round-label">หลัง Round 6 — เรียงสำเร็จ ✓</div>
+    <div class="arr-demo">
+      <div class="arr-cell sorted">4</div><div class="arr-cell sorted">12</div><div class="arr-cell sorted">23</div>
+      <div class="arr-cell sorted">32</div><div class="arr-cell sorted">45</div><div class="arr-cell sorted">87</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-code">Selection Sort — Python</span>
+    <div class="code-block"><span class="kw">def</span> <span class="fn">selection_sort</span>(A):<br>    n = <span class="fn">len</span>(A)<br>    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n - <span class="num">1</span>):        <span class="cm"># i = จุดเริ่มต้นของ unsorted</span><br>        min_idx = i               <span class="cm"># สมมติว่า i คือ minimum ก่อน</span><br>        <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(i + <span class="num">1</span>, n): <span class="cm"># ไล่หา minimum จริง</span><br>            <span class="kw">if</span> A[j] < A[min_idx]:<br>                min_idx = j<br>        <span class="kw">if</span> min_idx != i:          <span class="cm"># swap ก็ต่อเมื่อ min ไม่ใช่ตัวเอง</span><br>            A[i], A[min_idx] = A[min_idx], A[i]<br>    <span class="kw">return</span> A</div>
+    <div class="eg">
+      สังเกต: Loop ใน (หา min) ทำงานทุกครั้ง แต่ Swap ทำเฉพาะตอนจำเป็น<br>
+      → Comparisons = เยอะเหมือนเดิม O(n²) แต่ Swaps = น้อยมาก ≤ n-1 ครั้ง
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- CH4: Insertion Sort -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--purple-bg);color:var(--purple-text)">4</div>
+    <div class="ch-title">Insertion Sort — หยิบมาแทรก เหมือนจัดไพ่</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">intuition — เข้าใจก่อนจำ</span>
+    <div class="pt">Insertion Sort = <span class="hl">เหมือนเล่นไพ่</span> — หยิบไพ่ใหม่มา 1 ใบ แล้วสอดแทรกเข้าไปในมือที่เรียงอยู่แล้ว</div>
+    <div class="pt">แบ่งเป็น 2 ส่วน: <span class="hl">Sorted list (ซ้าย)</span> และ <span class="hl">Unsorted list (ขวา)</span> — เริ่มต้น sorted มีแค่ 1 ตัว</div>
+    <div class="pt">ทุก round นำตัวแรกของ unsorted ไป<span class="hl">สอดแทรก</span>ในตำแหน่งที่ถูกต้องใน sorted → ไม่ swap แต่ <span class="hl">copy (เลื่อน)</span></div>
+    <div class="eg">
+      จำง่าย: "หยิบ 1 ใบ สอดเข้าที่ถูก" — ต่างจาก Selection ที่ swap จากปลาย
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบ — ตัวอย่าง Round by Round</span>
+    <div class="round-label">เริ่มต้น — [45] sorted, [23, 87, 12, 32, 4] unsorted</div>
+    <div class="arr-demo">
+      <div class="arr-cell sorted">45</div><div class="arr-cell active">23</div><div class="arr-cell">87</div>
+      <div class="arr-cell">12</div><div class="arr-cell">32</div><div class="arr-cell">4</div>
+    </div>
+    <div class="round-label">หลัง Round 1 — แทรก 23 เข้า sorted → [23, 45] ✓</div>
+    <div class="arr-demo">
+      <div class="arr-cell sorted">23</div><div class="arr-cell sorted">45</div><div class="arr-cell active">87</div>
+      <div class="arr-cell">12</div><div class="arr-cell">32</div><div class="arr-cell">4</div>
+    </div>
+    <div class="round-label">หลัง Round 4 — แทรก 12 เข้า sorted → [12, 23, 45, 87] ✓</div>
+    <div class="arr-demo">
+      <div class="arr-cell sorted">12</div><div class="arr-cell sorted">23</div>
+      <div class="arr-cell sorted">45</div><div class="arr-cell sorted">87</div>
+      <div class="arr-cell active">32</div><div class="arr-cell">4</div>
+    </div>
+    <div class="round-label">หลัง Round 6 — เรียงสำเร็จ ✓</div>
+    <div class="arr-demo">
+      <div class="arr-cell sorted">4</div><div class="arr-cell sorted">12</div><div class="arr-cell sorted">23</div>
+      <div class="arr-cell sorted">32</div><div class="arr-cell sorted">45</div><div class="arr-cell sorted">87</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-code">Insertion Sort — Python</span>
+    <div class="code-block"><span class="kw">def</span> <span class="fn">insertion_sort</span>(A):<br>    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, <span class="fn">len</span>(A)):      <span class="cm"># เริ่มจาก index 1</span><br>        key = A[i]               <span class="cm"># ตัวที่จะแทรก</span><br>        j = i - <span class="num">1</span>               <span class="cm"># ชี้ตัวสุดท้ายใน sorted</span><br>        <span class="kw">while</span> j >= <span class="num">0</span> <span class="kw">and</span> A[j] > key:<br>            A[j + <span class="num">1</span>] = A[j]    <span class="cm"># เลื่อนขวา (copy ไม่ใช่ swap)</span><br>            j -= <span class="num">1</span><br>        A[j + <span class="num">1</span>] = key          <span class="cm"># วาง key ตรงตำแหน่งที่ถูกต้อง</span><br>    <span class="kw">return</span> A</div>
+    <div class="eg">
+      สังเกต: ใช้ copy (A[j+1] = A[j]) ไม่ใช่ swap → ลดการ copy ลงครึ่งนึงเทียบกับ swap<br>
+      ถ้าข้อมูล "เกือบเรียง" อยู่แล้ว inner while loop จะสั้นมาก → Best Case O(n) ทำงานได้ดีมาก
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- CH5: Complexity Analysis -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--amber-bg);color:var(--amber-text)">5</div>
+    <div class="ch-title">Complexity Analysis — ประสิทธิภาพของทั้ง 3 Algorithm</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบแน่ — ตารางนี้ต้องท่องได้</span>
+    <table class="tbl">
+      <tr><th>Algorithm</th><th>Best Case</th><th>Average Case</th><th>Worst Case</th><th>Swaps/Copies</th></tr>
+      <tr>
+        <td><strong>Bubble Sort</strong></td>
+        <td class="best">Ω(n)</td>
+        <td class="mid">θ(n²)</td>
+        <td class="worst">O(n²)</td>
+        <td>Swap ≤ O(n²)</td>
+      </tr>
+      <tr>
+        <td><strong>Selection Sort</strong></td>
+        <td class="worst">Ω(n²)</td>
+        <td class="mid">θ(n²)</td>
+        <td class="worst">O(n²)</td>
+        <td><span style="color:var(--green-text);font-weight:600">Swap ≤ n-1 ✓</span></td>
+      </tr>
+      <tr>
+        <td><strong>Insertion Sort</strong></td>
+        <td class="best">Ω(n)</td>
+        <td class="mid">θ(n²)</td>
+        <td class="worst">O(n²)</td>
+        <td>Copy ≤ O(n²)</td>
+      </tr>
+    </table>
+    <div class="eg">
+      จุดต่างสำคัญ: Selection Sort Best Case = Ω(n²) — แม้ข้อมูลเรียงแล้ว ยังต้องไล่หา minimum ทุก round<br>
+      Bubble และ Insertion สามารถหยุดได้เร็วกว่าถ้าข้อมูลเรียงแล้ว → Best Case = Ω(n)
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบ — สรุป Comparisons และ Swaps สำหรับ n element</span>
+    <div class="grid2">
+      <div class="mini-card">
+        <div class="mini-title">Comparisons ทุกตัว</div>
+        <div class="mini-body">
+          n=1 → 0 ครั้ง<br>
+          n=2 → 1 ครั้ง<br>
+          n=3 → 3 ครั้ง<br>
+          n=6 → 15 ครั้ง<br>
+          n ตัว → n(n-1)/2 ครั้ง = <strong>O(n²)</strong>
+        </div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-title">Swaps (Bubble/Selection)</div>
+        <div class="mini-body">
+          <strong>Bubble:</strong> min=0, max=n(n-1)/2<br>
+          <strong>Selection:</strong> min=0, max=n-1 ← น้อยมาก!<br>
+          <strong>Insertion:</strong> ไม่ swap แต่ copy แทน<br>
+          min=0, max=n(n-1)/2
+        </div>
+      </div>
+    </div>
+    <div class="pt" style="margin-top:.5rem">Space Complexity ทุกตัว = <span class="hl">O(n)</span> — ใช้แค่ array เดิม + ตัวแปรเล็กน้อย</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- CH6: เปรียบเทียบ -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--teal-bg);color:var(--teal-text)">6</div>
+    <div class="ch-title">เปรียบเทียบ 3 Algorithm — เลือกใช้อะไรเมื่อไหร่</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบ — จุดเด่น-ด้อยของแต่ละตัว</span>
+    <div class="compare-row">
+      <div class="compare-card neutral">
+        <div class="compare-title">🫧 Bubble Sort</div>
+        <div class="compare-body">
+          ✓ เข้าใจง่ายที่สุด<br>
+          ✓ Best case O(n) ถ้าใช้ flag<br>
+          ✗ ช้าที่สุดในทางปฏิบัติ<br>
+          ✗ Swap เยอะมากใน worst case<br><br>
+          <strong>เหมาะกับ:</strong> ข้อมูลน้อย หรือสอนให้เข้าใจ concept
+        </div>
+      </div>
+      <div class="compare-card good">
+        <div class="compare-title">🎯 Selection Sort</div>
+        <div class="compare-body">
+          ✓ Swap น้อยที่สุด (≤ n-1 ครั้ง)<br>
+          ✓ เหมาะเมื่อ cost ของ swap แพง<br>
+          ✗ Best case = Ω(n²) เสมอ<br>
+          ✗ ไม่สามารถ early-stop ได้<br><br>
+          <strong>เหมาะกับ:</strong> เมื่อ memory write มีราคาแพง
+        </div>
+      </div>
+    </div>
+    <div class="compare-card purple" style="margin-top:.65rem">
+      <div class="compare-title">🃏 Insertion Sort — ดีที่สุดในบรรดา 3 ตัวนี้</div>
+      <div class="compare-body">
+        ✓ Best case O(n) — เร็วมากถ้าข้อมูลเกือบเรียงแล้ว<br>
+        ✓ เร็วกว่า Bubble Sort ประมาณ 2 เท่าในทางปฏิบัติ<br>
+        ✓ ใช้ copy แทน swap → ลด memory access<br>
+        ✓ เป็น Stable Sort — รักษาลำดับของตัวที่ค่าเท่ากัน<br>
+        ✓ Adaptive — ยิ่งเรียงอยู่แล้วยิ่งเร็ว<br><br>
+        <strong>เหมาะกับ:</strong> ข้อมูลน้อย หรือข้อมูลที่เกือบเรียงอยู่แล้ว — ดีที่สุดในสามตัวนี้เกือบทุกสถานการณ์
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">Stable Sort คืออะไร — ต้องรู้</span>
+    <div class="pt"><span class="hl">Stable Sort</span> = ถ้ามีค่าเท่ากัน 2 ตัว ลำดับสัมพัทธ์ของมันจะ<span class="hl">ไม่เปลี่ยน</span>หลัง sort</div>
+    <div class="pt">Bubble, Selection, Insertion ทั้ง 3 ตัวเป็น <span class="hl">Stable Sort</span> ทั้งหมด</div>
+    <div class="eg">
+      เช่น มี [3a, 1, 3b, 2] → หลัง sort ได้ [1, 2, 3a, 3b] — 3a ยังอยู่ก่อน 3b เสมอ<br>
+      สำคัญมากเมื่อ sort หลายรอบหรือ sort ตาม key หลายตัว
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">สูตรจำเร็ว ก่อนสอบ</span>
+    <div class="flow-row">
+      <div class="flow-box">Bubble = เปรียบเทียบคู่ข้างๆ swap ถ้าผิด</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">Selection = หา min swap มาหน้า</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">Insertion = หยิบมา 1 ตัว สอดเข้าที่ถูกต้อง</div>
+    </div>
+    <div class="pt" style="margin-top:.5rem">ทั้ง 3 ตัว: Worst/Average = <span class="hl">O(n²)</span>, Space = <span class="hl">O(n)</span></div>
+    <div class="pt">Best Case: Bubble = <span class="hl">Ω(n)</span>, Selection = <span class="hl">Ω(n²)</span>, Insertion = <span class="hl">Ω(n)</span></div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- QUIZ -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--red-bg);color:var(--red-text)">Q</div>
+    <div class="ch-title">Mini Quiz — ลองทำก่อนดูเฉลย</div>
+  </div>
+  <div class="quiz-wrap" id="quiz"></div>
+</div>
+
+</div>
+
+<script>
+const QS = [
+  {
+    q: "ข้อใดอธิบายความแตกต่างระหว่าง Bubble Sort และ Selection Sort ได้ถูกต้องที่สุด?",
+    opts: [
+      "Bubble Sort swap น้อยกว่า Selection Sort เสมอ",
+      "Selection Sort หา minimum แล้ว swap ครั้งเดียวต่อรอบ ส่วน Bubble Sort อาจ swap หลายครั้งต่อรอบ",
+      "ทั้งคู่มี Best Case = Ω(n) เท่ากันทุกกรณี",
+      "Selection Sort เร็วกว่า Bubble Sort ในทุก case"
+    ],
+    ans: 1,
+    explain: "Selection Sort วิ่งหา minimum ใน unsorted part แล้ว swap เพียงครั้งเดียวต่อรอบ (≤ n-1 swap ทั้งหมด) ส่วน Bubble Sort เปรียบเทียบคู่ข้างกันและอาจ swap หลายครั้งต่อรอบ ทำให้ swap รวมได้ถึง O(n²) — นี่คือเหตุผลที่ Selection Sort ดีกว่าเมื่อ swap มีต้นทุนสูง"
+  },
+  {
+    q: "ทำไม Selection Sort ถึงมี Best Case = Ω(n²) แต่ Bubble Sort และ Insertion Sort มี Best Case = Ω(n)?",
+    opts: [
+      "Selection Sort ใช้ recursion จึงช้ากว่า",
+      "Selection Sort ต้องไล่หา minimum ทุก round แม้ข้อมูลจะเรียงอยู่แล้ว ส่วนอีกสองตัวสามารถ detect ว่าเรียงแล้วและหยุดได้",
+      "Bubble Sort และ Insertion Sort ใช้ Algorithm ที่ฉลาดกว่า",
+      "Selection Sort ต้องการ memory มากกว่า จึงช้ากว่า"
+    ],
+    ans: 1,
+    explain: "Selection Sort ต้องไล่หา minimum ใน unsorted part ทุก round เสมอ ไม่มีวิธีรู้ว่าเรียงแล้วโดยไม่ไล่ → always O(n²) แม้ในกรณีที่ดีที่สุด ส่วน Bubble Sort (ใช้ swapped flag) และ Insertion Sort (inner loop ไม่ทำงานถ้าเรียงแล้ว) สามารถหยุดได้เร็วถ้าข้อมูลเรียงแล้ว → Best Case O(n)"
+  },
+  {
+    q: "Insertion Sort ต่างจาก Bubble Sort และ Selection Sort อย่างไรในเรื่องของการย้ายข้อมูล?",
+    opts: [
+      "Insertion Sort ใช้ swap เหมือนกันทั้งหมด แต่ swap น้อยกว่า",
+      "Insertion Sort ไม่ swap เลย แต่ใช้ copy (เลื่อน) เพื่อสร้างช่องว่าง แล้ววางตัวที่หยิบมาลงในตำแหน่งที่ถูกต้อง",
+      "Insertion Sort ใช้ swap มากกว่า Bubble Sort",
+      "Insertion Sort สร้าง array ใหม่แยกต่างหาก"
+    ],
+    ans: 1,
+    explain: "Insertion Sort หยิบ key ออกมาเก็บไว้ก่อน จากนั้นเลื่อนตัวที่ใหญ่กว่า key ไปขวาทีละตัว (copy operation) แล้ววาง key ในช่องที่เหมาะสม — ไม่มี swap เลย Copy มีต้นทุนน้อยกว่า swap (swap ต้องการ 3 assignment ส่วน copy ต้องการแค่ 1) ทำให้ Insertion Sort เร็วกว่า Bubble Sort ประมาณ 2 เท่าในทางปฏิบัติ"
+  }
+];
+
+let cur = 0, done = [];
+
+function render() {
+  const q = QS[cur], a = done[cur];
+  const answered = done.filter(x => x !== undefined).length;
+  const pct = Math.round((answered / QS.length) * 100);
+  const allDone = answered === QS.length;
+
+  let scoreHtml = '';
+  if (allDone) {
+    const correct = QS.filter((q, i) => done[i] === q.ans).length;
+    scoreHtml = `<div class="score-card">
+      <div class="score-num">${correct} / ${QS.length}</div>
+      <div class="score-label">${correct === QS.length ? 'เยี่ยม! ถูกทุกข้อ' : correct >= 2 ? 'ดีมาก ผ่านแล้ว' : 'ลองอ่านทบทวนแล้วทำอีกรอบ'}</div>
+    </div>`;
+  }
+
+  document.getElementById('quiz').innerHTML = `
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <div class="qnum">ข้อ ${cur + 1} จาก ${QS.length}</div>
+    <div class="qtxt">${q.q}</div>
+    <div class="qopts">
+      ${q.opts.map((o, i) => {
+        let cls = 'qopt';
+        if (a !== undefined) {
+          if (i === q.ans) cls += ' correct';
+          else if (i === a && a !== q.ans) cls += ' wrong';
+        }
+        return `<button class="${cls}" ${a !== undefined ? 'disabled' : ''} onclick="pick(${i})">${String.fromCharCode(65+i)}. ${o}</button>`;
+      }).join('')}
+    </div>
+    <div class="qfb ${a === undefined ? '' : a === q.ans ? 'ok' : 'no'}">
+      ${a === undefined ? '' : (a === q.ans ? '✓ ถูกต้อง — ' : '✗ ไม่ใช่ — ') + q.explain}
+    </div>
+    ${scoreHtml}
+    <div class="qnav">
+      <button class="qbtn" ${cur===0?'disabled':''} onclick="go(-1)">← ก่อนหน้า</button>
+      <span class="qctr">${answered} / ${QS.length} ตอบแล้ว</span>
+      <button class="qbtn" ${cur===QS.length-1?'disabled':''} onclick="go(1)">ถัดไป →</button>
+    </div>
+  `;
+}
+
+function pick(i) { if (done[cur] !== undefined) return; done[cur] = i; render(); }
+function go(d) { cur += d; render(); }
+render();
+</script>
+</body>
+</html>
