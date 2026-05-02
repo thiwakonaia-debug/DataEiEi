@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>สรุป Trees — ITDS 122</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #f8f7f4;
+    --surface: #ffffff;
+    --border: rgba(0,0,0,0.1);
+    --border-strong: rgba(0,0,0,0.2);
+    --text: #1a1a1a;
+    --text-2: #555;
+    --text-3: #888;
+    --purple-bg: #EEEDFE; --purple-text: #3C3489;
+    --teal-bg: #E1F5EE; --teal-text: #085041;
+    --coral-bg: #FAECE7; --coral-text: #712B13;
+    --blue-bg: #E6F1FB; --blue-text: #0C447C;
+    --amber-bg: #FAEEDA; --amber-text: #633806;
+    --green-bg: #EAF3DE; --green-text: #27500A;
+    --red-bg: #FCEBEB; --red-text: #A32D2D;
+    --accent: #1D9E75;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 15px;
+  }
+
+  .header {
+    background: var(--surface);
+    border-bottom: 0.5px solid var(--border);
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+  .header-inner {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+
+  .header-tag {
+    display: inline-block;
+    background: var(--teal-bg);
+    color: var(--teal-text);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: .75rem;
+  }
+
+  h1 {
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: .35rem;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    color: var(--text-3);
+  }
+
+  .container {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 1.5rem 4rem;
+  }
+
+  .chapter {
+    margin-bottom: 2.5rem;
+  }
+
+  .ch-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1rem;
+  }
+
+  .ch-num {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .ch-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    padding: 1.1rem 1.3rem;
+    margin-bottom: .75rem;
+  }
+
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 9px;
+    border-radius: 20px;
+    margin-bottom: .6rem;
+    margin-right: 4px;
+  }
+
+  .b-exam { background: var(--coral-bg); color: var(--coral-text); }
+  .b-code { background: var(--green-bg); color: var(--green-text); }
+  .b-tip  { background: var(--purple-bg); color: var(--purple-text); }
+  .b-warn { background: var(--amber-bg); color: var(--amber-text); }
+
+  .pt {
+    font-size: 14px;
+    color: var(--text-2);
+    line-height: 1.75;
+    margin-bottom: .4rem;
+    padding-left: 1rem;
+    position: relative;
+  }
+  .pt::before { content: "—"; position: absolute; left: 0; color: var(--text-3); }
+  .hl { color: var(--text); font-weight: 600; }
+
+  .eg {
+    background: var(--bg);
+    border-left: 3px solid #378ADD;
+    border-radius: 0 8px 8px 0;
+    padding: .75rem 1rem;
+    margin: .75rem 0;
+    font-size: 13px;
+    color: var(--text-2);
+    line-height: 1.75;
+  }
+
+  .code-block {
+    background: #1e1e2e;
+    border-radius: 8px;
+    padding: .85rem 1rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: #cdd6f4;
+    line-height: 1.9;
+    margin: .75rem 0;
+    overflow-x: auto;
+  }
+  .kw  { color: #89b4fa; }
+  .fn  { color: #a6e3a1; }
+  .cm  { color: #6c7086; }
+  .st  { color: #f38ba8; }
+
+  .grid2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .65rem;
+    margin: .75rem 0;
+  }
+
+  .mini-card {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: .7rem .9rem;
+    border: 0.5px solid var(--border);
+  }
+
+  .mini-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: .25rem;
+  }
+
+  .mini-body {
+    font-size: 12px;
+    color: var(--text-2);
+    line-height: 1.6;
+  }
+
+  .compare-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .65rem;
+    margin: .75rem 0;
+  }
+
+  .compare-card {
+    border-radius: 8px;
+    padding: .75rem 1rem;
+  }
+
+  .compare-card.bad  { background: var(--red-bg);  border: 0.5px solid #F09595; }
+  .compare-card.good { background: var(--green-bg); border: 0.5px solid #97C459; }
+
+  .compare-title {
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: .35rem;
+  }
+
+  .compare-card.bad  .compare-title { color: var(--red-text); }
+  .compare-card.good .compare-title { color: var(--green-text); }
+  .compare-body { font-size: 12px; color: var(--text-2); line-height: 1.65; }
+
+  .flow-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin: .6rem 0;
+  }
+
+  .flow-box {
+    background: var(--bg);
+    border: 0.5px solid var(--border-strong);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 12px;
+    color: var(--text);
+  }
+
+  .flow-arr { font-size: 12px; color: var(--text-3); }
+
+  .divider {
+    height: 0.5px;
+    background: var(--border);
+    margin: 2rem 0;
+  }
+
+  /* Quiz */
+  .quiz-wrap {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    padding: 1.3rem;
+  }
+
+  .progress-bar {
+    height: 3px;
+    background: var(--bg);
+    border-radius: 2px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+    border: 0.5px solid var(--border);
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width .4s ease;
+  }
+
+  .qnum  { font-size: 11px; font-weight: 600; color: var(--text-3); margin-bottom: .5rem; letter-spacing: .04em; text-transform: uppercase; }
+  .qtxt  { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: .85rem; line-height: 1.65; white-space: pre-line; }
+
+  .qopts { display: flex; flex-direction: column; gap: 7px; margin-bottom: .85rem; }
+
+  .qopt {
+    text-align: left;
+    background: var(--bg);
+    border: 0.5px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 13px;
+    font-size: 13px;
+    font-family: 'Sarabun', sans-serif;
+    color: var(--text);
+    cursor: pointer;
+    line-height: 1.55;
+    transition: border-color .15s, background .15s;
+  }
+
+  .qopt:hover:not(:disabled) { border-color: var(--border-strong); background: var(--surface); }
+  .qopt.correct { background: var(--green-bg); border-color: #97C459; color: var(--green-text); }
+  .qopt.wrong   { background: var(--red-bg);   border-color: #F09595; color: var(--red-text); }
+
+  .qfb { font-size: 13px; min-height: 18px; line-height: 1.65; padding: .1rem 0; }
+  .qfb.ok { color: var(--green-text); }
+  .qfb.no { color: var(--red-text); }
+
+  .qnav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 1.1rem;
+    padding-top: 1rem;
+    border-top: 0.5px solid var(--border);
+  }
+
+  .qbtn {
+    font-size: 13px;
+    font-family: 'Sarabun', sans-serif;
+    background: transparent;
+    border: 0.5px solid var(--border-strong);
+    border-radius: 7px;
+    padding: 6px 16px;
+    color: var(--text);
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .qbtn:hover:not(:disabled) { background: var(--bg); }
+  .qbtn:disabled { opacity: .3; cursor: default; }
+  .qctr { font-size: 12px; color: var(--text-3); }
+
+  .score-card {
+    background: var(--teal-bg);
+    border: 0.5px solid #5DCAA5;
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    text-align: center;
+    margin-top: 1rem;
+  }
+
+  .score-num { font-size: 32px; font-weight: 600; color: var(--teal-text); }
+  .score-label { font-size: 13px; color: #085041; margin-top: .25rem; }
+
+  @media (max-width: 540px) {
+    .grid2, .compare-row { grid-template-columns: 1fr; }
+    h1 { font-size: 21px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-tag">ITDS 122 — Data Structures</div>
+    <h1>สรุป Trees ฉบับละเอียด</h1>
+    <div class="subtitle">Lecture 10 · อ่านรอบเดียวเข้าใจ · มี Quiz 5 ข้อ</div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- CH1 -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--purple-bg);color:var(--purple-text)">1</div>
+    <div class="ch-title">Tree คืออะไร — พื้นฐานสุด</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">concept</span>
+    <div class="pt"><span class="hl">Tree = โครงสร้างข้อมูลแบบลำดับชั้น</span> — ต่างจาก array/linked list ที่เรียงตรง ๆ tree แตกกิ่งออกเหมือนต้นไม้จริง ๆ</div>
+    <div class="pt">ทุก node เชื่อมกันด้วย <span class="hl">edge (เส้นเชื่อม)</span> และมีความสัมพันธ์แบบ parent-child</div>
+    <div class="pt">ข้อดีคือ search/retrieve ข้อมูลได้เร็วกว่า linear structure มาก</div>
+    <div class="eg">
+      จินตนาการว่าแผนผังองค์กร — CEO อยู่บนสุด (root), แต่ละแผนกเป็น internal node, พนักงานปลายสายเป็น leaf — นี่คือ tree
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบบ่อย</span>
+    <div class="pt" style="margin-bottom:.75rem"><span class="hl">คำศัพท์สำคัญ — ต้องจำให้ขึ้นใจ</span></div>
+    <div class="grid2">
+      <div class="mini-card"><div class="mini-title">Root</div><div class="mini-body">โหนดบนสุด ไม่มี parent เลย มีได้แค่ 1 ตัวใน tree</div></div>
+      <div class="mini-card"><div class="mini-title">Leaf / External node</div><div class="mini-body">โหนดที่ไม่มีลูกเลย อยู่ปลายสุดของกิ่ง</div></div>
+      <div class="mini-card"><div class="mini-title">Internal node</div><div class="mini-body">โหนดที่มีลูกอย่างน้อย 1 คน ไม่ใช่ leaf</div></div>
+      <div class="mini-card"><div class="mini-title">Siblings</div><div class="mini-body">โหนดที่มี parent เดียวกัน = พี่น้องกัน</div></div>
+      <div class="mini-card"><div class="mini-title">Ancestor</div><div class="mini-body">บรรพบุรุษ — ทุกโหนดที่อยู่เหนือขึ้นไปจนถึง root รวม node ตัวเองด้วย</div></div>
+      <div class="mini-card"><div class="mini-title">Descendant</div><div class="mini-body">ลูกหลาน — ทุกโหนดที่อยู่ใต้ node นั้นลงไปทุกระดับ</div></div>
+    </div>
+    <div class="eg">ตัวอย่าง file system: /user/rt/courses/ คือ root → cs016/ เป็น internal node → hw1, hw2, hw3 เป็น leaf</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">ตัวอย่าง real-world</span>
+    <div class="pt">Python Exception hierarchy ก็คือ tree — <span class="hl">BaseException</span> เป็น root, Exception เป็น internal, KeyError/ValueError เป็น leaf</div>
+    <div class="pt"><span class="hl">Ordered tree</span> = ลำดับของลูกสำคัญ เช่น หนังสือ — บท 1 ต้องมาก่อนบท 2 เสมอ</div>
+    <div class="pt"><span class="hl">Unordered tree</span> = ลำดับไม่สำคัญ เช่น org chart — ไม่สนว่าแผนกไหนอยู่ซ้ายหรือขวา</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- CH2 -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--teal-bg);color:var(--teal-text)">2</div>
+    <div class="ch-title">Depth และ Height — จุดที่สับสนที่สุด</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบบ่อยมาก</span>
+    <div class="pt"><span class="hl">Depth(p)</span> = นับขั้นจาก root ลงมาถึง p — <span class="hl">root มี depth = 0 เสมอ</span></div>
+    <div class="pt"><span class="hl">Height(p)</span> = นับขั้นจาก p ลงไปถึง leaf ที่ลึกที่สุด — <span class="hl">leaf มี height = 0 เสมอ</span></div>
+    <div class="pt">Height ของทั้งต้นไม้ = height ของ root node</div>
+    <div class="eg">
+      จำง่าย: Depth วัด "ลงดิน" จาก root, Height วัด "ขึ้นฟ้า" จาก leaf<br><br>
+      ถ้า tree: Electronics R'Us → Sales → International → Overseas → Africa<br>
+      — depth(Africa) = 4 (นับจาก root ลงมา 4 ขั้น)<br>
+      — height(Africa) = 0 (เป็น leaf ไม่มีลูก)<br>
+      — height(Overseas) = 1 (ลึกสุดใต้มันคือ Africa, 1 ขั้น)<br>
+      — height ของ tree นี้ = 4
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบ — สูตร recursive</span>
+    <div class="pt" style="margin-bottom:.5rem"><span class="hl">สูตรคำนวณ depth:</span></div>
+    <div class="code-block"><span class="kw">def</span> <span class="fn">depth</span>(self, p):<br>    <span class="kw">if</span> self.is_root(p):<br>        <span class="kw">return</span> 0  <span class="cm"># base case: root = 0</span><br>    <span class="kw">else</span>:<br>        <span class="kw">return</span> 1 + self.depth(self.parent(p))  <span class="cm"># ขึ้นหา parent แล้วบวก 1</span></div>
+    <div class="pt" style="margin:.5rem 0"><span class="hl">สูตรคำนวณ height (efficient):</span></div>
+    <div class="code-block"><span class="kw">def</span> <span class="fn">_height2</span>(self, p):<br>    <span class="kw">if</span> self.is_leaf(p):<br>        <span class="kw">return</span> 0  <span class="cm"># base case: leaf = 0</span><br>    <span class="kw">else</span>:<br>        <span class="kw">return</span> 1 + max(self._height2(c) <span class="kw">for</span> c <span class="kw">in</span> self.children(p))</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบ — complexity</span>
+    <div class="compare-row">
+      <div class="compare-card bad">
+        <div class="compare-title">_height1 (แบบไม่ดี) O(n²)</div>
+        <div class="compare-body">คำนวณ depth ของทุก leaf แล้วเอามา max — แต่ละ leaf ต้องวิ่งขึ้น root ซ้ำซ้อน</div>
+      </div>
+      <div class="compare-card good">
+        <div class="compare-title">_height2 (แบบดี) O(n)</div>
+        <div class="compare-body">คำนวณ bottom-up ผ่านแต่ละ node แค่ครั้งเดียว เก็บผลแต่ละ subtree ไว้เลย</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- CH3 -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--coral-bg);color:var(--coral-text)">3</div>
+    <div class="ch-title">Tree ADT — interface มาตรฐาน</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">concept</span>
+    <div class="pt">ADT = Abstract Data Type — แค่ "สัญญา" ว่าต้องมี method อะไรบ้าง ยังไม่บอกว่า implement ยังไง</div>
+    <div class="pt">เหมือนสัญญาจ้างงาน: บอกว่า "ต้องทำอะไรได้บ้าง" แต่ไม่บอกว่า "ทำยังไง"</div>
+    <div class="grid2" style="margin-top:.75rem">
+      <div class="mini-card"><div class="mini-title">T.root()</div><div class="mini-body">คืนค่า position ของ root</div></div>
+      <div class="mini-card"><div class="mini-title">T.parent(p)</div><div class="mini-body">คืนค่า parent ของ p, None ถ้าเป็น root</div></div>
+      <div class="mini-card"><div class="mini-title">T.children(p)</div><div class="mini-body">iterate ลูกทั้งหมดของ p</div></div>
+      <div class="mini-card"><div class="mini-title">T.num_children(p)</div><div class="mini-body">จำนวนลูกของ p</div></div>
+      <div class="mini-card"><div class="mini-title">T.is_leaf(p)</div><div class="mini-body">True ถ้า p ไม่มีลูก</div></div>
+      <div class="mini-card"><div class="mini-title">T.is_empty()</div><div class="mini-body">True ถ้า tree ว่างเปล่า</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-code">abstract vs concrete</span>
+    <div class="pt"><span class="hl">Abstract method</span> = raise NotImplementedError ไว้ subclass ต้อง implement ไม่งั้น error</div>
+    <div class="pt"><span class="hl">Concrete method</span> = implement แล้วใน base class ใช้ได้เลย เช่น is_root(), is_leaf(), is_empty()</div>
+    <div class="code-block"><span class="kw">def</span> <span class="fn">is_root</span>(self, p):<br>    <span class="kw">return</span> self.root() == p  <span class="cm"># concrete — implement แล้ว</span><br><br><span class="kw">def</span> <span class="fn">root</span>(self):<br>    <span class="kw">raise</span> NotImplementedError(...)  <span class="cm"># abstract — subclass ต้อง implement</span></div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- CH4 -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--blue-bg);color:var(--blue-text)">4</div>
+    <div class="ch-title">LinkedTree — การ implement จริง</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-code">implementation</span>
+    <div class="pt">แต่ละ node เก็บ 3 อย่าง: <span class="hl">_element</span> (ข้อมูล), <span class="hl">_parent</span> (pointer ไปหา parent), <span class="hl">_children</span> (list ของลูก)</div>
+    <div class="code-block"><span class="kw">class</span> <span class="fn">Node</span>:<br>    __slots__ = <span class="st">'_element'</span>, <span class="st">'_parent'</span>, <span class="st">'_children'</span><br>    <span class="kw">def</span> <span class="fn">__init__</span>(self, element, parent=None):<br>        self._element = element<br>        self._parent = parent<br>        self._children = []  <span class="cm"># รองรับลูกได้กี่คนก็ได้</span></div>
+    <div class="eg">ทำไมต้องใช้ linked structure? เพราะ tree ขยาย/ลดขนาดได้ตลอด เพิ่ม/ลบ node ได้ง่าย ไม่ต้องย้าย memory เหมือน array</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบ — Position class</span>
+    <div class="pt"><span class="hl">Position</span> = wrapper ที่ห่อ node ไว้ ป้องกันไม่ให้แก้ไข node โดยตรง</div>
+    <div class="pt">ทุกครั้งที่ใช้ method ใน tree จะผ่าน <span class="hl">_validate(p)</span> ก่อน — ตรวจว่า p เป็น Position ถูกต้อง, อยู่ใน tree นี้จริง, และยังไม่ถูกลบ</div>
+    <div class="flow-row">
+      <div class="flow-box">user เรียก method</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">_validate(p)</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">access Node จริง</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-code">method สำคัญ</span>
+    <div class="pt"><span class="hl">add_child(p, e)</span> — เพิ่ม node ลูกให้ p, ถ้า p = None แสดงว่ากำลังสร้าง root</div>
+    <div class="pt"><span class="hl">remove(p)</span> — ลบ node p และลูกหลานทั้งหมดแบบ recursive</div>
+    <div class="pt"><span class="hl">find_element(e)</span> — ค้นหาด้วย DFS (ลงลึกก่อน), คืน Position ถ้าเจอ, None ถ้าไม่เจอ</div>
+    <div class="code-block"><span class="kw">def</span> <span class="fn">add_child</span>(self, p, e):<br>    parent_node = self._validate(p) <span class="kw">if</span> p <span class="kw">else</span> None<br>    new_node = self.Node(e, parent_node)<br>    <span class="kw">if</span> parent_node:<br>        parent_node._children.append(new_node)<br>    <span class="kw">else</span>:<br>        self._root = new_node  <span class="cm"># ถ้า p=None → สร้าง root</span><br>    self._size += 1<br>    <span class="kw">return</span> self._make_position(new_node)</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- CH5 -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--amber-bg);color:var(--amber-text)">5</div>
+    <div class="ch-title">Testing — ทดสอบ implementation</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">concept</span>
+    <div class="pt">ใช้ <span class="hl">assert</span> ตรวจค่าที่คาดหวัง — ถ้าไม่ตรง Python จะ raise AssertionError บอกทันที</div>
+    <div class="pt" style="margin-bottom:.5rem"><span class="hl">Test ที่สำคัญ 5 ตัว:</span></div>
+    <div class="flow-row">
+      <div class="flow-box">structure</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">parent ref</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">add_child</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">remove</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">find_element</div>
+    </div>
+    <div class="code-block"><span class="cm"># ตัวอย่าง tree ที่ใช้ test</span><br>root = tree.add_child(None, <span class="st">"Root"</span>)<br>child1 = tree.add_child(root, <span class="st">"Child 1"</span>)<br>child2 = tree.add_child(root, <span class="st">"Child 2"</span>)<br><br><span class="cm"># ตรวจ structure</span><br><span class="kw">assert</span> tree.num_children(root) == 2<br><span class="kw">assert</span> tree.parent(child1).element() == root.element()</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- QUIZ -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--purple-bg);color:var(--purple-text)">Q</div>
+    <div class="ch-title">Mini Quiz — ลองทำดูก่อนดูเฉลย</div>
+  </div>
+  <div class="quiz-wrap" id="quiz"></div>
+</div>
+
+</div><!-- end container -->
+
+<script>
+const QS = [
+  {
+    q: "ดู tree นี้: Electronics R'Us → Sales → International → Overseas → Africa\n\nheight ของ Overseas เท่ากับเท่าไหร่?",
+    opts: ["0","1","2","3"],
+    ans: 1,
+    explain: "height วัดจากโหนดลงไปถึง leaf ที่ลึกที่สุด — ใต้ Overseas มีแค่ Africa (leaf) อยู่ 1 ขั้น ดังนั้น height(Overseas) = 1 ส่วน depth(Overseas) = 3 อย่าสับสน!"
+  },
+  {
+    q: "ทำไม LinkedTree ถึงต้องใช้ Position class แทนที่จะส่ง Node ออกมาตรง ๆ?",
+    opts: [
+      "เพราะ Node class มี method ไม่พอ",
+      "เพื่อป้องกันไม่ให้ user แก้ไข node โดยตรง (encapsulation) และตรวจ validity",
+      "เพราะ Python ไม่รองรับ nested class",
+      "เพื่อประหยัด memory"
+    ],
+    ans: 1,
+    explain: "Position ทำหน้าที่เป็น 'ประตูรักษาความปลอดภัย' — ทุกครั้งที่ใช้ method ใน tree จะผ่าน _validate(p) ก่อน ตรวจว่า p เป็น Position ถูกต้อง อยู่ใน tree นี้จริง และยังไม่ถูกลบ"
+  },
+  {
+    q: "โค้ดนี้คืนค่าอะไร?\n\ndef _height2(self, p):\n    if self.is_leaf(p): return 0\n    return 1 + max(self._height2(c) for c in self.children(p))\n\nถ้า p มีลูก 3 คน และลูกทั้งหมดเป็น leaf",
+    opts: ["0","1","2","3"],
+    ans: 1,
+    explain: "ลูกทั้ง 3 เป็น leaf → _height2 ของลูกแต่ละคนคืน 0 → max(0,0,0) = 0 → 1 + 0 = 1 node นี้จึงมี height = 1"
+  },
+  {
+    q: "method ไหนใน Tree ADT เป็น concrete method (implement แล้วใน base class)?",
+    opts: [
+      "root(), parent(), children()",
+      "is_leaf(), is_root(), is_empty()",
+      "num_children(), __len__()",
+      "ทุก method ต้อง override ใน subclass"
+    ],
+    ans: 1,
+    explain: "is_leaf(), is_root(), is_empty() เป็น concrete — implement ได้โดยใช้ method abstract อื่น เช่น is_leaf(p) คืน num_children(p)==0 ส่วน root(), parent(), children() ต้องให้ subclass implement เพราะขึ้นอยู่กับ internal structure"
+  },
+  {
+    q: "ข้อไหนอธิบาย DFS (Depth-First Search) ที่ใช้ใน find_element() ได้ถูกต้อง?",
+    opts: [
+      "ค้นหาทีละ level จากบนลงล่าง",
+      "ลงลึกในแต่ละกิ่งก่อนที่จะย้ายไปกิ่งถัดไป",
+      "สุ่มค้นหา node ตามความน่าจะเป็น",
+      "ค้นหาจาก leaf ขึ้นมาหา root"
+    ],
+    ans: 1,
+    explain: "DFS = ดำดิ่งลงไปในกิ่งนึงก่อน จนสุดก่อนค่อยย้อนกลับมาลองกิ่งถัดไป — ดูโค้ด find_element จะเห็น recursive call ลงลูกทีละตัว ถ้าเจอก็คืนผลทันที"
+  }
+];
+
+let cur = 0, done = [];
+
+function render() {
+  const q = QS[cur], a = done[cur];
+  const answered = done.filter(x => x !== undefined).length;
+  const pct = Math.round((answered / QS.length) * 100);
+  const allDone = answered === QS.length;
+
+  let scoreHtml = '';
+  if (allDone) {
+    const correct = QS.filter((q, i) => done[i] === q.ans).length;
+    scoreHtml = `<div class="score-card">
+      <div class="score-num">${correct} / ${QS.length}</div>
+      <div class="score-label">${correct === QS.length ? 'เยี่ยม! ถูกทุกข้อ' : correct >= 3 ? 'ดีมาก ผ่านแล้ว' : 'ลองอ่านทบทวนแล้วทำอีกรอบ'}</div>
+    </div>`;
+  }
+
+  document.getElementById('quiz').innerHTML = `
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <div class="qnum">ข้อ ${cur + 1} จาก ${QS.length}</div>
+    <div class="qtxt">${q.q}</div>
+    <div class="qopts">
+      ${q.opts.map((o, i) => {
+        let cls = 'qopt';
+        if (a !== undefined) {
+          if (i === q.ans) cls += ' correct';
+          else if (i === a && a !== q.ans) cls += ' wrong';
+        }
+        return `<button class="${cls}" ${a !== undefined ? 'disabled' : ''} onclick="pick(${i})">${String.fromCharCode(65 + i)}. ${o}</button>`;
+      }).join('')}
+    </div>
+    <div class="qfb ${a === undefined ? '' : a === q.ans ? 'ok' : 'no'}">
+      ${a === undefined ? '' : (a === q.ans ? '✓ ถูกต้อง — ' : '✗ ไม่ใช่ — ') + q.explain}
+    </div>
+    ${scoreHtml}
+    <div class="qnav">
+      <button class="qbtn" ${cur === 0 ? 'disabled' : ''} onclick="go(-1)">← ก่อนหน้า</button>
+      <span class="qctr">${answered} / ${QS.length} ตอบแล้ว</span>
+      <button class="qbtn" ${cur === QS.length - 1 ? 'disabled' : ''} onclick="go(1)">ถัดไป →</button>
+    </div>
+  `;
+}
+
+function pick(i) { if (done[cur] !== undefined) return; done[cur] = i; render(); }
+function go(d) { cur += d; render(); }
+render();
+</script>
+</body>
+</html>

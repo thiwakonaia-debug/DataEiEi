@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>สรุป Hashing & Hash Table — ITDS 122</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #f8f7f4;
+    --surface: #ffffff;
+    --border: rgba(0,0,0,0.1);
+    --border-strong: rgba(0,0,0,0.2);
+    --text: #1a1a1a;
+    --text-2: #555;
+    --text-3: #888;
+    --purple-bg: #EEEDFE; --purple-text: #3C3489;
+    --teal-bg: #E1F5EE; --teal-text: #085041;
+    --coral-bg: #FAECE7; --coral-text: #712B13;
+    --blue-bg: #E6F1FB; --blue-text: #0C447C;
+    --amber-bg: #FAEEDA; --amber-text: #633806;
+    --green-bg: #EAF3DE; --green-text: #27500A;
+    --red-bg: #FCEBEB; --red-text: #A32D2D;
+    --accent: #1D9E75;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 15px;
+  }
+
+  .header {
+    background: var(--surface);
+    border-bottom: 0.5px solid var(--border);
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+  .header-inner { max-width: 760px; margin: 0 auto; padding: 0 1.5rem; }
+
+  .header-tag {
+    display: inline-block;
+    background: var(--amber-bg);
+    color: var(--amber-text);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: .75rem;
+  }
+
+  h1 { font-size: 26px; font-weight: 600; color: var(--text); margin-bottom: .35rem; }
+  .subtitle { font-size: 14px; color: var(--text-3); }
+
+  .container { max-width: 760px; margin: 0 auto; padding: 0 1.5rem 4rem; }
+
+  .chapter { margin-bottom: 2.5rem; }
+
+  .ch-header { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; }
+
+  .ch-num {
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600; flex-shrink: 0;
+  }
+
+  .ch-title { font-size: 17px; font-weight: 600; color: var(--text); }
+
+  .card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    padding: 1.1rem 1.3rem;
+    margin-bottom: .75rem;
+  }
+
+  .badge {
+    display: inline-block; font-size: 11px; font-weight: 600;
+    padding: 2px 9px; border-radius: 20px; margin-bottom: .6rem; margin-right: 4px;
+  }
+
+  .b-exam { background: var(--coral-bg); color: var(--coral-text); }
+  .b-code { background: var(--green-bg); color: var(--green-text); }
+  .b-tip  { background: var(--purple-bg); color: var(--purple-text); }
+  .b-warn { background: var(--amber-bg); color: var(--amber-text); }
+
+  .pt {
+    font-size: 14px; color: var(--text-2); line-height: 1.75;
+    margin-bottom: .4rem; padding-left: 1rem; position: relative;
+  }
+  .pt::before { content: "—"; position: absolute; left: 0; color: var(--text-3); }
+  .hl { color: var(--text); font-weight: 600; }
+
+  .eg {
+    background: var(--bg);
+    border-left: 3px solid #378ADD;
+    border-radius: 0 8px 8px 0;
+    padding: .75rem 1rem; margin: .75rem 0;
+    font-size: 13px; color: var(--text-2); line-height: 1.75;
+  }
+
+  .code-block {
+    background: #1e1e2e; border-radius: 8px;
+    padding: .85rem 1rem; font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px; color: #cdd6f4; line-height: 1.9; margin: .75rem 0; overflow-x: auto;
+  }
+  .kw  { color: #89b4fa; }
+  .fn  { color: #a6e3a1; }
+  .cm  { color: #6c7086; }
+  .st  { color: #f38ba8; }
+  .num { color: #fab387; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: .65rem; margin: .75rem 0; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .65rem; margin: .75rem 0; }
+
+  .mini-card {
+    background: var(--bg); border-radius: 8px; padding: .7rem .9rem;
+    border: 0.5px solid var(--border);
+  }
+  .mini-title { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: .25rem; }
+  .mini-body  { font-size: 12px; color: var(--text-2); line-height: 1.6; }
+
+  .compare-row { display: grid; grid-template-columns: 1fr 1fr; gap: .65rem; margin: .75rem 0; }
+
+  .compare-card { border-radius: 8px; padding: .75rem 1rem; }
+  .compare-card.bad     { background: var(--red-bg);    border: 0.5px solid #F09595; }
+  .compare-card.good    { background: var(--green-bg);  border: 0.5px solid #97C459; }
+  .compare-card.neutral { background: var(--blue-bg);   border: 0.5px solid #82B8E8; }
+  .compare-card.amber   { background: var(--amber-bg);  border: 0.5px solid #E0B870; }
+
+  .compare-title { font-size: 12px; font-weight: 600; margin-bottom: .35rem; }
+  .compare-card.bad     .compare-title { color: var(--red-text); }
+  .compare-card.good    .compare-title { color: var(--green-text); }
+  .compare-card.neutral .compare-title { color: var(--blue-text); }
+  .compare-card.amber   .compare-title { color: var(--amber-text); }
+  .compare-body { font-size: 12px; color: var(--text-2); line-height: 1.65; }
+
+  .flow-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: .6rem 0; }
+  .flow-box {
+    background: var(--bg); border: 0.5px solid var(--border-strong);
+    border-radius: 6px; padding: 4px 10px; font-size: 12px; color: var(--text);
+  }
+  .flow-arr { font-size: 12px; color: var(--text-3); }
+
+  .divider { height: 0.5px; background: var(--border); margin: 2rem 0; }
+
+  .tbl { width: 100%; border-collapse: collapse; font-size: 13px; margin: .75rem 0; }
+  .tbl th {
+    background: var(--bg); color: var(--text); font-weight: 600;
+    padding: 8px 12px; border: 0.5px solid var(--border); text-align: left;
+  }
+  .tbl td { padding: 7px 12px; border: 0.5px solid var(--border); color: var(--text-2); background: var(--surface); }
+  .tbl tr:hover td { background: var(--bg); }
+
+  .formula-box {
+    background: var(--purple-bg); border: 0.5px solid #A89EF8;
+    border-radius: 10px; padding: .9rem 1.1rem; margin: .75rem 0;
+    font-family: 'IBM Plex Mono', monospace; font-size: 14px;
+    color: var(--purple-text); font-weight: 600; text-align: center;
+  }
+
+  /* Quiz */
+  .quiz-wrap { background: var(--surface); border: 0.5px solid var(--border); border-radius: 12px; padding: 1.3rem; }
+  .progress-bar { height: 3px; background: var(--bg); border-radius: 2px; margin-bottom: 1rem; overflow: hidden; border: 0.5px solid var(--border); }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width .4s ease; }
+  .qnum  { font-size: 11px; font-weight: 600; color: var(--text-3); margin-bottom: .5rem; letter-spacing: .04em; text-transform: uppercase; }
+  .qtxt  { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: .85rem; line-height: 1.65; white-space: pre-line; }
+  .qopts { display: flex; flex-direction: column; gap: 7px; margin-bottom: .85rem; }
+  .qopt {
+    text-align: left; background: var(--bg); border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 9px 13px; font-size: 13px;
+    font-family: 'Sarabun', sans-serif; color: var(--text);
+    cursor: pointer; line-height: 1.55; transition: border-color .15s, background .15s;
+  }
+  .qopt:hover:not(:disabled) { border-color: var(--border-strong); background: var(--surface); }
+  .qopt.correct { background: var(--green-bg); border-color: #97C459; color: var(--green-text); }
+  .qopt.wrong   { background: var(--red-bg);   border-color: #F09595; color: var(--red-text); }
+  .qfb { font-size: 13px; min-height: 18px; line-height: 1.65; padding: .1rem 0; }
+  .qfb.ok { color: var(--green-text); }
+  .qfb.no { color: var(--red-text); }
+  .qnav { display: flex; align-items: center; justify-content: space-between; margin-top: 1.1rem; padding-top: 1rem; border-top: 0.5px solid var(--border); }
+  .qbtn { font-size: 13px; font-family: 'Sarabun', sans-serif; background: transparent; border: 0.5px solid var(--border-strong); border-radius: 7px; padding: 6px 16px; color: var(--text); cursor: pointer; transition: background .15s; }
+  .qbtn:hover:not(:disabled) { background: var(--bg); }
+  .qbtn:disabled { opacity: .3; cursor: default; }
+  .qctr { font-size: 12px; color: var(--text-3); }
+  .score-card { background: var(--teal-bg); border: 0.5px solid #5DCAA5; border-radius: 10px; padding: 1rem 1.25rem; text-align: center; margin-top: 1rem; }
+  .score-num { font-size: 32px; font-weight: 600; color: var(--teal-text); }
+  .score-label { font-size: 13px; color: #085041; margin-top: .25rem; }
+
+  @media (max-width: 540px) {
+    .grid2, .compare-row, .grid3 { grid-template-columns: 1fr; }
+    h1 { font-size: 21px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-tag">ITDS 122 — Data Structures</div>
+    <h1>สรุป Hashing & Hash Table ฉบับละเอียด</h1>
+    <div class="subtitle">Lecture 11 · อ่านรอบเดียวเข้าใจ · มี Quiz 5 ข้อ</div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- CH1: Hashing คืออะไร -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--purple-bg);color:var(--purple-text)">1</div>
+    <div class="ch-title">Hashing คืออะไร — แนวคิดหลัก</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">concept</span>
+    <div class="pt"><span class="hl">Hashing</span> = เทคนิคแปลง "ค่าข้อมูล" ให้เป็น "ตำแหน่งที่อยู่" โดยตรง ไม่ต้องไล่เปรียบเทียบทีละตัว</div>
+    <div class="pt"><span class="hl">Hash Table</span> = โครงสร้างข้อมูลที่ใช้ร่วมกับ hashing ประกอบด้วย 2 สดมภ์: Hash Value (ที่อยู่) + Hash Key (ค่าข้อมูล)</div>
+    <div class="pt">ขนาดของ Hash Table = ความยาวของ array ที่ใช้เก็บ</div>
+    <div class="eg">
+      เปรียบเสมือนตู้เก็บเอกสารที่มีหมายเลขล็อค — ชื่อเอกสาร (key) → คำนวณหมายเลขล็อค (hash) → เปิดล็อคตรงนั้นได้เลย ไม่ต้องไล่เปิดทุกล็อค
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบ — Complexity ต้องจำ</span>
+    <div class="grid2">
+      <div class="mini-card">
+        <div class="mini-title">Time Complexity</div>
+        <div class="mini-body">Insert, Find, Delete = <strong>O(1)</strong> เร็วที่สุดในบรรดาโครงสร้างข้อมูลทั้งหมด</div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-title">Space Complexity</div>
+        <div class="mini-body">S(n) = <strong>O(n)</strong> ใช้พื้นที่สัดส่วนกับจำนวนข้อมูล</div>
+      </div>
+    </div>
+    <div class="eg">เปรียบกับ Array: O(n) search, Balanced Tree: O(log n) search — Hashing ชนะทั้งคู่ด้วย O(1)</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">ข้อดี vs ข้อเสีย</span>
+    <div class="compare-row">
+      <div class="compare-card good">
+        <div class="compare-title">ข้อดี</div>
+        <div class="compare-body">Insert, Find, Delete รวดเร็ว O(1) — เหมาะกับข้อมูลจำนวนมากและการทำดัชนี</div>
+      </div>
+      <div class="compare-card bad">
+        <div class="compare-title">ข้อเสีย</div>
+        <div class="compare-body">ไม่เหมาะกับ Range Search (>10 &lt;20) ไม่รองรับเรียงลำดับ และถ้า hash function ไม่ดีจะเกิด collision มาก</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- CH2: Hash Function -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--teal-bg);color:var(--teal-text)">2</div>
+    <div class="ch-title">ฟังก์ชันแฮช (Hash Function) — 4 วิธี</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">concept</span>
+    <div class="pt"><span class="hl">Hash Function h</span> แปลง k (Hash Key = ค่าข้อมูล) → h(k) (Hash Value = ตำแหน่งที่อยู่)</div>
+    <div class="pt">เป็น value-to-address transformation — ค่าเดิม key เดิมต้องได้ hash value เดิมเสมอ</div>
+    <div class="flow-row">
+      <div class="flow-box">k (Hash Key)</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">h (Hash Function)</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">h(k) (Hash Value)</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบ — วิธีที่ 1: Modulo (นิยมมากที่สุด)</span>
+    <div class="formula-box">h(k) = k % M</div>
+    <div class="pt">k = กุญแจแฮช, M = ขนาดของตารางแฮช, % = หารเอาเศษ</div>
+    <div class="pt">M ควรเป็น <span class="hl">จำนวนเฉพาะ (prime number)</span> หรือ 2ⁿ เพื่อลด collision</div>
+    <div class="eg">ตัวอย่าง: k=87654, M=100 → h(k) = 87654 % 100 = <strong>54</strong></div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบ — วิธีที่ 2: Digit Folding</span>
+    <div class="pt"><span class="hl">ขั้นตอน:</span> แบ่ง key เป็นส่วน r หลัก → รวมทุกส่วน → ตัดเลขทด (last carry) ออก</div>
+    <div class="eg">
+      k = 6624410909, r = 2 → แบ่งเป็น 66, 24, 41, 09, 09<br>
+      รวม: 66+24+41+09+09 = 149 → ตัด carry ออก → <strong>h(k) = 49</strong><br><br>
+      ตัวอย่างสอบ: k=87654, r=2 → 87, 65, 4 → 87+65+4 = 156 → <strong>h(k) = 56</strong>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบ — วิธีที่ 3: Mid-Square</span>
+    <div class="pt"><span class="hl">ขั้นตอน:</span> ยก key กำลัง 2 → เลือก r หลักตรงกลางของผลลัพธ์</div>
+    <div class="eg">
+      k = 60 → 60² = 3600 → ตรงกลาง 2 หลัก → <strong>h(k) = 60</strong><br><br>
+      ตัวอย่างสอบ: k=87654, r=2 → 87654² = 7683215716 → ตรงกลาง 2 หลัก → <strong>h(k) = 21</strong>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบ — วิธีที่ 4: Multiplication Method</span>
+    <div class="pt"><span class="hl">สูตร:</span> h(k) = floor(M × (kA mod 1)) เมื่อ 0 &lt; A &lt; 1</div>
+    <div class="pt">ขั้นตอน: (1) คูณ k×A → (2) เอาเฉพาะทศนิยม → (3) คูณ M → (4) floor</div>
+    <div class="eg">
+      k=12345, A=0.357840, M=100<br>
+      kA = 4417.5348 → ทศนิยม = 0.5348 → ×100 = 53.48 → floor → <strong>h(k) = 53</strong>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- CH3: Non-numeric Keys -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--coral-bg);color:var(--coral-text)">3</div>
+    <div class="ch-title">Non-Numeric Keys — แฮช String อย่างไร</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">concept</span>
+    <div class="pt">ถ้า key เป็น string เช่น "CAT" ต้องแปลงเป็นตัวเลขก่อน จึงค่อยใส่ hash function</div>
+    <div class="pt">วิธีแปลง: ใช้ <span class="hl">ASCII</span> (A=65, B=66, ..., Z=90) หรือกำหนดเอง (A=1, B=2, ...)</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบ — 3 วิธีแปลง String</span>
+    <div class="grid3">
+      <div class="mini-card">
+        <div class="mini-title">วิธี 1: Adding Digits</div>
+        <div class="mini-body">รวม code ทุกตัวอักษร<br>CAT (A=1..Z=26):<br>3+1+19 = <strong>23</strong></div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-title">วิธี 2: Multiplying by Powers</div>
+        <div class="mini-body">คูณด้วยฐาน 27<br>CAT: 3×27²+1×27¹+19×27⁰ = <strong>2233</strong></div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-title">วิธี 3: Multiplying by Indices</div>
+        <div class="mini-body">คูณด้วย index ตำแหน่ง<br>CAT: 3×1+1×2+19×3 = <strong>62</strong></div>
+      </div>
+    </div>
+    <div class="eg">
+      สังเกต: วิธี Adding Digits ไม่แยกความแตกต่างระหว่าง CAT กับ TAC (ผลรวมเท่ากัน) — วิธี 2 และ 3 แก้ปัญหานี้ได้
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-code">ตัวอย่าง Python (ASCII)</span>
+    <div class="code-block"><span class="cm"># แปลง "CAT" ด้วย ASCII แล้ว hash ด้วย modulo</span><br>sum_ascii = ord(<span class="st">'C'</span>) + ord(<span class="st">'A'</span>) + ord(<span class="st">'T'</span>)  <span class="cm"># 67+65+84 = 216</span><br>h = sum_ascii % <span class="num">7</span>  <span class="cm"># 216 % 7 = 6</span><br>print(h)  <span class="cm"># print 6</span></div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- CH4: Collision -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--blue-bg);color:var(--blue-text)">4</div>
+    <div class="ch-title">Collision — ปัญหาการชนกัน และการแก้ไข</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบ — Collision คืออะไร</span>
+    <div class="pt"><span class="hl">Collision</span> = เมื่อ key ต่างกัน แต่ฟังก์ชันแฮชให้ค่าเดียวกัน (ชนกันในช่องเดิม)</div>
+    <div class="pt">key เดิม → hash เดิมเสมอ แต่ key ต่างกัน อาจชนได้</div>
+    <div class="eg">ตัวอย่าง: h(k) = k % 7, ใส่ 7, 14, 21, 28, 35 → ทุกตัวได้ h(k) = 0 หมด → ชนทั้งหมด!</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบ — 2 แนวทางแก้ Collision</span>
+    <div class="compare-row">
+      <div class="compare-card neutral">
+        <div class="compare-title">Separate Chaining (Open Hashing)</div>
+        <div class="compare-body">แต่ละช่องในตารางเก็บ linked list — ถ้าชนกันก็ต่อท้าย list ในช่องนั้น ง่ายแต่ใช้ memory พิเศษ</div>
+      </div>
+      <div class="compare-card amber">
+        <div class="compare-title">Open Addressing (Closed Hashing)</div>
+        <div class="compare-body">เก็บทุกอย่างในตารางเดียว — ถ้าชนให้หาช่องว่างใกล้เคียงตามกฎที่กำหนด</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบ — Open Addressing 3 วิธี</span>
+    <div class="grid3">
+      <div class="mini-card">
+        <div class="mini-title">Linear Probing</div>
+        <div class="mini-body">เลื่อนไปทีละ 1 ช่อง<br>(h(k)+i) % M<br>ง่าย แต่เกิด clustering</div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-title">Quadratic Probing</div>
+        <div class="mini-body">เลื่อนไปตาม i²<br>(h(k)+i²) % M<br>กระจายดีกว่า linear</div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-title">Double Hashing</div>
+        <div class="mini-body">ใช้ h2 เมื่อชน<br>(h1+j×h2) % M<br>กระจายดีที่สุด</div>
+      </div>
+    </div>
+    <div class="eg">
+      ตัวอย่าง Linear: h(k)=k%7, insert 12,19,33,20<br>
+      12→slot 5, 19→slot 6, 33→slot 5 ชน! → (5+1)%7=6 ชนอีก! → (5+2)%7=0 ว่าง → ใส่ที่ 0<br>
+      20→slot 6 ชน → (6+1)%7=0 ชน → (6+2)%7=1 ว่าง → ใส่ที่ 1
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">Double Hashing สูตรครบ</span>
+    <div class="formula-box">h(k, j) = (h1(k) + j × h2(k)) % M</div>
+    <div class="pt">j = จำนวนครั้งที่ชน (เริ่มที่ 0), h1 ใช้ปกติ, h2 ใช้เมื่อชนครั้งแรก</div>
+    <div class="eg">h1(k) = k%7, h2(k) = 1+(k%7)<br>ถ้า key=33 ชนที่ j=1: h(33,1) = (33%7 + 1×(1+33%7)) % 7 = (5+6)%7 = 4</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- CH5: Load Factor -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--amber-bg);color:var(--amber-text)">5</div>
+    <div class="ch-title">Load Factor — ตัวชี้วัดประสิทธิภาพ</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบ — สูตรและการตีความ</span>
+    <div class="formula-box">Load Factor (λ) = จำนวน key ที่บรรจุ / ขนาดของตาราง</div>
+    <div class="pt">λ → 1 หมายถึงตารางแฮชใกล้เต็ม → โอกาสชนมากขึ้น → ประสิทธิภาพลดลง</div>
+    <div class="pt">เมื่อ λ ≈ <span class="hl">0.7 หรือ 0.75</span> ควรขยายตาราง ~2 เท่า แล้ว <span class="hl">rehash</span> ทุก key ใหม่</div>
+    <div class="eg">
+      ตาราง size=7, ใส่ข้อมูล 5 ตัว → λ = 5/7 ≈ 0.71 → ถึงเวลา rehash!<br>
+      ขยายเป็น size=13 (prime) → hash function เปลี่ยนเป็น k%13 → rehash ทุกตัวใหม่
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- CH6: Applications -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--green-bg);color:var(--green-text)">6</div>
+    <div class="ch-title">การประยุกต์ใช้งาน — Real-world Hashing</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">สำคัญ — One-way Function</span>
+    <div class="pt">ฟังก์ชันแฮชเป็น <span class="hl">ฟังก์ชันทางเดียว (one-way)</span> — แปลงจาก key → hash value ได้ แต่ <span class="hl">ย้อนกลับไม่ได้</span></div>
+    <div class="pt">นี่คือเหตุผลที่ hashing ใช้ในระบบความปลอดภัยได้ดี</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">3 การประยุกต์หลัก</span>
+    <div class="grid3">
+      <div class="mini-card">
+        <div class="mini-title">🔐 Password Verification</div>
+        <div class="mini-body">เก็บ hash ของรหัสผ่าน ไม่เก็บรหัสตรง ๆ — ต้อง brute-force ถึงจะ hack ได้</div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-title">📦 Checksums</div>
+        <div class="mini-body">ตรวจสอบว่าไฟล์ที่รับมาครบถ้วนไม่มีการเปลี่ยนแปลงระหว่างทาง (MD5, SHA1)</div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-title">⛓️ Blockchain</div>
+        <div class="mini-body">ทุก block เก็บ hash ของตัวเองและ block ก่อนหน้า — ทำให้แก้ไขข้อมูลย้อนหลังไม่ได้</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">เปรียบเทียบกับโครงสร้างข้อมูลอื่น</span>
+    <table class="tbl">
+      <tr><th>Operation</th><th>Array</th><th>Linked List</th><th>Balanced Tree</th><th>Hash Table</th></tr>
+      <tr><td>Insert</td><td>O(n)</td><td>O(1)/O(n)</td><td>O(log n)</td><td><strong>O(1) ✓</strong></td></tr>
+      <tr><td>Find</td><td>O(n)</td><td>O(n)</td><td>O(log n)</td><td><strong>O(1) ✓</strong></td></tr>
+      <tr><td>Delete</td><td>O(n)</td><td>O(n)</td><td>O(log n)</td><td><strong>O(1) ✓</strong></td></tr>
+      <tr><td>Range Search</td><td>O(n)</td><td>O(n)</td><td>O(log n) ✓</td><td>ไม่รองรับ ✗</td></tr>
+      <tr><td>Sorted Order</td><td>ได้ถ้าเรียง</td><td>ได้ถ้าเรียง</td><td>ได้เสมอ ✓</td><td>ไม่รองรับ ✗</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- QUIZ -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--purple-bg);color:var(--purple-text)">Q</div>
+    <div class="ch-title">Mini Quiz — ลองทำดูก่อนดูเฉลย</div>
+  </div>
+  <div class="quiz-wrap" id="quiz"></div>
+</div>
+
+</div>
+
+<script>
+const QS = [
+  {
+    q: "กำหนดให้ h(k) = k % 7 จงหา h(k) เมื่อ k = 50",
+    opts: ["1", "2", "3", "4"],
+    ans: 0,
+    explain: "50 % 7 = 1 (เพราะ 7×7=49, เหลือ 1) ดังนั้น h(50) = 1 ข้อมูล 50 จะถูกเก็บไว้ที่ตำแหน่ง 1 ในตารางแฮช"
+  },
+  {
+    q: "วิธี Digit Folding กับ k=87654 โดย r=2\nขั้นตอนถูกต้องคือข้อใด?",
+    opts: [
+      "87×65×4 = ผลคูณ",
+      "แบ่งเป็น 87, 65, 4 → รวม 87+65+4 = 156 → h(k) = 56",
+      "ยก 87654² แล้วเลือกตรงกลาง",
+      "87654 % 100 = 54"
+    ],
+    ans: 1,
+    explain: "Digit Folding: แบ่ง k=87654 ออกเป็นส่วน r=2 หลัก → 87, 65, 4 → รวม 87+65+4 = 156 → ตัด last carry ออก → h(k) = 56"
+  },
+  {
+    q: "Separate Chaining ต่างจาก Open Addressing อย่างไร?",
+    opts: [
+      "Separate Chaining ใช้ hash function 2 ตัว",
+      "Separate Chaining เก็บข้อมูลที่ชนกันใน linked list นอกตาราง ส่วน Open Addressing หาช่องว่างภายในตารางเดิม",
+      "Open Addressing ใช้ memory นอกตาราง",
+      "Separate Chaining ค้นหาได้เร็วกว่าเสมอ"
+    ],
+    ans: 1,
+    explain: "Separate Chaining (Open Hashing): แต่ละช่องเก็บ linked list ของ key ที่ชนกัน ต้องการ memory พิเศษนอกตาราง — Open Addressing (Closed Hashing): ทุก key อยู่ในตารางเดิม แค่หาช่องว่างถัดไป"
+  },
+  {
+    q: "Load Factor = 0.8 หมายความว่าอย่างไร และควรทำอะไร?",
+    opts: [
+      "ตารางว่าง 80% ยังไม่ต้องทำอะไร",
+      "ตารางเต็ม 80% ควรขยายตารางและ rehash ทุก key เพราะ collision จะเพิ่มขึ้น",
+      "ฟังก์ชันแฮชผิดพลาด ควรเปลี่ยนสูตร",
+      "ต้องลบข้อมูล 80% ออกจากตาราง"
+    ],
+    ans: 1,
+    explain: "Load Factor = 0.8 หมายถึงตารางเต็ม 80% แล้ว ค่าที่ควร rehash คือ ≈0.7 หรือ 0.75 — ควรขยายตาราง ~2 เท่าแล้ว rehash กุญแจทั้งหมดใหม่ เพราะ hash function เปลี่ยนตามขนาดตาราง"
+  },
+  {
+    q: "ทำไม Hash Function ถึงเหมาะใช้กับ Password Verification?",
+    opts: [
+      "เพราะ hash function ถอดรหัสได้เร็ว",
+      "เพราะ hash function เป็น one-way — แปลง password→hash ได้ แต่ย้อนกลับไม่ได้ ทำให้ผู้โจมตีไม่รู้ password จริง",
+      "เพราะ hash function ทำให้ password ยาวขึ้น",
+      "เพราะ hash function ทำให้ password เหมือนกันทุกคน"
+    ],
+    ans: 1,
+    explain: "Hash Function เป็น one-way function — เราเก็บแค่ hash value ของ password ไม่ใช่ password จริง ผู้โจมตีได้ hash ไปก็ย้อนกลับหา password ไม่ได้ ต้องใช้ brute-force ลองเดาทีละค่าเท่านั้น"
+  }
+];
+
+let cur = 0, done = [];
+
+function render() {
+  const q = QS[cur], a = done[cur];
+  const answered = done.filter(x => x !== undefined).length;
+  const pct = Math.round((answered / QS.length) * 100);
+  const allDone = answered === QS.length;
+
+  let scoreHtml = '';
+  if (allDone) {
+    const correct = QS.filter((q, i) => done[i] === q.ans).length;
+    scoreHtml = `<div class="score-card">
+      <div class="score-num">${correct} / ${QS.length}</div>
+      <div class="score-label">${correct === QS.length ? 'เยี่ยม! ถูกทุกข้อ' : correct >= 3 ? 'ดีมาก ผ่านแล้ว' : 'ลองอ่านทบทวนแล้วทำอีกรอบ'}</div>
+    </div>`;
+  }
+
+  document.getElementById('quiz').innerHTML = `
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <div class="qnum">ข้อ ${cur + 1} จาก ${QS.length}</div>
+    <div class="qtxt">${q.q}</div>
+    <div class="qopts">
+      ${q.opts.map((o, i) => {
+        let cls = 'qopt';
+        if (a !== undefined) {
+          if (i === q.ans) cls += ' correct';
+          else if (i === a && a !== q.ans) cls += ' wrong';
+        }
+        return `<button class="${cls}" ${a !== undefined ? 'disabled' : ''} onclick="pick(${i})">${String.fromCharCode(65 + i)}. ${o}</button>`;
+      }).join('')}
+    </div>
+    <div class="qfb ${a === undefined ? '' : a === q.ans ? 'ok' : 'no'}">
+      ${a === undefined ? '' : (a === q.ans ? '✓ ถูกต้อง — ' : '✗ ไม่ใช่ — ') + q.explain}
+    </div>
+    ${scoreHtml}
+    <div class="qnav">
+      <button class="qbtn" ${cur === 0 ? 'disabled' : ''} onclick="go(-1)">← ก่อนหน้า</button>
+      <span class="qctr">${answered} / ${QS.length} ตอบแล้ว</span>
+      <button class="qbtn" ${cur === QS.length - 1 ? 'disabled' : ''} onclick="go(1)">ถัดไป →</button>
+    </div>
+  `;
+}
+
+function pick(i) { if (done[cur] !== undefined) return; done[cur] = i; render(); }
+function go(d) { cur += d; render(); }
+render();
+</script>
+</body>
+</html>

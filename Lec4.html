@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>สรุป Graph Traversal — ITDS 122</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #f8f7f4;
+    --surface: #ffffff;
+    --border: rgba(0,0,0,0.1);
+    --border-strong: rgba(0,0,0,0.2);
+    --text: #1a1a1a;
+    --text-2: #555;
+    --text-3: #888;
+    --purple-bg: #EEEDFE; --purple-text: #3C3489;
+    --teal-bg: #E1F5EE; --teal-text: #085041;
+    --coral-bg: #FAECE7; --coral-text: #712B13;
+    --blue-bg: #E6F1FB; --blue-text: #0C447C;
+    --amber-bg: #FAEEDA; --amber-text: #633806;
+    --green-bg: #EAF3DE; --green-text: #27500A;
+    --red-bg: #FCEBEB; --red-text: #A32D2D;
+    --accent: #1D9E75;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 15px;
+  }
+
+  .header {
+    background: var(--surface);
+    border-bottom: 0.5px solid var(--border);
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+  .header-inner {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+
+  .header-tag {
+    display: inline-block;
+    background: var(--teal-bg);
+    color: var(--teal-text);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: .75rem;
+  }
+
+  h1 {
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: .35rem;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    color: var(--text-3);
+  }
+
+  .container {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 1.5rem 4rem;
+  }
+
+  .chapter {
+    margin-bottom: 2.5rem;
+  }
+
+  .ch-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1rem;
+  }
+
+  .ch-num {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .ch-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    padding: 1.1rem 1.3rem;
+    margin-bottom: .75rem;
+  }
+
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 9px;
+    border-radius: 20px;
+    margin-bottom: .6rem;
+    margin-right: 4px;
+  }
+
+  .b-exam { background: var(--coral-bg); color: var(--coral-text); }
+  .b-code { background: var(--green-bg); color: var(--green-text); }
+  .b-tip  { background: var(--purple-bg); color: var(--purple-text); }
+  .b-warn { background: var(--amber-bg); color: var(--amber-text); }
+
+  .pt {
+    font-size: 14px;
+    color: var(--text-2);
+    line-height: 1.75;
+    margin-bottom: .4rem;
+    padding-left: 1rem;
+    position: relative;
+  }
+  .pt::before { content: "—"; position: absolute; left: 0; color: var(--text-3); }
+  .hl { color: var(--text); font-weight: 600; }
+
+  .eg {
+    background: var(--bg);
+    border-left: 3px solid #378ADD;
+    border-radius: 0 8px 8px 0;
+    padding: .75rem 1rem;
+    margin: .75rem 0;
+    font-size: 13px;
+    color: var(--text-2);
+    line-height: 1.75;
+  }
+
+  .code-block {
+    background: #1e1e2e;
+    border-radius: 8px;
+    padding: .85rem 1rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: #cdd6f4;
+    line-height: 1.9;
+    margin: .75rem 0;
+    overflow-x: auto;
+  }
+  .kw  { color: #89b4fa; }
+  .fn  { color: #a6e3a1; }
+  .cm  { color: #6c7086; }
+  .st  { color: #f38ba8; }
+  .num { color: #fab387; }
+
+  .grid2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .65rem;
+    margin: .75rem 0;
+  }
+
+  .mini-card {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: .7rem .9rem;
+    border: 0.5px solid var(--border);
+  }
+
+  .mini-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: .25rem;
+  }
+
+  .mini-body {
+    font-size: 12px;
+    color: var(--text-2);
+    line-height: 1.6;
+  }
+
+  .compare-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .65rem;
+    margin: .75rem 0;
+  }
+
+  .compare-card {
+    border-radius: 8px;
+    padding: .75rem 1rem;
+  }
+
+  .compare-card.bad  { background: var(--red-bg);  border: 0.5px solid #F09595; }
+  .compare-card.good { background: var(--green-bg); border: 0.5px solid #97C459; }
+  .compare-card.neutral { background: var(--blue-bg); border: 0.5px solid #82B8E8; }
+  .compare-card.amber { background: var(--amber-bg); border: 0.5px solid #E5C06A; }
+
+  .compare-title {
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: .35rem;
+  }
+
+  .compare-card.bad  .compare-title { color: var(--red-text); }
+  .compare-card.good .compare-title { color: var(--green-text); }
+  .compare-card.neutral .compare-title { color: var(--blue-text); }
+  .compare-card.amber .compare-title { color: var(--amber-text); }
+  .compare-body { font-size: 12px; color: var(--text-2); line-height: 1.65; }
+
+  .flow-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin: .6rem 0;
+  }
+
+  .flow-box {
+    background: var(--bg);
+    border: 0.5px solid var(--border-strong);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 12px;
+    color: var(--text);
+  }
+
+  .flow-arr { font-size: 12px; color: var(--text-3); }
+
+  .divider {
+    height: 0.5px;
+    background: var(--border);
+    margin: 2rem 0;
+  }
+
+  /* Table */
+  .tbl {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin: .75rem 0;
+  }
+  .tbl th {
+    background: var(--bg);
+    color: var(--text);
+    font-weight: 600;
+    padding: 8px 12px;
+    border: 0.5px solid var(--border);
+    text-align: left;
+  }
+  .tbl td {
+    padding: 7px 12px;
+    border: 0.5px solid var(--border);
+    color: var(--text-2);
+    background: var(--surface);
+  }
+  .tbl tr:hover td { background: var(--bg); }
+
+  /* Adjacency Matrix visual */
+  .matrix-wrap {
+    overflow-x: auto;
+    margin: .75rem 0;
+  }
+  .matrix-tbl {
+    border-collapse: collapse;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    margin: 0 auto;
+  }
+  .matrix-tbl th {
+    background: var(--teal-bg);
+    color: var(--teal-text);
+    font-weight: 600;
+    padding: 6px 12px;
+    border: 0.5px solid var(--border);
+    text-align: center;
+  }
+  .matrix-tbl td {
+    padding: 6px 12px;
+    border: 0.5px solid var(--border);
+    text-align: center;
+    background: var(--surface);
+  }
+  .matrix-tbl td.one {
+    background: var(--green-bg);
+    color: var(--green-text);
+    font-weight: 600;
+  }
+  .matrix-tbl td.zero { color: var(--text-3); }
+
+  /* Quiz */
+  .quiz-wrap {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    padding: 1.3rem;
+  }
+
+  .progress-bar {
+    height: 3px;
+    background: var(--bg);
+    border-radius: 2px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+    border: 0.5px solid var(--border);
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width .4s ease;
+  }
+
+  .qnum  { font-size: 11px; font-weight: 600; color: var(--text-3); margin-bottom: .5rem; letter-spacing: .04em; text-transform: uppercase; }
+  .qtxt  { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: .85rem; line-height: 1.65; white-space: pre-line; }
+
+  .qopts { display: flex; flex-direction: column; gap: 7px; margin-bottom: .85rem; }
+
+  .qopt {
+    text-align: left;
+    background: var(--bg);
+    border: 0.5px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 13px;
+    font-size: 13px;
+    font-family: 'Sarabun', sans-serif;
+    color: var(--text);
+    cursor: pointer;
+    line-height: 1.55;
+    transition: border-color .15s, background .15s;
+  }
+
+  .qopt:hover:not(:disabled) { border-color: var(--border-strong); background: var(--surface); }
+  .qopt.correct { background: var(--green-bg); border-color: #97C459; color: var(--green-text); }
+  .qopt.wrong   { background: var(--red-bg);   border-color: #F09595; color: var(--red-text); }
+
+  .qfb { font-size: 13px; min-height: 18px; line-height: 1.65; padding: .1rem 0; }
+  .qfb.ok { color: var(--green-text); }
+  .qfb.no { color: var(--red-text); }
+
+  .qnav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 1.1rem;
+    padding-top: 1rem;
+    border-top: 0.5px solid var(--border);
+  }
+
+  .qbtn {
+    font-size: 13px;
+    font-family: 'Sarabun', sans-serif;
+    background: transparent;
+    border: 0.5px solid var(--border-strong);
+    border-radius: 7px;
+    padding: 6px 16px;
+    color: var(--text);
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .qbtn:hover:not(:disabled) { background: var(--bg); }
+  .qbtn:disabled { opacity: .3; cursor: default; }
+  .qctr { font-size: 12px; color: var(--text-3); }
+
+  .score-card {
+    background: var(--teal-bg);
+    border: 0.5px solid #5DCAA5;
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    text-align: center;
+    margin-top: 1rem;
+  }
+
+  .score-num { font-size: 32px; font-weight: 600; color: var(--teal-text); }
+  .score-label { font-size: 13px; color: #085041; margin-top: .25rem; }
+
+  @media (max-width: 540px) {
+    .grid2, .compare-row { grid-template-columns: 1fr; }
+    h1 { font-size: 21px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-tag">ITDS 122 — Data Structures</div>
+    <h1>สรุป Graph Traversal ฉบับละเอียด</h1>
+    <div class="subtitle">Lecture 12 · อ่านรอบเดียวเข้าใจ · มี Quiz 3 ข้อ</div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- CH1: Graph คืออะไร -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--teal-bg);color:var(--teal-text)">1</div>
+    <div class="ch-title">Graph คืออะไร — ก่อนจะ Traverse ต้องรู้จักก่อน</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">concept</span>
+    <div class="pt"><span class="hl">Graph</span> = โครงสร้างข้อมูลที่ประกอบด้วย <span class="hl">Vertex (โหนด/จุด)</span> และ <span class="hl">Edge (เส้นเชื่อม)</span></div>
+    <div class="pt">ต่างจาก Tree ตรงที่ Graph <span class="hl">ไม่มี root</span> และ <span class="hl">วนลูปได้ (cycle)</span> — โหนดเชื่อมกันได้อิสระกว่า</div>
+    <div class="pt">ใช้แทนความสัมพันธ์จริงในชีวิต เช่น แผนที่, เครือข่าย, โซเชียล, เส้นทางรถไฟ</div>
+    <div class="eg">
+      เปรียบเทียบง่าย ๆ:<br>
+      Tree = ต้นไม้มีรากชัดเจน เดินได้ทางเดียว<br>
+      Graph = แผนที่เมือง — ไปจาก A ถึง B ได้หลายเส้นทาง วนกลับได้ด้วย
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบ — ประเภทของ Graph</span>
+    <div class="grid2">
+      <div class="mini-card">
+        <div class="mini-title">Undirected Graph</div>
+        <div class="mini-body">เส้นเชื่อมไม่มีทิศทาง — A→B และ B→A เหมือนกัน เช่น เพื่อนบน Facebook</div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-title">Directed Graph (Digraph)</div>
+        <div class="mini-body">เส้นเชื่อมมีทิศทาง — A→B ≠ B→A เช่น การ Follow บน Twitter/X</div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-title">Weighted Graph</div>
+        <div class="mini-body">แต่ละ edge มีน้ำหนัก (cost/distance) เช่น ระยะทางระหว่างเมือง</div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-title">Connected Graph</div>
+        <div class="mini-body">ทุก vertex เชื่อมถึงกันได้ทั้งหมด — ไม่มีโหนดโดดเดี่ยว</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- CH2: Graph Representation -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--blue-bg);color:var(--blue-text)">2</div>
+    <div class="ch-title">Graph Representation — เก็บ Graph ในโค้ดยังไง</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบ — 2 วิธีหลัก ต้องเปรียบเทียบได้</span>
+    <div class="compare-row">
+      <div class="compare-card neutral">
+        <div class="compare-title">1. Adjacency List (dict)</div>
+        <div class="compare-body">เก็บแต่ละ vertex → list ของ neighbor ที่เชื่อมอยู่<br><br>ดีเมื่อ: graph มี edge น้อย (sparse)<br>ประหยัด memory<br>หา neighbor ของ node ได้เร็ว</div>
+      </div>
+      <div class="compare-card amber">
+        <div class="compare-title">2. Adjacency Matrix (2D array)</div>
+        <div class="compare-body">เก็บเป็น matrix n×n — ใส่ 1 ถ้าเชื่อม ใส่ 0 ถ้าไม่เชื่อม<br><br>ดีเมื่อ: graph หนาแน่น (dense)<br>เช็คว่า A เชื่อม B ไหมได้ O(1) ทันที</div>
+      </div>
+    </div>
+    <div class="eg">
+      จำง่าย: List = เบา เร็วหา neighbor | Matrix = หนัก แต่เช็ค edge O(1)
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-code">Adjacency List — Python dict</span>
+    <div class="pt">Lab 1 ให้สร้าง G1, G2, G3 ด้วย <span class="hl">dict</span> ใน Python</div>
+    <div class="code-block"><span class="cm"># G1: กราฟ 5 โหนด A B C D E</span><br>G1 = {<br>    <span class="st">'A'</span>: [<span class="st">'B'</span>, <span class="st">'C'</span>, <span class="st">'E'</span>],<br>    <span class="st">'B'</span>: [<span class="st">'A'</span>, <span class="st">'D'</span>],<br>    <span class="st">'C'</span>: [<span class="st">'A'</span>, <span class="st">'D'</span>],<br>    <span class="st">'D'</span>: [<span class="st">'B'</span>, <span class="st">'C'</span>, <span class="st">'E'</span>],<br>    <span class="st">'E'</span>: [<span class="st">'A'</span>, <span class="st">'D'</span>]<br>}<br><br><span class="cm"># อ่านว่า: A เชื่อมกับ B, C, E</span><br><span class="cm"># B เชื่อมกับ A, D  ...และอื่น ๆ</span></div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบ — แปลง Adjacency List → Matrix (Lab 5 Bonus)</span>
+    <div class="pt">สร้าง matrix ขนาด <span class="hl">n × n</span> เติม 0 ทั้งหมดก่อน แล้วไล่ใส่ 1 ตาม edge ที่มี</div>
+    <div class="matrix-wrap">
+      <table class="matrix-tbl">
+        <tr><th></th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th></tr>
+        <tr><th>A</th><td class="zero">0</td><td class="one">1</td><td class="one">1</td><td class="zero">0</td><td class="zero">0</td></tr>
+        <tr><th>B</th><td class="one">1</td><td class="zero">0</td><td class="one">1</td><td class="one">1</td><td class="one">1</td></tr>
+        <tr><th>C</th><td class="one">1</td><td class="one">1</td><td class="zero">0</td><td class="one">1</td><td class="zero">0</td></tr>
+        <tr><th>D</th><td class="zero">0</td><td class="one">1</td><td class="one">1</td><td class="one">1</td><td class="one">1</td></tr>
+        <tr><th>E</th><td class="zero">0</td><td class="one">1</td><td class="zero">0</td><td class="one">1</td><td class="zero">0</td></tr>
+      </table>
+    </div>
+    <div class="code-block"><span class="kw">def</span> <span class="fn">to_adjacency_matrix</span>(graph):<br>    vertices = <span class="fn">sorted</span>(graph.keys())   <span class="cm"># เรียงชื่อ vertex</span><br>    n = <span class="fn">len</span>(vertices)<br>    idx = {v: i <span class="kw">for</span> i, v <span class="kw">in</span> <span class="fn">enumerate</span>(vertices)}<br>    matrix = [[<span class="num">0</span>] * n <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(n)]  <span class="cm"># เริ่มต้น 0 ทั้งหมด</span><br>    <span class="kw">for</span> v, neighbors <span class="kw">in</span> graph.items():<br>        <span class="kw">for</span> u <span class="kw">in</span> neighbors:<br>            matrix[idx[v]][idx[u]] = <span class="num">1</span>   <span class="cm"># ใส่ 1 ตรง edge</span><br>    <span class="kw">return</span> vertices, matrix</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- CH3: BFT -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--coral-bg);color:var(--coral-text)">3</div>
+    <div class="ch-title">Breadth-First Traversal (BFT) — เดินแนวกว้าง ทีละ layer</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">intuition — เข้าใจก่อนจำ</span>
+    <div class="pt">BFT = เหมือน <span class="hl">โยนก้อนหินลงน้ำ</span> — คลื่นกระจายออกทีละวง (layer by layer)</div>
+    <div class="pt">จาก vertex เริ่มต้น → เยี่ยม <span class="hl">เพื่อนบ้านทุกคน</span> ก่อน → แล้วค่อยไปไกลขึ้น</div>
+    <div class="pt">ใช้ <span class="hl">Queue (FIFO)</span> — ใครเข้าก่อน ออกก่อน เลยได้ผลแบบ level by level</div>
+    <div class="eg">
+      G1 เริ่มจาก A:<br>
+      Layer 0: A<br>
+      Layer 1: B, C, E (เพื่อนบ้านตรง ๆ ของ A)<br>
+      Layer 2: D (เพื่อนของ B และ C ที่ยังไม่เคยเยี่ยม)<br>
+      ผลลัพธ์: A → B → C → E → D
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบ — ขั้นตอน BFT จำให้ได้</span>
+    <div class="flow-row">
+      <div class="flow-box">1. เพิ่ม start ลง Queue</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">2. Mark visited</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">3. Dequeue ออกมา</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">4. เยี่ยม neighbor ที่ยังไม่เยี่ยม → Enqueue</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">5. ทำซ้ำจนหมด</div>
+    </div>
+    <div class="pt" style="margin-top:.5rem"><span class="hl">กุญแจสำคัญ:</span> ต้องมี <span class="hl">visited set</span> — ป้องกันวนลูปซ้ำ (graph มี cycle ได้!)</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-code">BFT — Python implementation</span>
+    <div class="code-block"><span class="kw">from</span> collections <span class="kw">import</span> deque<br><br><span class="kw">def</span> <span class="fn">breadth_first_traversal</span>(graph, start):<br>    visited = <span class="fn">set</span>()          <span class="cm"># เก็บโหนดที่เยี่ยมแล้ว</span><br>    queue = deque([start])    <span class="cm"># เริ่มต้นด้วย start node</span><br>    visited.add(start)<br><br>    <span class="kw">while</span> queue:<br>        vertex = queue.popleft()   <span class="cm"># ดึงออกจากหน้า queue</span><br>        <span class="fn">print</span>(vertex, end=<span class="st">' → '</span>)<br><br>        <span class="kw">for</span> neighbor <span class="kw">in</span> graph[vertex]:<br>            <span class="kw">if</span> neighbor <span class="kw">not in</span> visited:<br>                visited.add(neighbor)<br>                queue.append(neighbor)  <span class="cm"># เพิ่มต่อหลัง queue</span></div>
+    <div class="eg">
+      สังเกต: visited.add() ก่อน append เข้า queue เลย<br>
+      → ป้องกันโหนดเดิมถูก enqueue ซ้ำหลายครั้ง ซึ่งจะทำให้ผลผิด
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- CH4: DFT -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--purple-bg);color:var(--purple-text)">4</div>
+    <div class="ch-title">Depth-First Traversal (DFT) — เดินแนวลึก ดำดิ่งก่อน</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">intuition — เข้าใจก่อนจำ</span>
+    <div class="pt">DFT = เหมือน <span class="hl">สำรวจถ้ำ</span> — เดินลึกสุดทางเดียวก่อน ค่อยถอยมาลองทางอื่น</div>
+    <div class="pt">จาก vertex เริ่มต้น → <span class="hl">ดำลึกไปเรื่อย ๆ</span> จน dead-end → backtrack → ลองทางใหม่</div>
+    <div class="pt">ใช้ <span class="hl">Recursion</span> (หรือ Stack) — call stack คือ memory ที่จำว่าต้องถอยไปไหน</div>
+    <div class="eg">
+      G1 เริ่มจาก A (สมมติไล่ตาม alphabet):<br>
+      A → B → D → C → E<br>
+      (ดำลึกก่อน ไม่ออกกว้าง — ต่างจาก BFT ที่ได้ A → B → C → E → D)
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบ — ขั้นตอน DFT จำให้ได้</span>
+    <div class="flow-row">
+      <div class="flow-box">1. Mark visited</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">2. เยี่ยม vertex นี้</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">3. loop neighbor ที่ยังไม่เยี่ยม</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">4. เรียก DFT(neighbor) ซ้ำ (recursive)</div>
+    </div>
+    <div class="pt" style="margin-top:.5rem">เหมือน BFT แต่เปลี่ยน Queue → Recursion และ <span class="hl">ดำลึกก่อน</span> แทนที่จะกระจายกว้าง</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-code">DFT — Python implementation (recursive)</span>
+    <div class="code-block"><span class="kw">def</span> <span class="fn">depth_first_traversal</span>(graph, vertex, visited=<span class="kw">None</span>):<br>    <span class="kw">if</span> visited <span class="kw">is</span> <span class="kw">None</span>:<br>        visited = <span class="fn">set</span>()          <span class="cm"># สร้าง visited ครั้งแรก</span><br><br>    visited.add(vertex)         <span class="cm"># mark ก่อนเยี่ยม</span><br>    <span class="fn">print</span>(vertex, end=<span class="st">' → '</span>)<br><br>    <span class="kw">for</span> neighbor <span class="kw">in</span> graph[vertex]:<br>        <span class="kw">if</span> neighbor <span class="kw">not in</span> visited:<br>            <span class="fn">depth_first_traversal</span>(graph, neighbor, visited)  <span class="cm"># ดำลึก!</span></div>
+    <div class="eg">
+      จุดสำคัญ: visited ส่งต่อเป็น argument เดิมทุก recursive call<br>
+      → ทุก level รู้ว่าเยี่ยมอะไรไปแล้ว ไม่วนซ้ำ
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- CH5: BFT vs DFT -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--amber-bg);color:var(--amber-text)">5</div>
+    <div class="ch-title">BFT vs DFT — เปรียบเทียบให้ชัด (Lab 4)</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบ — ต้องบอกความแตกต่างได้</span>
+    <table class="tbl">
+      <tr><th>หัวข้อ</th><th>BFT (แนวกว้าง)</th><th>DFT (แนวลึก)</th></tr>
+      <tr><td>โครงสร้างที่ใช้</td><td>Queue (deque)</td><td>Recursion / Stack</td></tr>
+      <tr><td>ลำดับการเยี่ยม</td><td>Layer by layer</td><td>ดำลึกก่อน backtrack</td></tr>
+      <tr><td>เหมาะกับ</td><td>หาเส้นทางสั้นสุด (Shortest Path)</td><td>ตรวจ cycle, topological sort</td></tr>
+      <tr><td>Memory</td><td>ใช้มากถ้า graph กว้าง</td><td>ใช้มากถ้า graph ลึก (stack overflow)</td></tr>
+      <tr><td>ผลลัพธ์</td><td>คล้ายกัน แต่ลำดับต่างกัน</td><td>คล้ายกัน แต่ลำดับต่างกัน</td></tr>
+    </table>
+    <div class="eg">
+      ทั้งสองเยี่ยมทุก vertex เหมือนกัน (ถ้า graph connected) — แต่<span style="font-weight:600"> ลำดับการเยี่ยมต่างกัน</span><br>
+      เปรียบเทียบง่าย: BFT = น้ำท่วมไล่ระดับ | DFT = งูเลื้อยลึก
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">สิ่งที่เหมือนกัน ทั้ง BFT และ DFT</span>
+    <div class="pt">ทั้งคู่ต้องมี <span class="hl">visited set</span> — ป้องกัน infinite loop ใน graph ที่มี cycle</div>
+    <div class="pt">ทั้งคู่รับ <span class="hl">graph (adjacency list)</span> และ <span class="hl">start vertex</span> เป็น input</div>
+    <div class="pt">ทั้งคู่ <span class="hl">เยี่ยมทุก vertex ครั้งเดียว</span> — complexity เท่ากันคือ <span class="hl">O(V + E)</span></div>
+    <div class="eg">
+      O(V + E) หมายถึง: V = จำนวน vertex, E = จำนวน edge<br>
+      ไล่ทุก node หนึ่งครั้ง + ดู edge ทุกเส้นหนึ่งครั้ง — ไม่มีการทำซ้ำ
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- CH6: สรุปรวม -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--green-bg);color:var(--green-text)">6</div>
+    <div class="ch-title">สรุปภาพรวม — จำแค่นี้ก็ผ่าน</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">โครงสร้าง Lab ทั้งหมด 5 ข้อ</span>
+    <div class="flow-row">
+      <div class="flow-box">Lab 1: สร้าง G1 G2 G3 ด้วย dict</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">Lab 2: เขียน BFT + ทดสอบ</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">Lab 3: เขียน DFT + ทดสอบ</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">Lab 4: เปรียบเทียบ BFT vs DFT</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">Lab 5 (Bonus): List → Matrix</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">สูตรจำเร็ว — ก่อนสอบ</span>
+    <div class="compare-row">
+      <div class="compare-card neutral">
+        <div class="compare-title">BFT = Queue + กว้าง</div>
+        <div class="compare-body">
+          deque([start]) → popleft() → append(neighbor)<br><br>
+          visited ก่อน enqueue เสมอ
+        </div>
+      </div>
+      <div class="compare-card good">
+        <div class="compare-title">DFT = Recursion + ลึก</div>
+        <div class="compare-body">
+          visited.add(v) → print(v) → recurse(neighbor)<br><br>
+          ส่ง visited ต่อทุก call
+        </div>
+      </div>
+    </div>
+    <div class="compare-row" style="margin-top:.65rem">
+      <div class="compare-card amber">
+        <div class="compare-title">Adjacency List (dict)</div>
+        <div class="compare-body">Sparse graph — ประหยัด memory<br>หา neighbor ได้เร็ว</div>
+      </div>
+      <div class="compare-card amber">
+        <div class="compare-title">Adjacency Matrix (2D)</div>
+        <div class="compare-body">Dense graph — เช็ค edge O(1)<br>แต่กิน memory O(V²)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- QUIZ -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--coral-bg);color:var(--coral-text)">Q</div>
+    <div class="ch-title">Mini Quiz — ลองทำก่อนดูเฉลย</div>
+  </div>
+  <div class="quiz-wrap" id="quiz"></div>
+</div>
+
+</div><!-- end container -->
+
+<script>
+const QS = [
+  {
+    q: "BFT และ DFT ต่างกันที่โครงสร้างข้อมูลที่ใช้ — BFT ใช้อะไร และทำให้ผลแตกต่างยังไง?",
+    opts: [
+      "BFT ใช้ Stack — ทำให้เยี่ยม node ลึกก่อน",
+      "BFT ใช้ Queue — ทำให้เยี่ยม node ทีละ layer (กว้างก่อน)",
+      "BFT ใช้ Recursion — ทำให้ backtrack ได้",
+      "BFT ใช้ Set — ทำให้ไม่มีการเยี่ยมซ้ำ"
+    ],
+    ans: 1,
+    explain: "BFT ใช้ Queue (FIFO — ใครเข้าก่อนออกก่อน) ทำให้เยี่ยม neighbor ทั้งหมดของ level ปัจจุบันก่อน แล้วค่อยขยายไปลึกขึ้น — ผลคือได้ layer by layer ต่างจาก DFT ที่ใช้ Recursion/Stack และดำลึกทางเดียวก่อน"
+  },
+  {
+    q: "ทำไม BFT และ DFT ต้องมี visited set — ถ้าไม่มีจะเกิดอะไรขึ้น?",
+    opts: [
+      "โปรแกรมจะช้าลง แต่ยังทำงานได้ถูกต้อง",
+      "เยี่ยม node ซ้ำได้ ทำให้วนลูปอนันต์ (infinite loop) เพราะ graph มี cycle",
+      "ผลลัพธ์จะเรียงลำดับผิด แต่ไม่วนซ้ำ",
+      "ใช้ memory มากขึ้นเท่านั้น ไม่มีผลอื่น"
+    ],
+    ans: 1,
+    explain: "Graph (ต่างจาก Tree) มี cycle ได้ เช่น A-B-C-A ถ้าไม่มี visited set จะวนไปเรื่อย ๆ ไม่มีวันหยุด เกิด infinite loop หรือ stack overflow — visited set จึงเป็น 'หน่วยความจำ' ว่าเราเคยไปที่ไหนแล้วบ้าง"
+  },
+  {
+    q: "Adjacency List และ Adjacency Matrix ต่างกันอย่างไร — เลือกใช้แบบไหนเมื่อไหร่?",
+    opts: [
+      "ไม่ต่างกัน — ผลลัพธ์ BFT/DFT เหมือนกันทุกอย่าง",
+      "Adjacency List เร็วกว่าเสมอ — ควรใช้ทุกกรณี",
+      "Adjacency List ประหยัด memory เหมาะ sparse graph | Matrix เช็ค edge O(1) เหมาะ dense graph",
+      "Adjacency Matrix ใช้ memory น้อยกว่าเสมอ"
+    ],
+    ans: 2,
+    explain: "Adjacency List เก็บเฉพาะ edge ที่มีอยู่จริง → ประหยัด memory เหมาะกับ graph ที่มี edge น้อย (sparse) | Adjacency Matrix เก็บทุก pair ทำให้ใช้ memory O(V²) แต่เช็คว่า A เชื่อม B ไหมได้ O(1) ทันที เหมาะกับ graph ที่ edge หนาแน่น (dense)"
+  }
+];
+
+let cur = 0, done = [];
+
+function render() {
+  const q = QS[cur], a = done[cur];
+  const answered = done.filter(x => x !== undefined).length;
+  const pct = Math.round((answered / QS.length) * 100);
+  const allDone = answered === QS.length;
+
+  let scoreHtml = '';
+  if (allDone) {
+    const correct = QS.filter((q, i) => done[i] === q.ans).length;
+    scoreHtml = `<div class="score-card">
+      <div class="score-num">${correct} / ${QS.length}</div>
+      <div class="score-label">${correct === QS.length ? 'เยี่ยม! ถูกทุกข้อ' : correct >= 2 ? 'ดีมาก ผ่านแล้ว' : 'ลองอ่านทบทวนแล้วทำอีกรอบ'}</div>
+    </div>`;
+  }
+
+  document.getElementById('quiz').innerHTML = `
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <div class="qnum">ข้อ ${cur + 1} จาก ${QS.length}</div>
+    <div class="qtxt">${q.q}</div>
+    <div class="qopts">
+      ${q.opts.map((o, i) => {
+        let cls = 'qopt';
+        if (a !== undefined) {
+          if (i === q.ans) cls += ' correct';
+          else if (i === a && a !== q.ans) cls += ' wrong';
+        }
+        return `<button class="${cls}" ${a !== undefined ? 'disabled' : ''} onclick="pick(${i})">${String.fromCharCode(65 + i)}. ${o}</button>`;
+      }).join('')}
+    </div>
+    <div class="qfb ${a === undefined ? '' : a === q.ans ? 'ok' : 'no'}">
+      ${a === undefined ? '' : (a === q.ans ? '✓ ถูกต้อง — ' : '✗ ไม่ใช่ — ') + q.explain}
+    </div>
+    ${scoreHtml}
+    <div class="qnav">
+      <button class="qbtn" ${cur === 0 ? 'disabled' : ''} onclick="go(-1)">← ก่อนหน้า</button>
+      <span class="qctr">${answered} / ${QS.length} ตอบแล้ว</span>
+      <button class="qbtn" ${cur === QS.length - 1 ? 'disabled' : ''} onclick="go(1)">ถัดไป →</button>
+    </div>
+  `;
+}
+
+function pick(i) { if (done[cur] !== undefined) return; done[cur] = i; render(); }
+function go(d) { cur += d; render(); }
+render();
+</script>
+</body>
+</html>

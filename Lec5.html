@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>สรุป Shortest Path & MST — ITDS 122</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #f8f7f4;
+    --surface: #ffffff;
+    --border: rgba(0,0,0,0.1);
+    --border-strong: rgba(0,0,0,0.2);
+    --text: #1a1a1a;
+    --text-2: #555;
+    --text-3: #888;
+    --purple-bg: #EEEDFE; --purple-text: #3C3489;
+    --teal-bg: #E1F5EE; --teal-text: #085041;
+    --coral-bg: #FAECE7; --coral-text: #712B13;
+    --blue-bg: #E6F1FB; --blue-text: #0C447C;
+    --amber-bg: #FAEEDA; --amber-text: #633806;
+    --green-bg: #EAF3DE; --green-text: #27500A;
+    --red-bg: #FCEBEB; --red-text: #A32D2D;
+    --accent: #1D9E75;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 15px;
+  }
+
+  .header {
+    background: var(--surface);
+    border-bottom: 0.5px solid var(--border);
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+  .header-inner { max-width: 760px; margin: 0 auto; padding: 0 1.5rem; }
+
+  .header-tag {
+    display: inline-block;
+    background: var(--amber-bg);
+    color: var(--amber-text);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: .75rem;
+  }
+
+  h1 { font-size: 26px; font-weight: 600; color: var(--text); margin-bottom: .35rem; }
+  .subtitle { font-size: 14px; color: var(--text-3); }
+
+  .container { max-width: 760px; margin: 0 auto; padding: 0 1.5rem 4rem; }
+  .chapter { margin-bottom: 2.5rem; }
+
+  .ch-header { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; }
+
+  .ch-num {
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600; flex-shrink: 0;
+  }
+
+  .ch-title { font-size: 17px; font-weight: 600; color: var(--text); }
+
+  .card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    padding: 1.1rem 1.3rem;
+    margin-bottom: .75rem;
+  }
+
+  .badge {
+    display: inline-block;
+    font-size: 11px; font-weight: 600;
+    padding: 2px 9px; border-radius: 20px;
+    margin-bottom: .6rem; margin-right: 4px;
+  }
+
+  .b-exam { background: var(--coral-bg); color: var(--coral-text); }
+  .b-code { background: var(--green-bg); color: var(--green-text); }
+  .b-tip  { background: var(--purple-bg); color: var(--purple-text); }
+  .b-warn { background: var(--amber-bg); color: var(--amber-text); }
+
+  .pt {
+    font-size: 14px; color: var(--text-2); line-height: 1.75;
+    margin-bottom: .4rem; padding-left: 1rem; position: relative;
+  }
+  .pt::before { content: "—"; position: absolute; left: 0; color: var(--text-3); }
+  .hl { color: var(--text); font-weight: 600; }
+
+  .eg {
+    background: var(--bg);
+    border-left: 3px solid #378ADD;
+    border-radius: 0 8px 8px 0;
+    padding: .75rem 1rem;
+    margin: .75rem 0;
+    font-size: 13px; color: var(--text-2); line-height: 1.75;
+  }
+
+  .code-block {
+    background: #1e1e2e;
+    border-radius: 8px;
+    padding: .85rem 1rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px; color: #cdd6f4;
+    line-height: 1.9; margin: .75rem 0; overflow-x: auto;
+  }
+  .kw  { color: #89b4fa; }
+  .fn  { color: #a6e3a1; }
+  .cm  { color: #6c7086; }
+  .st  { color: #f38ba8; }
+  .num { color: #fab387; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: .65rem; margin: .75rem 0; }
+
+  .mini-card {
+    background: var(--bg); border-radius: 8px;
+    padding: .7rem .9rem; border: 0.5px solid var(--border);
+  }
+  .mini-title { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: .25rem; }
+  .mini-body  { font-size: 12px; color: var(--text-2); line-height: 1.6; }
+
+  .compare-row { display: grid; grid-template-columns: 1fr 1fr; gap: .65rem; margin: .75rem 0; }
+
+  .compare-card { border-radius: 8px; padding: .75rem 1rem; }
+  .compare-card.bad     { background: var(--red-bg);   border: 0.5px solid #F09595; }
+  .compare-card.good    { background: var(--green-bg); border: 0.5px solid #97C459; }
+  .compare-card.neutral { background: var(--blue-bg);  border: 0.5px solid #82B8E8; }
+  .compare-card.amber   { background: var(--amber-bg); border: 0.5px solid #E5C06A; }
+  .compare-card.purple  { background: var(--purple-bg);border: 0.5px solid #A9A3F0; }
+
+  .compare-title { font-size: 12px; font-weight: 600; margin-bottom: .35rem; }
+  .compare-card.bad     .compare-title { color: var(--red-text); }
+  .compare-card.good    .compare-title { color: var(--green-text); }
+  .compare-card.neutral .compare-title { color: var(--blue-text); }
+  .compare-card.amber   .compare-title { color: var(--amber-text); }
+  .compare-card.purple  .compare-title { color: var(--purple-text); }
+  .compare-body { font-size: 12px; color: var(--text-2); line-height: 1.65; }
+
+  .flow-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: .6rem 0; }
+  .flow-box {
+    background: var(--bg); border: 0.5px solid var(--border-strong);
+    border-radius: 6px; padding: 4px 10px; font-size: 12px; color: var(--text);
+  }
+  .flow-arr { font-size: 12px; color: var(--text-3); }
+
+  .divider { height: 0.5px; background: var(--border); margin: 2rem 0; }
+
+  .tbl { width: 100%; border-collapse: collapse; font-size: 13px; margin: .75rem 0; }
+  .tbl th {
+    background: var(--bg); color: var(--text); font-weight: 600;
+    padding: 8px 12px; border: 0.5px solid var(--border); text-align: left;
+  }
+  .tbl td {
+    padding: 7px 12px; border: 0.5px solid var(--border);
+    color: var(--text-2); background: var(--surface);
+  }
+  .tbl tr:hover td { background: var(--bg); }
+
+  /* result list */
+  .result-list {
+    display: flex; flex-direction: column; gap: 5px; margin: .75rem 0;
+  }
+  .result-row {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--bg); border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 7px 12px; font-size: 13px;
+  }
+  .result-label { font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: var(--text); min-width: 50px; }
+  .result-bar-wrap { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .result-bar { height: 100%; background: var(--accent); border-radius: 3px; }
+  .result-val { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-2); min-width: 45px; text-align: right; }
+
+  /* MST edge list */
+  .edge-list { display: flex; flex-wrap: wrap; gap: 6px; margin: .75rem 0; }
+  .edge-tag {
+    background: var(--teal-bg); color: var(--teal-text);
+    border: 0.5px solid #5DCAA5; border-radius: 6px;
+    padding: 4px 10px; font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px; font-weight: 600;
+  }
+
+  /* Quiz */
+  .quiz-wrap {
+    background: var(--surface); border: 0.5px solid var(--border);
+    border-radius: 12px; padding: 1.3rem;
+  }
+  .progress-bar {
+    height: 3px; background: var(--bg); border-radius: 2px;
+    margin-bottom: 1rem; overflow: hidden; border: 0.5px solid var(--border);
+  }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width .4s ease; }
+  .qnum  { font-size: 11px; font-weight: 600; color: var(--text-3); margin-bottom: .5rem; letter-spacing: .04em; text-transform: uppercase; }
+  .qtxt  { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: .85rem; line-height: 1.65; white-space: pre-line; }
+  .qopts { display: flex; flex-direction: column; gap: 7px; margin-bottom: .85rem; }
+  .qopt {
+    text-align: left; background: var(--bg); border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 9px 13px; font-size: 13px;
+    font-family: 'Sarabun', sans-serif; color: var(--text); cursor: pointer;
+    line-height: 1.55; transition: border-color .15s, background .15s;
+  }
+  .qopt:hover:not(:disabled) { border-color: var(--border-strong); background: var(--surface); }
+  .qopt.correct { background: var(--green-bg); border-color: #97C459; color: var(--green-text); }
+  .qopt.wrong   { background: var(--red-bg);   border-color: #F09595; color: var(--red-text); }
+  .qfb { font-size: 13px; min-height: 18px; line-height: 1.65; padding: .1rem 0; }
+  .qfb.ok { color: var(--green-text); }
+  .qfb.no { color: var(--red-text); }
+  .qnav {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 1.1rem; padding-top: 1rem; border-top: 0.5px solid var(--border);
+  }
+  .qbtn {
+    font-size: 13px; font-family: 'Sarabun', sans-serif; background: transparent;
+    border: 0.5px solid var(--border-strong); border-radius: 7px;
+    padding: 6px 16px; color: var(--text); cursor: pointer; transition: background .15s;
+  }
+  .qbtn:hover:not(:disabled) { background: var(--bg); }
+  .qbtn:disabled { opacity: .3; cursor: default; }
+  .qctr { font-size: 12px; color: var(--text-3); }
+  .score-card {
+    background: var(--teal-bg); border: 0.5px solid #5DCAA5;
+    border-radius: 10px; padding: 1rem 1.25rem; text-align: center; margin-top: 1rem;
+  }
+  .score-num   { font-size: 32px; font-weight: 600; color: var(--teal-text); }
+  .score-label { font-size: 13px; color: #085041; margin-top: .25rem; }
+
+  @media (max-width: 540px) {
+    .grid2, .compare-row { grid-template-columns: 1fr; }
+    h1 { font-size: 21px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-tag">ITDS 122 — Data Structures</div>
+    <h1>สรุป Shortest Path & MST ฉบับละเอียด</h1>
+    <div class="subtitle">Lecture 13 · อ่านรอบเดียวเข้าใจ · มี Quiz 3 ข้อ</div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- CH1: ปัญหาคืออะไร -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--amber-bg);color:var(--amber-text)">1</div>
+    <div class="ch-title">ปัญหาที่ต้องแก้ — Shortest Path vs MST</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">เข้าใจ context ก่อน</span>
+    <div class="pt">Lecture นี้มีปัญหา <span class="hl">2 ประเภท</span> — ต่างกันมาก ต้องแยกให้ออก</div>
+    <div class="compare-row">
+      <div class="compare-card neutral">
+        <div class="compare-title">Shortest Path — หาเส้นทางสั้นสุด</div>
+        <div class="compare-body">จากจุดเริ่มต้น 1 จุด → ไปยังทุกจุดอื่น ด้วยค่าน้ำหนักรวมน้อยที่สุด<br><br>ใช้: GPS นำทาง, routing packet ในเครือข่าย</div>
+      </div>
+      <div class="compare-card amber">
+        <div class="compare-title">MST — ต้นไม้ครอบคลุมน้ำหนักน้อยสุด</div>
+        <div class="compare-body">เชื่อมทุก vertex เข้าด้วยกัน โดยใช้ edge น้อยที่สุดและรวมน้ำหนักน้อยที่สุด<br><br>ใช้: วางสายไฟ, เครือข่าย internet ราคาถูก</div>
+      </div>
+    </div>
+    <div class="eg">
+      จำง่าย:<br>
+      Shortest Path = "ฉันจะไป BKK จาก CNX ยังไงให้เร็วสุด?" — สนใจ path จาก source ไป destination<br>
+      MST = "จะลากสายไฟให้ครบทุกบ้านโดยใช้สายน้อยสุด?" — สนใจเชื่อมทุกจุดรวมกันให้ถูกที่สุด
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบ — Graph G4 ที่ใช้ใน Lab</span>
+    <div class="pt">G4 = กราฟสนามบินในสหรัฐอเมริกา มี <span class="hl">9 vertex</span> (สนามบิน) และ <span class="hl">weighted edges</span> (ระยะทางไมล์)</div>
+    <div class="pt">Vertices: <span class="hl">BOS, PVD, JFK, BWI, ORD, MIA, DFW, SFO, LAX</span></div>
+    <div class="code-block"><span class="cm"># G4 เป็น Weighted Graph — เก็บด้วย dict of dict</span><br>G4 = {<br>    <span class="st">'BOS'</span>: {<span class="st">'PVD'</span>: <span class="num">867</span>, <span class="st">'JFK'</span>: <span class="num">187</span>, <span class="st">'SFO'</span>: <span class="num">2704</span>},<br>    <span class="st">'PVD'</span>: {<span class="st">'BOS'</span>: <span class="num">867</span>, <span class="st">'JFK'</span>: <span class="num">144</span>},<br>    <span class="st">'JFK'</span>: {<span class="st">'PVD'</span>: <span class="num">144</span>, <span class="st">'BOS'</span>: <span class="num">187</span>, <span class="st">'BWI'</span>: <span class="num">184</span>, <span class="st">'ORD'</span>: <span class="num">621</span>},<br>    <span class="st">'BWI'</span>: {<span class="st">'JFK'</span>: <span class="num">184</span>, <span class="st">'MIA'</span>: <span class="num">946</span>, <span class="st">'ORD'</span>: <span class="num">621</span>},<br>    <span class="st">'ORD'</span>: {<span class="st">'JFK'</span>: <span class="num">621</span>, <span class="st">'BWI'</span>: <span class="num">621</span>, <span class="st">'DFW'</span>: <span class="num">802</span>, <span class="st">'SFO'</span>: <span class="num">1846</span>},<br>    <span class="st">'MIA'</span>: {<span class="st">'BWI'</span>: <span class="num">946</span>, <span class="st">'DFW'</span>: <span class="num">1121</span>, <span class="st">'LAX'</span>: <span class="num">2342</span>},<br>    <span class="st">'DFW'</span>: {<span class="st">'ORD'</span>: <span class="num">802</span>, <span class="st">'MIA'</span>: <span class="num">1121</span>, <span class="st">'SFO'</span>: <span class="num">1464</span>, <span class="st">'LAX'</span>: <span class="num">1235</span>},<br>    <span class="st">'SFO'</span>: {<span class="st">'BOS'</span>: <span class="num">2704</span>, <span class="st">'ORD'</span>: <span class="num">1846</span>, <span class="st">'DFW'</span>: <span class="num">1464</span>, <span class="st">'LAX'</span>: <span class="num">337</span>},<br>    <span class="st">'LAX'</span>: {<span class="st">'SFO'</span>: <span class="num">337</span>, <span class="st">'DFW'</span>: <span class="num">1235</span>, <span class="st">'MIA'</span>: <span class="num">2342</span>}<br>}</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- CH2: Dijkstra -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--blue-bg);color:var(--blue-text)">2</div>
+    <div class="ch-title">Dijkstra's Algorithm — หาเส้นทางสั้นสุด (Lab 1)</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">intuition — เข้าใจก่อนจำ</span>
+    <div class="pt">Dijkstra = เหมือน <span class="hl">ระลอกน้ำ</span> แต่ชาญฉลาดกว่า BFT เพราะคำนึงถึง <span class="hl">น้ำหนัก</span></div>
+    <div class="pt">แนวคิด: เยี่ยม vertex ที่ <span class="hl">"ถูกที่สุด/ใกล้ที่สุด"</span> จาก source ก่อนเสมอ → ค่อย ๆ ขยายออก</div>
+    <div class="pt">ใช้ <span class="hl">Priority Queue (Min-Heap)</span> — ดึงตัวที่มี cost น้อยสุดออกมาก่อน</div>
+    <div class="pt"><span class="hl">ข้อจำกัดสำคัญ:</span> ใช้ได้กับ graph ที่ <span class="hl">น้ำหนักไม่ติดลบ</span> เท่านั้น!</div>
+    <div class="eg">
+      เปรียบเทียบ: ถ้า BFT = นับจำนวน hop, Dijkstra = นับน้ำหนักรวม<br>
+      ทางที่ hop น้อยกว่า ≠ ทางที่ถูกกว่า เสมอ — Dijkstra จึงเลือกทางที่ถูกสุดเสมอ
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบ — ขั้นตอน Dijkstra จำให้ได้</span>
+    <div class="flow-row">
+      <div class="flow-box">1. dist[src] = 0, ทุกตัวอื่น = ∞</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">2. ใส่ (0, src) ลง Priority Queue</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">3. ดึงตัวที่ cost น้อยสุดออก</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">4. Relax neighbor ทุกตัว (อัพเดต dist ถ้าถูกกว่า)</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">5. ทำซ้ำจนหมด PQ</div>
+    </div>
+    <div class="pt" style="margin-top:.5rem"><span class="hl">Relaxation</span> คือหัวใจ: ถ้า dist[u] + weight(u,v) &lt; dist[v] → อัพเดต dist[v]</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-code">Dijkstra — Python implementation</span>
+    <div class="code-block"><span class="kw">import</span> heapq<br><br><span class="kw">def</span> <span class="fn">dijkstra</span>(graph, src):<br>    dist = {v: <span class="fn">float</span>(<span class="st">'inf'</span>) <span class="kw">for</span> v <span class="kw">in</span> graph}  <span class="cm"># เริ่มต้น ∞ ทุกตัว</span><br>    dist[src] = <span class="num">0</span><br>    pq = [(<span class="num">0</span>, src)]   <span class="cm"># (cost, vertex) → min-heap</span><br><br>    <span class="kw">while</span> pq:<br>        cost, u = heapq.heappop(pq)    <span class="cm"># ดึงตัวที่ถูกที่สุด</span><br>        <span class="kw">if</span> cost > dist[u]: <span class="kw">continue</span>   <span class="cm"># outdated entry → ข้ามไป</span><br><br>        <span class="kw">for</span> v, w <span class="kw">in</span> graph[u].items():    <span class="cm"># ไล่ neighbor</span><br>            new_cost = dist[u] + w<br>            <span class="kw">if</span> new_cost < dist[v]:         <span class="cm"># Relaxation!</span><br>                dist[v] = new_cost<br>                heapq.heappush(pq, (new_cost, v))<br><br>    <span class="kw">return</span> dist</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ผลลัพธ์ตัวอย่าง — เริ่มจาก BWI (Lab 1)</span>
+    <div class="pt">Dijkstra จาก BWI บนกราฟ G4 — ระยะทางสั้นสุดไปแต่ละสนามบิน:</div>
+    <div class="result-list">
+      <div class="result-row"><span class="result-label">BWI</span><div class="result-bar-wrap"><div class="result-bar" style="width:2%"></div></div><span class="result-val">0</span></div>
+      <div class="result-row"><span class="result-label">JFK</span><div class="result-bar-wrap"><div class="result-bar" style="width:7%"></div></div><span class="result-val">184</span></div>
+      <div class="result-row"><span class="result-label">PVD</span><div class="result-bar-wrap"><div class="result-bar" style="width:12%"></div></div><span class="result-val">328</span></div>
+      <div class="result-row"><span class="result-label">BOS</span><div class="result-bar-wrap"><div class="result-bar" style="width:14%"></div></div><span class="result-val">371</span></div>
+      <div class="result-row"><span class="result-label">ORD</span><div class="result-bar-wrap"><div class="result-bar" style="width:23%"></div></div><span class="result-val">621</span></div>
+      <div class="result-row"><span class="result-label">MIA</span><div class="result-bar-wrap"><div class="result-bar" style="width:36%"></div></div><span class="result-val">946</span></div>
+      <div class="result-row"><span class="result-label">DFW</span><div class="result-bar-wrap"><div class="result-bar" style="width:54%"></div></div><span class="result-val">1423</span></div>
+      <div class="result-row"><span class="result-label">SFO</span><div class="result-bar-wrap"><div class="result-bar" style="width:93%"></div></div><span class="result-val">2467</span></div>
+      <div class="result-row"><span class="result-label">LAX</span><div class="result-bar-wrap"><div class="result-bar" style="width:100%"></div></div><span class="result-val">2658</span></div>
+    </div>
+    <div class="eg">สังเกต: BWI→JFK แค่ 184 (direct) แต่ BWI→PVD ต้องผ่าน JFK ก่อน = 184+144 = 328</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- CH3: MST คืออะไร -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--teal-bg);color:var(--teal-text)">3</div>
+    <div class="ch-title">Minimum Spanning Tree (MST) — เชื่อมทุกจุดให้ถูกสุด</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">concept — MST คืออะไร</span>
+    <div class="pt"><span class="hl">Spanning Tree</span> = tree ที่เชื่อมทุก vertex ใน graph โดยมี edge จำนวน <span class="hl">V-1 เส้น</span> (V คือจำนวน vertex)</div>
+    <div class="pt"><span class="hl">MST</span> = Spanning Tree ที่ผลรวมน้ำหนัก edge <span class="hl">น้อยที่สุด</span> ในบรรดา Spanning Tree ทั้งหมด</div>
+    <div class="pt">MST <span class="hl">ไม่มี cycle</span> — เพราะถ้ามี cycle แสดงว่ามี edge เกิน จะตัดออกได้เสมอ</div>
+    <div class="eg">
+      G4 มี 9 vertex → MST ต้องมี edge ครบ 8 เส้นพอดี<br>
+      ทำไมต้อง V-1? เพราะ tree ที่เชื่อม n node ต้องมี n-1 edge — น้อยกว่านี้ไม่ connected มากกว่านี้มี cycle
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบ — 2 algorithm สำหรับ MST ต้องเปรียบเทียบได้</span>
+    <div class="compare-row">
+      <div class="compare-card good">
+        <div class="compare-title">Prim-Jarnik — โตจากจุดเดียว</div>
+        <div class="compare-body">เริ่มจาก vertex ใด ๆ → ขยาย MST ทีละ 1 vertex โดยเลือก edge ที่ถูกที่สุดที่เชื่อมเข้า MST</div>
+      </div>
+      <div class="compare-card purple">
+        <div class="compare-title">Kruskal's — เรียง edge แล้วเลือก</div>
+        <div class="compare-body">เรียง edge ทุกเส้นจากถูก→แพง → เลือกทีละเส้น ถ้าไม่สร้าง cycle ก็เพิ่ม ไม่สร้างก็ข้าม</div>
+      </div>
+    </div>
+    <div class="eg">
+      ทั้งสองได้ MST เดียวกัน (total weight เท่ากัน) แต่ลำดับเลือก edge อาจต่างกัน<br>
+      Prim = เหมือนปลูกต้นไม้จากรากเดียว | Kruskal = เหมือนเลือกอิฐราคาถูกสุดก่อน
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- CH4: Prim-Jarnik -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--green-bg);color:var(--green-text)">4</div>
+    <div class="ch-title">Prim-Jarnik Algorithm — ขยาย MST จากจุดเดิม (Lab 2)</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">intuition</span>
+    <div class="pt">Prim = <span class="hl">คล้าย Dijkstra มาก</span> — ต่างกันที่ key ของ PQ คือ <span class="hl">น้ำหนัก edge ที่เชื่อมเข้า MST</span> ไม่ใช่ระยะสะสม</div>
+    <div class="pt">เริ่มจาก vertex ใด ๆ → ทุกรอบ เลือก vertex ข้างนอกที่ <span class="hl">ใกล้ MST ที่สุด</span> มาเพิ่ม</div>
+    <div class="pt">ใช้ <span class="hl">Priority Queue</span> เช่นกัน แต่เก็บ (edge_weight, neighbor_vertex) ไม่ใช่ (total_dist, vertex)</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบ — ขั้นตอน Prim-Jarnik</span>
+    <div class="flow-row">
+      <div class="flow-box">1. เริ่มจาก vertex ใด ๆ ก็ได้ → ใส่ neighbor ทุกตัวลง PQ</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">2. ดึง (weight, v) ที่น้อยสุดออก</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">3. ถ้า v ยังไม่อยู่ใน MST → เพิ่ม edge นี้ลง MST</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">4. ใส่ neighbor ของ v ที่ยังไม่อยู่ใน MST ลง PQ</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">5. ทำซ้ำจน MST มีครบ V-1 edge</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-code">Prim-Jarnik — Python implementation</span>
+    <div class="code-block"><span class="kw">import</span> heapq<br><br><span class="kw">def</span> <span class="fn">MST_PrimJarnik</span>(graph):<br>    start = <span class="fn">next</span>(<span class="fn">iter</span>(graph))   <span class="cm"># เริ่มจาก vertex แรก</span><br>    in_mst = {start}<br>    mst_edges = []<br>    pq = []<br><br>    <span class="kw">for</span> neighbor, w <span class="kw">in</span> graph[start].items():<br>        heapq.heappush(pq, (w, start, neighbor))<br><br>    <span class="kw">while</span> pq <span class="kw">and</span> <span class="fn">len</span>(in_mst) < <span class="fn">len</span>(graph):<br>        w, u, v = heapq.heappop(pq)   <span class="cm"># edge ถูกสุด</span><br>        <span class="kw">if</span> v <span class="kw">in</span> in_mst: <span class="kw">continue</span>     <span class="cm"># v อยู่ใน MST แล้ว → ข้าม</span><br>        in_mst.add(v)<br>        mst_edges.append((u, v, w))   <span class="cm"># เพิ่ม edge นี้ใน MST</span><br>        <span class="kw">for</span> neighbor, w2 <span class="kw">in</span> graph[v].items():<br>            <span class="kw">if</span> neighbor <span class="kw">not in</span> in_mst:<br>                heapq.heappush(pq, (w2, v, neighbor))<br><br>    <span class="kw">return</span> mst_edges</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ผลลัพธ์ Prim-Jarnik บน G4</span>
+    <div class="pt">MST ของ G4 มี 8 edge รวมน้ำหนัก <span class="hl">4460 ไมล์</span></div>
+    <div class="edge-list">
+      <span class="edge-tag">SFO–LAX : 337</span>
+      <span class="edge-tag">LAX–DFW : 1235</span>
+      <span class="edge-tag">DFW–ORD : 802</span>
+      <span class="edge-tag">ORD–BWI : 621</span>
+      <span class="edge-tag">BWI–JFK : 184</span>
+      <span class="edge-tag">JFK–PVD : 144</span>
+      <span class="edge-tag">JFK–BOS : 187</span>
+      <span class="edge-tag">MIA–BWI : 946</span>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- CH5: Kruskal -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--purple-bg);color:var(--purple-text)">5</div>
+    <div class="ch-title">Kruskal's Algorithm — เรียง Edge แล้วเลือก (Lab 3)</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">intuition</span>
+    <div class="pt">Kruskal = <span class="hl">ต่างจาก Prim ตรงที่ไม่ขยายจากจุดเดิม</span> — มองภาพรวม edge ทั้งหมดก่อน</div>
+    <div class="pt">เรียง edge ทุกเส้นจากถูก→แพง → ไล่เลือกทีละเส้น → เพิ่มถ้า <span class="hl">ไม่ทำให้เกิด cycle</span></div>
+    <div class="pt">ใช้โครงสร้าง <span class="hl">Union-Find (Disjoint Set)</span> — ตรวจว่าสอง vertex อยู่ใน component เดียวกันหรือเปล่า</div>
+    <div class="eg">
+      Union-Find คืออะไร? เป็นโครงสร้างที่ตอบคำถาม "A กับ B เชื่อมกันอยู่ไหม?" ได้เร็วมาก<br>
+      ถ้า A กับ B อยู่ใน component เดียวกัน → เพิ่ม edge A-B จะทำให้เกิด cycle → ข้าม!
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบ — ขั้นตอน Kruskal</span>
+    <div class="flow-row">
+      <div class="flow-box">1. รวม edge ทุกเส้นในกราฟ</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">2. เรียงจากน้ำหนักน้อย → มาก</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">3. ไล่ edge ทีละเส้น</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">4. ถ้า u, v ต่าง component → เพิ่มลง MST + Union(u, v)</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">5. ถ้า u, v component เดียวกัน → ข้าม (จะเกิด cycle)</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-code">Kruskal — Python implementation</span>
+    <div class="code-block"><span class="kw">def</span> <span class="fn">MST_Kruskal</span>(graph):<br>    <span class="cm"># 1. รวม edge ทั้งหมด (undirected → ไม่นับซ้ำ)</span><br>    edges = []<br>    seen = <span class="fn">set</span>()<br>    <span class="kw">for</span> u <span class="kw">in</span> graph:<br>        <span class="kw">for</span> v, w <span class="kw">in</span> graph[u].items():<br>            <span class="kw">if</span> (v, u) <span class="kw">not in</span> seen:<br>                edges.append((w, u, v)); seen.add((u, v))<br>    edges.<span class="fn">sort</span>()  <span class="cm"># เรียงน้ำหนักจากน้อยไปมาก</span><br><br>    <span class="cm"># 2. Union-Find</span><br>    parent = {v: v <span class="kw">for</span> v <span class="kw">in</span> graph}<br>    <span class="kw">def</span> <span class="fn">find</span>(x): <span class="kw">return</span> x <span class="kw">if</span> parent[x]==x <span class="kw">else</span> <span class="fn">find</span>(parent[x])<br>    <span class="kw">def</span> <span class="fn">union</span>(a, b): parent[<span class="fn">find</span>(a)] = <span class="fn">find</span>(b)<br><br>    <span class="cm"># 3. เลือก edge</span><br>    mst = []<br>    <span class="kw">for</span> w, u, v <span class="kw">in</span> edges:<br>        <span class="kw">if</span> <span class="fn">find</span>(u) != <span class="fn">find</span>(v):   <span class="cm"># ต่าง component → ปลอดภัย</span><br>            mst.append((u, v, w))<br>            <span class="fn">union</span>(u, v)<br>    <span class="kw">return</span> mst</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ผลลัพธ์ Kruskal บน G4 — เหมือน Prim แต่ลำดับต่าง</span>
+    <div class="edge-list">
+      <span class="edge-tag">JFK–PVD : 144</span>
+      <span class="edge-tag">BWI–JFK : 184</span>
+      <span class="edge-tag">JFK–BOS : 187</span>
+      <span class="edge-tag">SFO–LAX : 337</span>
+      <span class="edge-tag">ORD–BWI : 621</span>
+      <span class="edge-tag">DFW–ORD : 802</span>
+      <span class="edge-tag">MIA–BWI : 946</span>
+      <span class="edge-tag">LAX–DFW : 1235</span>
+    </div>
+    <div class="eg">
+      สังเกต: ลำดับ edge ต่างจาก Prim (Kruskal เรียงจากถูกสุดก่อน) แต่ edge ที่เลือก<span style="font-weight:600">เหมือนกันทุกเส้น</span> — MST คือ MST เดิม น้ำหนักรวม 4460 ไมล์เท่ากัน
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- CH6: เปรียบเทียบ 3 algorithm -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--coral-bg);color:var(--coral-text)">6</div>
+    <div class="ch-title">สรุปเปรียบเทียบ 3 Algorithm — จำแค่นี้พอ</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบบ่อย — ต้องแยกได้ทันที</span>
+    <table class="tbl">
+      <tr><th>หัวข้อ</th><th>Dijkstra</th><th>Prim-Jarnik</th><th>Kruskal's</th></tr>
+      <tr><td>แก้ปัญหา</td><td>Shortest Path</td><td>MST</td><td>MST</td></tr>
+      <tr><td>โครงสร้างหลัก</td><td>Priority Queue</td><td>Priority Queue</td><td>Sort + Union-Find</td></tr>
+      <tr><td>กลยุทธ์</td><td>Greedy (dist น้อยสุดก่อน)</td><td>Greedy (edge ถูกสุดก่อน)</td><td>Greedy (edge เรียงถูก→แพง)</td></tr>
+      <tr><td>Complexity</td><td>O((V+E) log V)</td><td>O((V+E) log V)</td><td>O(E log E)</td></tr>
+      <tr><td>ข้อจำกัด</td><td>น้ำหนักต้อง ≥ 0</td><td>Undirected + Weighted</td><td>Undirected + Weighted</td></tr>
+      <tr><td>เหมาะกับ</td><td>Graph หนาแน่น</td><td>Graph หนาแน่น</td><td>Graph เบาบาง (sparse)</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">สูตรจำเร็ว — ก่อนสอบ</span>
+    <div class="compare-row">
+      <div class="compare-card neutral">
+        <div class="compare-title">Dijkstra = Shortest Path</div>
+        <div class="compare-body">dist[src]=0, ∞ ทุกตัว → PQ → Relax neighbor → dist[v] อัพเดตถ้าถูกกว่า</div>
+      </div>
+      <div class="compare-card good">
+        <div class="compare-title">Prim = MST จากจุดเดิม</div>
+        <div class="compare-body">เหมือน Dijkstra แต่ key = edge weight (ไม่ใช่ dist สะสม) → ขยาย MST ทีละ vertex</div>
+      </div>
+    </div>
+    <div class="compare-card purple" style="margin-top:.65rem">
+      <div class="compare-title">Kruskal = MST จาก edge ทั้งหมด</div>
+      <div class="compare-body">เรียง edge → ไล่เลือก → Union-Find ตรวจ cycle → ข้ามถ้า same component → เพิ่มถ้าต่าง component</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- QUIZ -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--blue-bg);color:var(--blue-text)">Q</div>
+    <div class="ch-title">Mini Quiz — ลองทำก่อนดูเฉลย</div>
+  </div>
+  <div class="quiz-wrap" id="quiz"></div>
+</div>
+
+</div>
+
+<script>
+const QS = [
+  {
+    q: "Dijkstra's algorithm ต่างจาก BFT (Breadth-First Traversal) อย่างไร และทำไมถึงต้องใช้ Priority Queue แทน Queue ธรรมดา?",
+    opts: [
+      "Dijkstra ใช้ recursion ส่วน BFT ใช้ Queue — ต่างกันที่วิธี implement เท่านั้น",
+      "Dijkstra คำนึงถึงน้ำหนัก edge — ต้องเลือก vertex ที่มีต้นทุนรวมน้อยสุดก่อนเสมอ ซึ่ง Queue ธรรมดาทำไม่ได้",
+      "Dijkstra และ BFT เหมือนกันทุกอย่าง ต่างกันแค่ชื่อ",
+      "Dijkstra ใช้ Queue แบบเดิม แต่เรียง vertex ตามตัวอักษร"
+    ],
+    ans: 1,
+    explain: "BFT นับจำนวน hop เท่ากัน (unweighted) ส่วน Dijkstra นับน้ำหนักสะสม — ทางที่ hop น้อยกว่าไม่จำเป็นต้องถูกกว่าเสมอ Priority Queue (Min-Heap) จึงต้องใช้เพื่อดึง vertex ที่มี cost น้อยที่สุดออกมาก่อนทุกครั้ง"
+  },
+  {
+    q: "Prim-Jarnik และ Kruskal's algorithm ต่างกันอย่างไร — แต่ทำไมผลลัพธ์ (MST) ถึงเหมือนกัน?",
+    opts: [
+      "ต่างกันทั้งกลยุทธ์และผลลัพธ์ — MST ที่ได้จากสองอัลกอริทึมต่างกันเสมอ",
+      "Prim ขยาย MST จากจุดเดียว ส่วน Kruskal เรียง edge ทั้งหมด — แต่ทั้งคู่ Greedy เลือก edge ถูกสุดทุกรอบ จึงได้ MST เดิม",
+      "Kruskal เร็วกว่า Prim เสมอ จึงควรใช้ Kruskal แทนได้เลย",
+      "Prim ต้องการ Union-Find ส่วน Kruskal ต้องการ Priority Queue"
+    ],
+    ans: 1,
+    explain: "Prim ขยาย MST ทีละ vertex (คล้าย Dijkstra) ส่วน Kruskal เรียง edge ทั้งหมดแล้วเลือกทีละเส้น — กลยุทธ์ต่างกัน แต่ทั้งคู่ใช้หลัก Greedy (เลือกสิ่งที่ถูกที่สุดก่อนเสมอ) ทำให้ได้ MST เดิม เพียงแต่ลำดับที่เลือก edge อาจต่างกัน"
+  },
+  {
+    q: "ถ้าต้องเลือกระหว่าง Prim-Jarnik กับ Kruskal's สำหรับ graph ที่มี vertex น้อยแต่มี edge มากมาย (dense graph) — ควรเลือกอันไหนและทำไม?",
+    opts: [
+      "Kruskal's — เพราะเรียง edge ง่ายกว่า",
+      "Prim-Jarnik — เพราะ O((V+E) log V) เหมาะกับ dense graph มากกว่า Kruskal ที่ต้องเรียง edge ทั้งหมด O(E log E)",
+      "ทั้งคู่ performance เหมือนกันทุกสถานการณ์",
+      "Dijkstra's — เพราะรวดเร็วที่สุด"
+    ],
+    ans: 1,
+    explain: "สำหรับ dense graph (E ≈ V²) Kruskal ต้องเรียง edge ทั้งหมด O(E log E) ซึ่งอาจช้ากว่า ส่วน Prim-Jarnik ใช้ Priority Queue ขยายจาก vertex ปัจจุบัน O((V+E) log V) เหมาะกับ dense graph มากกว่า — ในทางกลับกัน Kruskal เหมาะกับ sparse graph ที่มี edge น้อย"
+  }
+];
+
+let cur = 0, done = [];
+
+function render() {
+  const q = QS[cur], a = done[cur];
+  const answered = done.filter(x => x !== undefined).length;
+  const pct = Math.round((answered / QS.length) * 100);
+  const allDone = answered === QS.length;
+
+  let scoreHtml = '';
+  if (allDone) {
+    const correct = QS.filter((q, i) => done[i] === q.ans).length;
+    scoreHtml = `<div class="score-card">
+      <div class="score-num">${correct} / ${QS.length}</div>
+      <div class="score-label">${correct === QS.length ? 'เยี่ยม! ถูกทุกข้อ' : correct >= 2 ? 'ดีมาก ผ่านแล้ว' : 'ลองอ่านทบทวนแล้วทำอีกรอบ'}</div>
+    </div>`;
+  }
+
+  document.getElementById('quiz').innerHTML = `
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <div class="qnum">ข้อ ${cur + 1} จาก ${QS.length}</div>
+    <div class="qtxt">${q.q}</div>
+    <div class="qopts">
+      ${q.opts.map((o, i) => {
+        let cls = 'qopt';
+        if (a !== undefined) {
+          if (i === q.ans) cls += ' correct';
+          else if (i === a && a !== q.ans) cls += ' wrong';
+        }
+        return `<button class="${cls}" ${a !== undefined ? 'disabled' : ''} onclick="pick(${i})">${String.fromCharCode(65+i)}. ${o}</button>`;
+      }).join('')}
+    </div>
+    <div class="qfb ${a === undefined ? '' : a === q.ans ? 'ok' : 'no'}">
+      ${a === undefined ? '' : (a === q.ans ? '✓ ถูกต้อง — ' : '✗ ไม่ใช่ — ') + q.explain}
+    </div>
+    ${scoreHtml}
+    <div class="qnav">
+      <button class="qbtn" ${cur===0?'disabled':''} onclick="go(-1)">← ก่อนหน้า</button>
+      <span class="qctr">${answered} / ${QS.length} ตอบแล้ว</span>
+      <button class="qbtn" ${cur===QS.length-1?'disabled':''} onclick="go(1)">ถัดไป →</button>
+    </div>
+  `;
+}
+
+function pick(i) { if (done[cur] !== undefined) return; done[cur] = i; render(); }
+function go(d) { cur += d; render(); }
+render();
+</script>
+</body>
+</html>

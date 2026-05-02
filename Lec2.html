@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>สรุป Search Trees — ITDS 122</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #f8f7f4;
+    --surface: #ffffff;
+    --border: rgba(0,0,0,0.1);
+    --border-strong: rgba(0,0,0,0.2);
+    --text: #1a1a1a;
+    --text-2: #555;
+    --text-3: #888;
+    --purple-bg: #EEEDFE; --purple-text: #3C3489;
+    --teal-bg: #E1F5EE; --teal-text: #085041;
+    --coral-bg: #FAECE7; --coral-text: #712B13;
+    --blue-bg: #E6F1FB; --blue-text: #0C447C;
+    --amber-bg: #FAEEDA; --amber-text: #633806;
+    --green-bg: #EAF3DE; --green-text: #27500A;
+    --red-bg: #FCEBEB; --red-text: #A32D2D;
+    --accent: #1D9E75;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 15px;
+  }
+
+  .header {
+    background: var(--surface);
+    border-bottom: 0.5px solid var(--border);
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+
+  .header-inner {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+
+  .header-tag {
+    display: inline-block;
+    background: var(--blue-bg);
+    color: var(--blue-text);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: .75rem;
+  }
+
+  h1 {
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: .35rem;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    color: var(--text-3);
+  }
+
+  .container {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 1.5rem 4rem;
+  }
+
+  .chapter {
+    margin-bottom: 2.5rem;
+  }
+
+  .ch-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1rem;
+  }
+
+  .ch-num {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .ch-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    padding: 1.1rem 1.3rem;
+    margin-bottom: .75rem;
+  }
+
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 9px;
+    border-radius: 20px;
+    margin-bottom: .6rem;
+    margin-right: 4px;
+  }
+
+  .b-exam { background: var(--coral-bg); color: var(--coral-text); }
+  .b-code { background: var(--green-bg); color: var(--green-text); }
+  .b-tip  { background: var(--purple-bg); color: var(--purple-text); }
+  .b-warn { background: var(--amber-bg); color: var(--amber-text); }
+
+  .pt {
+    font-size: 14px;
+    color: var(--text-2);
+    line-height: 1.75;
+    margin-bottom: .4rem;
+    padding-left: 1rem;
+    position: relative;
+  }
+  .pt::before { content: "—"; position: absolute; left: 0; color: var(--text-3); }
+  .hl { color: var(--text); font-weight: 600; }
+
+  .eg {
+    background: var(--bg);
+    border-left: 3px solid #378ADD;
+    border-radius: 0 8px 8px 0;
+    padding: .75rem 1rem;
+    margin: .75rem 0;
+    font-size: 13px;
+    color: var(--text-2);
+    line-height: 1.75;
+  }
+
+  .code-block {
+    background: #1e1e2e;
+    border-radius: 8px;
+    padding: .85rem 1rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: #cdd6f4;
+    line-height: 1.9;
+    margin: .75rem 0;
+    overflow-x: auto;
+  }
+  .kw  { color: #89b4fa; }
+  .fn  { color: #a6e3a1; }
+  .cm  { color: #6c7086; }
+  .st  { color: #f38ba8; }
+  .num { color: #fab387; }
+
+  .grid2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .65rem;
+    margin: .75rem 0;
+  }
+
+  .mini-card {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: .7rem .9rem;
+    border: 0.5px solid var(--border);
+  }
+
+  .mini-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: .25rem;
+  }
+
+  .mini-body {
+    font-size: 12px;
+    color: var(--text-2);
+    line-height: 1.6;
+  }
+
+  .compare-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .65rem;
+    margin: .75rem 0;
+  }
+
+  .compare-card {
+    border-radius: 8px;
+    padding: .75rem 1rem;
+  }
+
+  .compare-card.bad  { background: var(--red-bg);  border: 0.5px solid #F09595; }
+  .compare-card.good { background: var(--green-bg); border: 0.5px solid #97C459; }
+  .compare-card.neutral { background: var(--blue-bg); border: 0.5px solid #82B8E8; }
+
+  .compare-title {
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: .35rem;
+  }
+
+  .compare-card.bad  .compare-title { color: var(--red-text); }
+  .compare-card.good .compare-title { color: var(--green-text); }
+  .compare-card.neutral .compare-title { color: var(--blue-text); }
+  .compare-body { font-size: 12px; color: var(--text-2); line-height: 1.65; }
+
+  .flow-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin: .6rem 0;
+  }
+
+  .flow-box {
+    background: var(--bg);
+    border: 0.5px solid var(--border-strong);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 12px;
+    color: var(--text);
+  }
+
+  .flow-arr { font-size: 12px; color: var(--text-3); }
+
+  .divider {
+    height: 0.5px;
+    background: var(--border);
+    margin: 2rem 0;
+  }
+
+  /* Table */
+  .tbl {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin: .75rem 0;
+  }
+  .tbl th {
+    background: var(--bg);
+    color: var(--text);
+    font-weight: 600;
+    padding: 8px 12px;
+    border: 0.5px solid var(--border);
+    text-align: left;
+  }
+  .tbl td {
+    padding: 7px 12px;
+    border: 0.5px solid var(--border);
+    color: var(--text-2);
+    background: var(--surface);
+  }
+  .tbl tr:hover td { background: var(--bg); }
+
+  /* Quiz */
+  .quiz-wrap {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    padding: 1.3rem;
+  }
+
+  .progress-bar {
+    height: 3px;
+    background: var(--bg);
+    border-radius: 2px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+    border: 0.5px solid var(--border);
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width .4s ease;
+  }
+
+  .qnum  { font-size: 11px; font-weight: 600; color: var(--text-3); margin-bottom: .5rem; letter-spacing: .04em; text-transform: uppercase; }
+  .qtxt  { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: .85rem; line-height: 1.65; white-space: pre-line; }
+
+  .qopts { display: flex; flex-direction: column; gap: 7px; margin-bottom: .85rem; }
+
+  .qopt {
+    text-align: left;
+    background: var(--bg);
+    border: 0.5px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 13px;
+    font-size: 13px;
+    font-family: 'Sarabun', sans-serif;
+    color: var(--text);
+    cursor: pointer;
+    line-height: 1.55;
+    transition: border-color .15s, background .15s;
+  }
+
+  .qopt:hover:not(:disabled) { border-color: var(--border-strong); background: var(--surface); }
+  .qopt.correct { background: var(--green-bg); border-color: #97C459; color: var(--green-text); }
+  .qopt.wrong   { background: var(--red-bg);   border-color: #F09595; color: var(--red-text); }
+
+  .qfb { font-size: 13px; min-height: 18px; line-height: 1.65; padding: .1rem 0; }
+  .qfb.ok { color: var(--green-text); }
+  .qfb.no { color: var(--red-text); }
+
+  .qnav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 1.1rem;
+    padding-top: 1rem;
+    border-top: 0.5px solid var(--border);
+  }
+
+  .qbtn {
+    font-size: 13px;
+    font-family: 'Sarabun', sans-serif;
+    background: transparent;
+    border: 0.5px solid var(--border-strong);
+    border-radius: 7px;
+    padding: 6px 16px;
+    color: var(--text);
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .qbtn:hover:not(:disabled) { background: var(--bg); }
+  .qbtn:disabled { opacity: .3; cursor: default; }
+  .qctr { font-size: 12px; color: var(--text-3); }
+
+  .score-card {
+    background: var(--teal-bg);
+    border: 0.5px solid #5DCAA5;
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    text-align: center;
+    margin-top: 1rem;
+  }
+
+  .score-num { font-size: 32px; font-weight: 600; color: var(--teal-text); }
+  .score-label { font-size: 13px; color: #085041; margin-top: .25rem; }
+
+  @media (max-width: 540px) {
+    .grid2, .compare-row { grid-template-columns: 1fr; }
+    h1 { font-size: 21px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-tag">ITDS 122 — Data Structures</div>
+    <h1>สรุป Search Trees ฉบับละเอียด</h1>
+    <div class="subtitle">Lecture 10 · อ่านรอบเดียวเข้าใจ · มี Quiz 5 ข้อ</div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- CH1: Binary Tree -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--purple-bg);color:var(--purple-text)">1</div>
+    <div class="ch-title">Binary Tree — พื้นฐานก่อนเข้า BST</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">concept</span>
+    <div class="pt"><span class="hl">Binary Tree</span> = tree ที่แต่ละ node มีลูกได้ <span class="hl">ไม่เกิน 2 ตัว</span> คือ left child และ right child</div>
+    <div class="pt">แต่ละ node เก็บ: <span class="hl">ข้อมูล (value)</span>, <span class="hl">left subtree</span>, <span class="hl">right subtree</span></div>
+    <div class="pt">ต่างจาก general tree ตรงที่ restrict จำนวนลูก — ทำให้ traverse และ search ได้ง่ายกว่า</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบ — ประเภทของ Binary Tree</span>
+    <div class="grid2">
+      <div class="mini-card">
+        <div class="mini-title">Full Binary Tree</div>
+        <div class="mini-body">ทุก node มีลูก 0 หรือ 2 ตัวเท่านั้น — ห้ามมีลูกแค่ 1 ตัว</div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-title">Complete Binary Tree</div>
+        <div class="mini-body">ทุก level เต็มหมด ยกเว้น level สุดท้ายที่ไล่จากซ้ายไปขวา</div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-title">Balanced Binary Tree</div>
+        <div class="mini-body">ความสูงของ left กับ right subtree ต่างกันได้ไม่เกิน 1</div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-title">Perfect Binary Tree</div>
+        <div class="mini-body">ทุก internal node มีลูก 2 คน และทุก leaf อยู่ที่ depth เดียวกันเป๊ะ</div>
+      </div>
+    </div>
+    <div class="eg">
+      จำง่าย: Full = 0 หรือ 2, Complete = เติมซ้ายก่อน, Balanced = สมดุล, Perfect = สมบูรณ์แบบที่สุด
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">เปรียบเทียบ</span>
+    <table class="tbl">
+      <tr><th>Feature</th><th>Binary Tree</th><th>General Tree</th></tr>
+      <tr><td>ลูกสูงสุด</td><td>2 ตัว</td><td>ไม่จำกัด</td></tr>
+      <tr><td>โครงสร้าง</td><td>Strict hierarchy</td><td>Flexible hierarchy</td></tr>
+      <tr><td>ประสิทธิภาพ</td><td>เร็วกว่า</td><td>ช้ากว่า</td></tr>
+      <tr><td>ใช้ใน</td><td>BST, Heap, Expression Tree</td><td>File system, Decision tree</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- CH2: LinkedBinaryTree -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--teal-bg);color:var(--teal-text)">2</div>
+    <div class="ch-title">LinkedBinaryTree — ขยายจาก LinkedTree</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">concept</span>
+    <div class="pt"><span class="hl">LinkedBinaryTree extends LinkedTree</span> — ไม่ต้องเขียนใหม่ทั้งหมด แค่ override method ที่จำเป็น</div>
+    <div class="pt">เพิ่ม 2 method หลัก: <span class="hl">add_left(p, e)</span> และ <span class="hl">add_right(p, e)</span> เพื่อ restrict ลูกให้ไม่เกิน 2</div>
+    <div class="pt">เพิ่ม accessor: <span class="hl">left(p)</span> คืน left child, <span class="hl">right(p)</span> คืน right child</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-code">implementation</span>
+    <div class="code-block"><span class="kw">class</span> <span class="fn">LinkedBinaryTree</span>(LinkedTree):<br>    <span class="kw">def</span> <span class="fn">add_left</span>(self, p, e):<br>        node = self._validate(p)<br>        <span class="kw">if</span> len(node._children) &gt; <span class="num">0</span>:<br>            <span class="kw">raise</span> ValueError(<span class="st">"Left child already exists!"</span>)<br>        <span class="kw">return</span> self.add_child(p, e)<br><br>    <span class="kw">def</span> <span class="fn">add_right</span>(self, p, e):<br>        node = self._validate(p)<br>        <span class="kw">if</span> len(node._children) &gt; <span class="num">1</span>:<br>            <span class="kw">raise</span> ValueError(<span class="st">"Right child already exists!"</span>)<br>        <span class="kw">return</span> self.add_child(p, e)<br><br>    <span class="kw">def</span> <span class="fn">left</span>(self, p):    <span class="cm"># ได้ left child หรือ None</span><br>        <span class="kw">return</span> next(iter(self.children(p)), None)<br><br>    <span class="kw">def</span> <span class="fn">right</span>(self, p):   <span class="cm"># ได้ right child หรือ None</span><br>        children = list(self.children(p))<br>        <span class="kw">return</span> children[<span class="num">1</span>] <span class="kw">if</span> len(children) &gt; <span class="num">1</span> <span class="kw">else</span> None</div>
+    <div class="eg">
+      ตัวอย่างสร้าง tree: bt.add_child(None, "A") → root A<br>
+      bt.add_left(root, "B") → B เป็น left child<br>
+      bt.add_right(root, "C") → C เป็น right child
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- CH3: Tree Traversal -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--coral-bg);color:var(--coral-text)">3</div>
+    <div class="ch-title">Tree Traversal — 4 วิธีเดิน tree</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบบ่อยมาก — จำลำดับให้ได้</span>
+    <table class="tbl">
+      <tr><th>Traversal</th><th>ลำดับ</th><th>ใช้ทำอะไร</th></tr>
+      <tr><td><strong>Preorder</strong></td><td>Root → Left → Right</td><td>Copy tree, Expression tree</td></tr>
+      <tr><td><strong>Inorder</strong></td><td>Left → Root → Right</td><td>BST sorted order ✓</td></tr>
+      <tr><td><strong>Postorder</strong></td><td>Left → Right → Root</td><td>ลบ tree, คำนวณ expression</td></tr>
+      <tr><td><strong>BFS (Level-order)</strong></td><td>Level by level</td><td>Shortest path, AI decision</td></tr>
+    </table>
+    <div class="eg">
+      จำง่าย — ชื่อบอกเลยว่า "root" อยู่ที่ไหน:<br>
+      PRE-order = root ก่อน (pre = ก่อน)<br>
+      IN-order = root กลาง (in = กลาง)<br>
+      POST-order = root หลัง (post = หลัง)
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-code">โค้ด 3 traversal</span>
+    <div class="code-block"><span class="cm"># Preorder: Root → Left → Right</span><br><span class="kw">def</span> <span class="fn">preorder_traversal</span>(self, p):<br>    <span class="kw">if</span> p:<br>        print(p.element(), end=<span class="st">' → '</span>)<br>        self.preorder_traversal(self.left(p))<br>        self.preorder_traversal(self.right(p))<br><br><span class="cm"># Inorder: Left → Root → Right</span><br><span class="kw">def</span> <span class="fn">inorder_traversal</span>(self, p):<br>    <span class="kw">if</span> p:<br>        self.inorder_traversal(self.left(p))<br>        print(p.element(), end=<span class="st">' → '</span>)<br>        self.inorder_traversal(self.right(p))<br><br><span class="cm"># Postorder: Left → Right → Root</span><br><span class="kw">def</span> <span class="fn">postorder_traversal</span>(self, p):<br>    <span class="kw">if</span> p:<br>        self.postorder_traversal(self.left(p))<br>        self.postorder_traversal(self.right(p))<br>        print(p.element(), end=<span class="st">' → '</span>)</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-code">BFS ใช้ Queue</span>
+    <div class="code-block"><span class="kw">def</span> <span class="fn">breadth_first_traversal</span>(self):<br>    <span class="kw">if</span> self.is_empty(): <span class="kw">return</span><br>    queue = deque([self.root()])  <span class="cm"># ใช้ deque เป็น queue</span><br>    <span class="kw">while</span> queue:<br>        p = queue.popleft()       <span class="cm"># ดึงออกจากหน้า</span><br>        print(p.element(), end=<span class="st">' → '</span>)<br>        <span class="kw">for</span> child <span class="kw">in</span> self.children(p):<br>            queue.append(child)   <span class="cm"># เพิ่มลูกเข้าหลัง queue</span></div>
+    <div class="eg">BFS ใช้ Queue (FIFO) — ทำงานทีละ level จากบนลงล่าง ต่างจาก DFS ที่ดำดิ่งลึกก่อน</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- CH4: Deletion -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--blue-bg);color:var(--blue-text)">4</div>
+    <div class="ch-title">การลบ Node — 3 กรณี (ออกสอบแน่)</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบ — 3 cases ต้องจำให้ได้ทุกข้อ</span>
+    <div class="compare-row">
+      <div class="compare-card good">
+        <div class="compare-title">Case 1: Leaf (ไม่มีลูก)</div>
+        <div class="compare-body">ลบออกตรง ๆ เลย — ง่ายที่สุด แค่เอาออกจาก parent._children</div>
+      </div>
+      <div class="compare-card neutral">
+        <div class="compare-title">Case 2: มีลูก 1 คน</div>
+        <div class="compare-body">แทนที่ node ด้วยลูกของมัน — ต่อสายตรงจาก grandparent ไปหาลูก</div>
+      </div>
+    </div>
+    <div class="compare-card bad" style="margin-top:.65rem">
+      <div class="compare-title">Case 3: มีลูก 2 คน (ยากที่สุด)</div>
+      <div class="compare-body">หา inorder successor (node ที่เล็กที่สุดใน right subtree) → คัดลอกค่ามาใส่ → ลบ successor ออก</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบ — Inorder Successor คืออะไร</span>
+    <div class="pt"><span class="hl">Inorder Successor</span> = node ที่มีค่าน้อยที่สุดใน right subtree = leftmost node ของ right subtree</div>
+    <div class="pt">วิธีหา: ไป right child ก่อน แล้วเดินซ้ายไปเรื่อย ๆ จนถึงจุดที่ไม่มี left child</div>
+    <div class="code-block"><span class="kw">def</span> <span class="fn">_find_min</span>(self, p):<br>    current = p<br>    <span class="kw">while</span> self.left(current):  <span class="cm"># เดินซ้ายไปเรื่อย ๆ</span><br>        current = self.left(current)<br>    <span class="kw">return</span> current  <span class="cm"># leftmost = smallest</span></div>
+    <div class="eg">
+      ทำไมต้องใช้ inorder successor? เพราะมันเป็นค่าที่เล็กที่สุดที่ยังคงมากกว่า node ที่ถูกลบ — ทำให้ BST property ยังคงอยู่ครบ
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- CH5: BST -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--amber-bg);color:var(--amber-text)">5</div>
+    <div class="ch-title">Binary Search Tree (BST) — หัวใจของ lecture นี้</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบ — BST property ต้องท่องได้</span>
+    <div class="pt"><span class="hl">BST = Binary Tree ที่มีกฎเพิ่ม:</span> ค่าซ้าย &lt; root &lt; ค่าขวา (ทุก node ในทุก subtree)</div>
+    <div class="pt">Left subtree = เฉพาะค่าที่ <span class="hl">น้อยกว่า</span> root</div>
+    <div class="pt">Right subtree = เฉพาะค่าที่ <span class="hl">มากกว่า</span> root</div>
+    <div class="pt">Inorder traversal ของ BST → ได้ค่า <span class="hl">เรียงจากน้อยไปมากเสมอ</span></div>
+    <div class="eg">
+      ตัวอย่าง: ใส่ 50, 30, 70, 20, 40, 60, 80<br>
+      Root = 50 → ซ้าย: 30 (ซ้าย: 20, ขวา: 40) → ขวา: 70 (ซ้าย: 60, ขวา: 80)<br>
+      Inorder = 20 → 30 → 40 → 50 → 60 → 70 → 80 ✓ เรียงแล้ว!
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ออกสอบ — Complexity</span>
+    <div class="grid2">
+      <div class="mini-card">
+        <div class="mini-title">Average Case: O(log n)</div>
+        <div class="mini-body">ต้นไม้สมดุล — ทุกครั้งที่เปรียบเทียบ ตัดทางเลือกออกครึ่งนึง</div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-title">Worst Case: O(n)</div>
+        <div class="mini-body">ใส่ข้อมูลเรียงลำดับ → tree กลายเป็นเส้นตรง (skewed tree)</div>
+      </div>
+    </div>
+    <div class="eg">Worst case เกิดเมื่อ insert 1, 2, 3, 4, 5... ตามลำดับ — tree จะโน้มเอียงขวาทั้งหมด กลายเป็นเหมือน linked list</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">ทำไมต้องใช้ BST</span>
+    <div class="pt">Search O(log n) — เร็วกว่า linear search O(n) มาก</div>
+    <div class="pt">ดึงข้อมูลเรียง (sorted) ได้ทันทีด้วย inorder traversal</div>
+    <div class="pt">รองรับ dynamic data — insert/delete ได้โดยไม่ต้อง rebuild ทั้งหมด</div>
+    <div class="pt">ใช้ใน: Database indexing, Symbol table ใน compiler, AI decision tree</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- CH6: BST Implementation -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--green-bg);color:var(--green-text)">6</div>
+    <div class="ch-title">BST Implementation — โค้ดสำคัญ</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-code">Insert — recursive</span>
+    <div class="pt">เริ่มจาก root → ถ้าค่าน้อยกว่า ไปซ้าย → ถ้ามากกว่า ไปขวา → ใส่ตรงที่ว่าง</div>
+    <div class="code-block"><span class="kw">def</span> <span class="fn">insert</span>(self, p, e):<br>    <span class="kw">if</span> p <span class="kw">is</span> None:  <span class="cm"># tree ว่าง → สร้าง root</span><br>        <span class="kw">return</span> self.add_child(None, e)<br>    node = self._validate(p)<br>    <span class="kw">if</span> e &lt; node._element:    <span class="cm"># น้อยกว่า → ไปซ้าย</span><br>        <span class="kw">if not</span> self.left(p):<br>            <span class="kw">return</span> self.add_left(p, e)<br>        <span class="kw">else</span>:<br>            <span class="kw">return</span> self.insert(self.left(p), e)<br>    <span class="kw">else</span>:                    <span class="cm"># มากกว่า → ไปขวา</span><br>        <span class="kw">if not</span> self.right(p):<br>            <span class="kw">return</span> self.add_right(p, e)<br>        <span class="kw">else</span>:<br>            <span class="kw">return</span> self.insert(self.right(p), e)</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-code">Search — recursive</span>
+    <div class="pt">ใช้ BST property ตัดสินทุกขั้น — ไม่ต้องดูทุก node แค่เลือกซ้ายหรือขวา</div>
+    <div class="code-block"><span class="kw">def</span> <span class="fn">search</span>(self, p, e):<br>    <span class="kw">if</span> p <span class="kw">is</span> None: <span class="kw">return</span> None  <span class="cm"># ไม่เจอ</span><br>    node = self._validate(p)<br>    <span class="kw">if</span> e == node._element: <span class="kw">return</span> p   <span class="cm"># เจอแล้ว!</span><br>    <span class="kw">elif</span> e &lt; node._element:<br>        <span class="kw">return</span> self.search(self.left(p), e)   <span class="cm"># ไปซ้าย</span><br>    <span class="kw">else</span>:<br>        <span class="kw">return</span> self.search(self.right(p), e)  <span class="cm"># ไปขวา</span></div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">สรุป inheritance chain</span>
+    <div class="flow-row">
+      <div class="flow-box">Tree (ADT)</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">LinkedTree</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">LinkedBinaryTree</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">BinarySearchTree</div>
+    </div>
+    <div class="pt" style="margin-top:.5rem">แต่ละชั้นเพิ่มของ: Tree กำหนด interface → LinkedTree implement linked structure → LinkedBinaryTree จำกัด 2 ลูก → BST เพิ่ม ordering rule</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- QUIZ -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--purple-bg);color:var(--purple-text)">Q</div>
+    <div class="ch-title">Mini Quiz — ลองทำดูก่อนดูเฉลย</div>
+  </div>
+  <div class="quiz-wrap" id="quiz"></div>
+</div>
+
+</div><!-- end container -->
+
+<script>
+const QS = [
+  {
+    q: "Inorder traversal ของ BST ที่มีค่า 50, 30, 70, 20, 40, 60, 80 จะได้ลำดับใด?",
+    opts: [
+      "50 → 30 → 70 → 20 → 40 → 60 → 80",
+      "20 → 30 → 40 → 50 → 60 → 70 → 80",
+      "20 → 40 → 30 → 60 → 80 → 70 → 50",
+      "50 → 20 → 30 → 40 → 60 → 70 → 80"
+    ],
+    ans: 1,
+    explain: "Inorder traversal (Left → Root → Right) บน BST จะคืนค่าเรียงจากน้อยไปมากเสมอ นี่คือหนึ่งในข้อดีหลักของ BST"
+  },
+  {
+    q: "ถ้า delete node ที่มีลูก 2 คนใน BST จะต้องแทนที่ด้วยอะไร?",
+    opts: [
+      "Left child ของ node นั้น",
+      "Right child ของ node นั้น",
+      "Inorder successor (node ที่เล็กที่สุดใน right subtree)",
+      "Root ของ tree"
+    ],
+    ans: 2,
+    explain: "ต้องใช้ inorder successor = leftmost node ใน right subtree เพราะมันคือค่าที่น้อยที่สุดที่ยังมากกว่า node ที่ถูกลบ — ทำให้ BST property ยังคงอยู่"
+  },
+  {
+    q: "Traversal แบบใดที่ใช้ Queue ในการทำงาน?",
+    opts: [
+      "Preorder Traversal",
+      "Inorder Traversal",
+      "Postorder Traversal",
+      "Breadth-First Traversal (BFS)"
+    ],
+    ans: 3,
+    explain: "BFS ใช้ Queue (FIFO) เพื่อเดิน node ทีละ level จากบนลงล่าง ส่วน Preorder/Inorder/Postorder เป็น DFS ที่ใช้ recursion (implicit call stack)"
+  },
+  {
+    q: "add_right(p, e) จะ raise ValueError เมื่อไหร่?",
+    opts: [
+      "เมื่อ p ไม่มีลูกเลย",
+      "เมื่อ p มีลูกแล้วมากกว่า 1 คน (right child มีอยู่แล้ว)",
+      "เมื่อ e มีค่าน้อยกว่า p.element()",
+      "เมื่อ tree ว่างเปล่า"
+    ],
+    ans: 1,
+    explain: "add_right() ตรวจว่า len(node._children) > 1 หรือไม่ — ถ้ามีลูกมากกว่า 1 แสดงว่า right child มีอยู่แล้ว จึง raise ValueError เพื่อ enforce binary tree rule"
+  },
+  {
+    q: "Worst case ของ BST search เกิดขึ้นเมื่อใด และ complexity คือเท่าไหร่?",
+    opts: [
+      "เมื่อ tree สมดุล → O(log n)",
+      "เมื่อ insert ข้อมูลแบบสุ่ม → O(n log n)",
+      "เมื่อ insert ข้อมูลเรียงลำดับ ทำให้ tree เป็นเส้นตรง (skewed) → O(n)",
+      "เมื่อ tree มีจำนวน node คี่ → O(n²)"
+    ],
+    ans: 2,
+    explain: "ถ้า insert 1, 2, 3, 4, 5... ตามลำดับ ทุก node จะเป็น right child ของ node ก่อนหน้า — tree กลายเป็นเหมือน linked list และ search ต้องไล่ทุก node → O(n)"
+  }
+];
+
+let cur = 0, done = [];
+
+function render() {
+  const q = QS[cur], a = done[cur];
+  const answered = done.filter(x => x !== undefined).length;
+  const pct = Math.round((answered / QS.length) * 100);
+  const allDone = answered === QS.length;
+
+  let scoreHtml = '';
+  if (allDone) {
+    const correct = QS.filter((q, i) => done[i] === q.ans).length;
+    scoreHtml = `<div class="score-card">
+      <div class="score-num">${correct} / ${QS.length}</div>
+      <div class="score-label">${correct === QS.length ? 'เยี่ยม! ถูกทุกข้อ' : correct >= 3 ? 'ดีมาก ผ่านแล้ว' : 'ลองอ่านทบทวนแล้วทำอีกรอบ'}</div>
+    </div>`;
+  }
+
+  document.getElementById('quiz').innerHTML = `
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <div class="qnum">ข้อ ${cur + 1} จาก ${QS.length}</div>
+    <div class="qtxt">${q.q}</div>
+    <div class="qopts">
+      ${q.opts.map((o, i) => {
+        let cls = 'qopt';
+        if (a !== undefined) {
+          if (i === q.ans) cls += ' correct';
+          else if (i === a && a !== q.ans) cls += ' wrong';
+        }
+        return `<button class="${cls}" ${a !== undefined ? 'disabled' : ''} onclick="pick(${i})">${String.fromCharCode(65 + i)}. ${o}</button>`;
+      }).join('')}
+    </div>
+    <div class="qfb ${a === undefined ? '' : a === q.ans ? 'ok' : 'no'}">
+      ${a === undefined ? '' : (a === q.ans ? '✓ ถูกต้อง — ' : '✗ ไม่ใช่ — ') + q.explain}
+    </div>
+    ${scoreHtml}
+    <div class="qnav">
+      <button class="qbtn" ${cur === 0 ? 'disabled' : ''} onclick="go(-1)">← ก่อนหน้า</button>
+      <span class="qctr">${answered} / ${QS.length} ตอบแล้ว</span>
+      <button class="qbtn" ${cur === QS.length - 1 ? 'disabled' : ''} onclick="go(1)">ถัดไป →</button>
+    </div>
+  `;
+}
+
+function pick(i) { if (done[cur] !== undefined) return; done[cur] = i; render(); }
+function go(d) { cur += d; render(); }
+render();
+</script>
+</body>
+</html>
