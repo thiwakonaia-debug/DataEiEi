@@ -32,10 +32,11 @@
       line-height: 1.7; 
       font-size: 15px; 
       padding: 2rem;
-      opacity: 0; /* For entrance animation */
-      transition: opacity 0.6s ease;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    body.loaded { opacity: 1; }
+    body.loaded { opacity: 1; transform: translateY(0); }
 
     .header { background: var(--surface); border-bottom: 0.5px solid var(--border); padding: 2rem 0; margin-bottom: 2rem; text-align: center; }
     .header-inner { max-width: 760px; margin: 0 auto; padding: 0 1.5rem; }
@@ -75,7 +76,7 @@
       align-items: center;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
       text-decoration: none;
-      animation: cardEntrance 0.6s ease backwards;
+      animation: cardEntrance 0.6s cubic-bezier(0.4, 0, 0.2, 1) backwards;
     }
     
     /* Staggered entrance */
@@ -115,7 +116,7 @@
     .n-ex { background: var(--amber-bg); color: var(--amber-text); }
 
     /* Page Exit effect */
-    .page-exit { opacity: 0 !important; transform: scale(1.02); pointer-events: none; }
+    .page-exit { opacity: 0 !important; transform: translateY(-10px) !important; pointer-events: none; }
 
     .footer { text-align: center; font-size: 13px; color: var(--text-2); margin-top: 2rem; }
 
@@ -180,30 +181,27 @@
   <div class="footer">Created by Thiwakon aiamsamram</div>
 
   <script>
-    // Entrance animation (handles both initial load and back button)
-    window.addEventListener('pageshow', (event) => {
-      // Reset body state
+    // Entrance animation
+    function showPage() {
       document.body.classList.remove('page-exit');
-      
-      // Small delay to ensure browser has rendered before fading in
       setTimeout(() => {
         document.body.classList.add('loaded');
-      }, 10);
+      }, 50);
+    }
+
+    window.addEventListener('pageshow', (event) => {
+      showPage();
     });
 
     // Exit animation on click
     document.querySelectorAll('.lecture-card').forEach(card => {
       card.addEventListener('click', function(e) {
         const targetUrl = this.getAttribute('href');
-        if (!targetUrl) return;
+        if (!targetUrl || targetUrl.startsWith('#')) return;
 
         e.preventDefault();
-        
-        // Add exit class to body
         document.body.classList.add('page-exit');
-        document.body.classList.remove('loaded');
         
-        // Navigate after animation finish
         setTimeout(() => {
           window.location.href = targetUrl;
         }, 400);

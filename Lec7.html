@@ -33,7 +33,26 @@
     color: var(--text);
     line-height: 1.7;
     font-size: 15px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   }
+
+  body.loaded { opacity: 1; transform: translateY(0); }
+  .page-exit { opacity: 0 !important; transform: translateY(-10px) !important; pointer-events: none; }
+
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    text-decoration: none;
+    color: var(--text-3);
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    transition: color 0.2s;
+  }
+  .back-btn:hover { color: var(--text); }
 
   .header {
     background: var(--surface);
@@ -245,6 +264,7 @@
 
 <div class="header">
   <div class="header-inner">
+    <a href="index.html" class="back-btn">← กลับหน้าหลัก</a>
     <div class="header-tag">ITDS 122 — Data Structures</div>
     <h1>สรุป Merge Sort & Quick Sort ฉบับละเอียด</h1>
     <div class="subtitle">Lecture 15 · Divide and Conquer · Efficient Sorting · มี Interactive Visualizer & Quiz</div>
@@ -695,6 +715,31 @@ function renderQuiz() {
 function pick(i) { if (done[cur] === undefined) { done[cur] = i; renderQuiz(); } }
 function go(d) { cur += d; renderQuiz(); }
 renderQuiz();
+
+function showPage() {
+  document.body.classList.remove('page-exit');
+  setTimeout(() => {
+    document.body.classList.add('loaded');
+  }, 50);
+}
+
+window.addEventListener('pageshow', (event) => {
+  showPage();
+});
+
+document.querySelectorAll('a').forEach(link => {
+  link.addEventListener('click', function(e) {
+    const targetUrl = this.getAttribute('href');
+    if (!targetUrl || targetUrl.startsWith('#') || this.target === '_blank') return;
+
+    e.preventDefault();
+    document.body.classList.add('page-exit');
+    
+    setTimeout(() => {
+      window.location.href = targetUrl;
+    }, 400);
+  });
+});
 </script>
 </body>
 </html>
