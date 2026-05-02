@@ -24,20 +24,102 @@
       --accent: #085041;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Sarabun', sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; font-size: 15px; padding: 2rem; }
+    
+    body { 
+      font-family: 'Sarabun', sans-serif; 
+      background: var(--bg); 
+      color: var(--text); 
+      line-height: 1.7; 
+      font-size: 15px; 
+      padding: 2rem;
+      opacity: 0; /* For entrance animation */
+      transition: opacity 0.6s ease;
+    }
+    body.loaded { opacity: 1; }
+
     .header { background: var(--surface); border-bottom: 0.5px solid var(--border); padding: 2rem 0; margin-bottom: 2rem; text-align: center; }
     .header-inner { max-width: 760px; margin: 0 auto; padding: 0 1.5rem; }
     .header-tag { display: inline-block; background: var(--amber-bg); color: var(--amber-text); font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: .75rem; }
     h1 { font-size: 26px; font-weight: 600; color: var(--text); margin-bottom: .35rem; }
     .subtitle { font-size: 14px; color: var(--text-3); }
     .container { max-width: 760px; margin: 0 auto; padding: 0 1.5rem 4rem; }
-    .lecture-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-top: 1rem; }
-    .lecture-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: 12px; padding: 1rem 1.2rem; text-align: center; transition: transform 0.1s ease, box-shadow 0.1s ease; }
-    .lecture-card:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-    .lecture-card a { color: var(--accent); text-decoration: none; font-weight: 600; display: block; }
-    .lecture-card a:hover { text-decoration: underline; }
-    .lecture-number { display: inline-block; background: var(--teal-bg); color: var(--teal-text); width: 26px; height: 26px; line-height: 26px; border-radius: 50%; margin-right: 0.5rem; font-weight: 600; }
+    
+    .section-label { 
+      font-size: 14px; 
+      font-weight: 600; 
+      color: var(--text-3); 
+      text-transform: uppercase; 
+      letter-spacing: 0.05em; 
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: fadeIn 0.8s ease forwards;
+    }
+    .section-label::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+
+    .lecture-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 2.5rem; }
+    
+    /* Card Animation */
+    @keyframes cardEntrance {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .lecture-card { 
+      background: var(--surface); 
+      border: 0.5px solid var(--border); 
+      border-radius: 12px; 
+      padding: 1rem 1.2rem; 
+      display: flex;
+      align-items: center;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+      text-decoration: none;
+      animation: cardEntrance 0.6s ease backwards;
+    }
+    
+    /* Staggered entrance */
+    .lecture-card:nth-child(1) { animation-delay: 0.1s; }
+    .lecture-card:nth-child(2) { animation-delay: 0.15s; }
+    .lecture-card:nth-child(3) { animation-delay: 0.2s; }
+    .lecture-card:nth-child(4) { animation-delay: 0.25s; }
+    .lecture-card:nth-child(5) { animation-delay: 0.3s; }
+    .lecture-card:nth-child(6) { animation-delay: 0.35s; }
+    .lecture-card:nth-child(7) { animation-delay: 0.4s; }
+
+    .lecture-card:hover { 
+      transform: translateY(-5px); 
+      box-shadow: 0 8px 20px rgba(0,0,0,0.06); 
+      border-color: var(--accent);
+      background: #fff;
+    }
+    .lecture-card:active { transform: scale(0.96); }
+
+    .lecture-card span:last-child { color: var(--text); font-weight: 600; flex: 1; font-size: 15px; }
+    
+    .lecture-number { 
+      display: inline-block; 
+      width: 32px; 
+      height: 32px; 
+      line-height: 32px; 
+      border-radius: 8px; 
+      margin-right: 1rem; 
+      font-weight: 600; 
+      text-align: center;
+      font-size: 13px;
+      transition: transform 0.3s ease;
+    }
+    .lecture-card:hover .lecture-number { transform: rotate(10deg) scale(1.1); }
+    
+    .n-lec { background: var(--teal-bg); color: var(--teal-text); }
+    .n-ex { background: var(--amber-bg); color: var(--amber-text); }
+
+    /* Page Exit effect */
+    .page-exit { opacity: 0 !important; transform: scale(1.02); pointer-events: none; }
+
     .footer { text-align: center; font-size: 13px; color: var(--text-2); margin-top: 2rem; }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   </style>
 </head>
 <body>
@@ -45,19 +127,79 @@
     <div class="header-inner">
       <div class="header-tag">ITDS 122 — Data Structures</div>
       <h1>สรุป Lectures ในโฟลเดอร์ Tree</h1>
-      <div class="subtitle">คลิกเพื่อเปิดบทเรียนต่าง ๆ</div>
+      <div class="subtitle">คลิกเพื่อเปิดบทเรียนและแบบฝึกหัด</div>
     </div>
   </div>
+  
   <div class="container">
+    
+    <!-- Section: Lectures -->
+    <div class="section-label">All Lectures</div>
     <div class="lecture-grid">
-      <div class="lecture-card"><span class="lecture-number">1</span><a href="Lec1.html">Lecture 1 – Tree คืออะไร (พื้นฐาน)</a></div>
-      <div class="lecture-card"><span class="lecture-number">2</span><a href="Lec2.html">Lecture 2 – Binary Tree &amp; BST พื้นฐาน</a></div>
-      <div class="lecture-card"><span class="lecture-number">3</span><a href="Lec3.html">Lecture 3 – Hashing &amp; Hash Table</a></div>
-      <div class="lecture-card"><span class="lecture-number">4</span><a href="Lec4.html">Lecture 4 – Graph Traversal</a></div>
-      <div class="lecture-card"><span class="lecture-number">5</span><a href="Lec5.html">Lecture 5 – Shortest Path &amp; MST</a></div>
-      <div class="lecture-card"><span class="lecture-number">6</span><a href="Lec6.html">Lecture 6 – Bubble, Selection, Insertion Sorts</a></div>
+      <a href="Lec1.html" class="lecture-card">
+        <span class="lecture-number n-lec">1</span>
+        <span>Lecture 1 – Tree คืออะไร (พื้นฐาน)</span>
+      </a>
+      <a href="Lec2.html" class="lecture-card">
+        <span class="lecture-number n-lec">2</span>
+        <span>Lecture 2 – Binary Tree &amp; BST พื้นฐาน</span>
+      </a>
+      <a href="Lec3.html" class="lecture-card">
+        <span class="lecture-number n-lec">3</span>
+        <span>Lecture 3 – Hashing &amp; Hash Table</span>
+      </a>
+      <a href="Lec4.html" class="lecture-card">
+        <span class="lecture-number n-lec">4</span>
+        <span>Lecture 4 – Graph Traversal</span>
+      </a>
+      <a href="Lec5.html" class="lecture-card">
+        <span class="lecture-number n-lec">5</span>
+        <span>Lecture 5 – Shortest Path &amp; MST</span>
+      </a>
+      <a href="Lec6.html" class="lecture-card">
+        <span class="lecture-number n-lec">6</span>
+        <span>Lecture 6 – Bubble, Selection, Insertion Sorts</span>
+      </a>
+      <a href="Lec7.html" class="lecture-card">
+        <span class="lecture-number n-lec">7</span>
+        <span>Lecture 7 – Merge Sort &amp; Quick Sort</span>
+      </a>
     </div>
+
+    <!-- Section: Exercises -->
+    <div class="section-label">Exercises & Quizzes</div>
+    <div class="lecture-grid">
+      <a href="Ex.html" class="lecture-card">
+        <span class="lecture-number n-ex">Ex</span>
+        <span>Exercise – Tree Traversal Summary &amp; Quiz</span>
+      </a>
+    </div>
+
   </div>
+  
   <div class="footer">Created by Thiwakon aiamsamram</div>
+
+  <script>
+    // Entrance animation
+    window.addEventListener('DOMContentLoaded', () => {
+      document.body.classList.add('loaded');
+    });
+
+    // Exit animation on click
+    document.querySelectorAll('.lecture-card').forEach(card => {
+      card.addEventListener('click', function(e) {
+        e.preventDefault();
+        const targetUrl = this.getAttribute('href');
+        
+        // Add exit class to body
+        document.body.classList.add('page-exit');
+        
+        // Navigate after animation finish
+        setTimeout(() => {
+          window.location.href = targetUrl;
+        }, 400);
+      });
+    });
+  </script>
 </body>
 </html>

@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>สรุป Tree Traversal — ITDS 122</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #f8f7f4;
+    --surface: #ffffff;
+    --border: rgba(0,0,0,0.1);
+    --border-strong: rgba(0,0,0,0.2);
+    --text: #1a1a1a;
+    --text-2: #555;
+    --text-3: #888;
+    --purple-bg: #EEEDFE; --purple-text: #3C3489;
+    --teal-bg: #E1F5EE;   --teal-text: #085041;
+    --coral-bg: #FAECE7;  --coral-text: #712B13;
+    --blue-bg: #E6F1FB;   --blue-text: #0C447C;
+    --amber-bg: #FAEEDA;  --amber-text: #633806;
+    --green-bg: #EAF3DE;  --green-text: #27500A;
+    --red-bg: #FCEBEB;    --red-text: #A32D2D;
+    --accent: #1D9E75;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 15px;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--surface);
+    border-bottom: 0.5px solid var(--border);
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+  .header-inner { max-width: 760px; margin: 0 auto; padding: 0 1.5rem; }
+  .header-tag {
+    display: inline-block;
+    background: var(--teal-bg); color: var(--teal-text);
+    font-size: 11px; font-weight: 600;
+    padding: 3px 10px; border-radius: 20px;
+    letter-spacing: .06em; text-transform: uppercase;
+    margin-bottom: .75rem;
+  }
+  h1 { font-size: 26px; font-weight: 600; color: var(--text); margin-bottom: .35rem; }
+  .subtitle { font-size: 14px; color: var(--text-3); }
+
+  /* ── LAYOUT ── */
+  .container { max-width: 760px; margin: 0 auto; padding: 0 1.5rem 4rem; }
+  .chapter { margin-bottom: 2.5rem; }
+  .ch-header { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; }
+  .ch-num {
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600; flex-shrink: 0;
+  }
+  .ch-title { font-size: 17px; font-weight: 600; color: var(--text); }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    padding: 1.1rem 1.3rem;
+    margin-bottom: .75rem;
+  }
+  .badge {
+    display: inline-block; font-size: 11px; font-weight: 600;
+    padding: 2px 9px; border-radius: 20px;
+    margin-bottom: .6rem; margin-right: 4px;
+  }
+  .b-exam { background: var(--coral-bg); color: var(--coral-text); }
+  .b-code { background: var(--green-bg); color: var(--green-text); }
+  .b-tip  { background: var(--purple-bg); color: var(--purple-text); }
+  .b-warn { background: var(--amber-bg); color: var(--amber-text); }
+  .b-blue { background: var(--blue-bg);  color: var(--blue-text); }
+
+  .pt {
+    font-size: 14px; color: var(--text-2); line-height: 1.75;
+    margin-bottom: .4rem; padding-left: 1rem; position: relative;
+  }
+  .pt::before { content: "—"; position: absolute; left: 0; color: var(--text-3); }
+  .hl { color: var(--text); font-weight: 600; }
+
+  .eg {
+    background: var(--bg);
+    border-left: 3px solid #378ADD;
+    border-radius: 0 8px 8px 0;
+    padding: .75rem 1rem; margin: .75rem 0;
+    font-size: 13px; color: var(--text-2); line-height: 1.75;
+  }
+
+  /* ── CODE ── */
+  .code-block {
+    background: #1e1e2e; border-radius: 8px;
+    padding: .85rem 1rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px; color: #cdd6f4; line-height: 1.9;
+    margin: .75rem 0; overflow-x: auto;
+  }
+  .kw { color: #89b4fa; } .fn { color: #a6e3a1; }
+  .cm { color: #6c7086; } .st { color: #f38ba8; }
+
+  /* ── GRID ── */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: .65rem; margin: .75rem 0; }
+  .mini-card { background: var(--bg); border-radius: 8px; padding: .7rem .9rem; border: 0.5px solid var(--border); }
+  .mini-title { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: .25rem; }
+  .mini-body  { font-size: 12px; color: var(--text-2); line-height: 1.6; }
+
+  .compare-row { display: grid; grid-template-columns: 1fr 1fr; gap: .65rem; margin: .75rem 0; }
+  .compare-card { border-radius: 8px; padding: .75rem 1rem; }
+  .compare-card.bad  { background: var(--red-bg);   border: 0.5px solid #F09595; }
+  .compare-card.good { background: var(--green-bg);  border: 0.5px solid #97C459; }
+  .compare-title { font-size: 12px; font-weight: 600; margin-bottom: .35rem; }
+  .compare-card.bad  .compare-title { color: var(--red-text); }
+  .compare-card.good .compare-title { color: var(--green-text); }
+  .compare-body { font-size: 12px; color: var(--text-2); line-height: 1.65; }
+
+  .flow-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: .6rem 0; }
+  .flow-box { background: var(--bg); border: 0.5px solid var(--border-strong); border-radius: 6px; padding: 4px 10px; font-size: 12px; color: var(--text); }
+  .flow-arr { font-size: 12px; color: var(--text-3); }
+
+  .divider { height: 0.5px; background: var(--border); margin: 2rem 0; }
+
+  /* ── TREE DEMO ── */
+  .tree-demo-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    padding: 1.1rem 1.3rem;
+    margin-bottom: .75rem;
+  }
+
+  /* SVG tree nodes */
+  .tree-node {
+    transition: fill .3s ease, stroke .3s ease;
+  }
+  .tree-label {
+    font-family: 'Sarabun', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    pointer-events: none;
+    transition: fill .3s ease;
+  }
+  .tree-edge {
+    stroke: rgba(0,0,0,0.15);
+    stroke-width: 1.5;
+    fill: none;
+  }
+  .tree-order-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    font-weight: 500;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .3s;
+  }
+
+  /* Walk order pills */
+  .walk-row {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 5px;
+    margin: .75rem 0 .5rem;
+  }
+  .walk-label { font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .06em; margin-right: 4px; }
+  .walk-pill {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 13px;
+    border: 2px solid transparent;
+    transition: transform .25s ease, border-color .25s, background .25s, color .25s, box-shadow .25s;
+    cursor: default;
+    background: var(--bg);
+    color: var(--text-3);
+  }
+  .walk-pill.active {
+    transform: scale(1.25);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .walk-pill.visited { transform: scale(1.0); box-shadow: none; }
+  .walk-arr { font-size: 10px; color: var(--text-3); }
+
+  /* Control buttons */
+  .ctrl-row { display: flex; align-items: center; gap: 8px; margin-top: .75rem; flex-wrap: wrap; }
+  .ctrl-btn {
+    font-family: 'Sarabun', sans-serif;
+    font-size: 12px; font-weight: 600;
+    padding: 5px 14px; border-radius: 20px;
+    border: 0.5px solid var(--border-strong);
+    background: var(--bg); color: var(--text-2);
+    cursor: pointer; transition: background .15s, color .15s, border-color .15s;
+  }
+  .ctrl-btn:hover { background: var(--surface); color: var(--text); border-color: var(--border-strong); }
+  .ctrl-btn.playing { background: var(--text); color: var(--surface); border-color: var(--text); }
+  .ctrl-speed { font-size: 11px; color: var(--text-3); margin-left: 4px; }
+
+  /* Step desc */
+  .step-desc {
+    font-size: 13px; color: var(--text-2); line-height: 1.65;
+    min-height: 20px; margin-top: .5rem;
+    padding: .6rem .9rem;
+    background: var(--bg); border-radius: 8px;
+    border: 0.5px solid var(--border);
+    transition: opacity .2s;
+  }
+  .step-desc b { color: var(--text); }
+
+  /* Section tabs */
+  .tab-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1rem; }
+  .tab {
+    font-family: 'Sarabun', sans-serif; font-size: 12px; font-weight: 600;
+    padding: 5px 14px; border-radius: 20px;
+    border: 0.5px solid var(--border-strong);
+    background: var(--bg); color: var(--text-2);
+    cursor: pointer; transition: all .15s;
+  }
+  .tab:hover { background: var(--surface); }
+  .tab.active { border-color: transparent; }
+
+  /* Summary table */
+  .tbl-wrap { overflow-x: auto; border-radius: 10px; border: 0.5px solid var(--border); margin-bottom: .75rem; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th {
+    background: var(--bg); padding: .65rem 1rem; text-align: left;
+    font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--text-3); border-bottom: 0.5px solid var(--border);
+  }
+  tbody td { padding: .7rem 1rem; border-bottom: 0.5px solid var(--border); color: var(--text-2); vertical-align: middle; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody td:first-child { font-weight: 600; color: var(--text); }
+  .chip {
+    display: inline-block; font-size: 11px; font-weight: 600;
+    padding: 2px 8px; border-radius: 20px;
+  }
+  .mono { font-family: 'IBM Plex Mono', monospace; font-size: 11px; }
+
+  /* Quiz */
+  .quiz-wrap { background: var(--surface); border: 0.5px solid var(--border); border-radius: 12px; padding: 1.3rem; }
+  .progress-bar { height: 3px; background: var(--bg); border-radius: 2px; margin-bottom: 1rem; overflow: hidden; border: 0.5px solid var(--border); }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width .4s ease; }
+  .qnum { font-size: 11px; font-weight: 600; color: var(--text-3); margin-bottom: .5rem; letter-spacing: .04em; text-transform: uppercase; }
+  .qtxt { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: .85rem; line-height: 1.65; white-space: pre-line; }
+  .qopts { display: flex; flex-direction: column; gap: 7px; margin-bottom: .85rem; }
+  .qopt {
+    text-align: left; background: var(--bg); border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 9px 13px; font-size: 13px;
+    font-family: 'Sarabun', sans-serif; color: var(--text);
+    cursor: pointer; line-height: 1.55; transition: border-color .15s, background .15s;
+  }
+  .qopt:hover:not(:disabled) { border-color: var(--border-strong); background: var(--surface); }
+  .qopt.correct { background: var(--green-bg); border-color: #97C459; color: var(--green-text); }
+  .qopt.wrong   { background: var(--red-bg);   border-color: #F09595; color: var(--red-text); }
+  .qfb { font-size: 13px; min-height: 18px; line-height: 1.65; padding: .1rem 0; }
+  .qfb.ok { color: var(--green-text); } .qfb.no { color: var(--red-text); }
+  .qnav { display: flex; align-items: center; justify-content: space-between; margin-top: 1.1rem; padding-top: 1rem; border-top: 0.5px solid var(--border); }
+  .qbtn { font-size: 13px; font-family: 'Sarabun', sans-serif; background: transparent; border: 0.5px solid var(--border-strong); border-radius: 7px; padding: 6px 16px; color: var(--text); cursor: pointer; transition: background .15s; }
+  .qbtn:hover:not(:disabled) { background: var(--bg); }
+  .qbtn:disabled { opacity: .3; cursor: default; }
+  .qctr { font-size: 12px; color: var(--text-3); }
+  .score-card { background: var(--teal-bg); border: 0.5px solid #5DCAA5; border-radius: 10px; padding: 1rem 1.25rem; text-align: center; margin-top: 1rem; }
+  .score-num { font-size: 32px; font-weight: 600; color: var(--teal-text); }
+  .score-label { font-size: 13px; color: #085041; margin-top: .25rem; }
+
+  @media (max-width: 540px) {
+    .grid2, .compare-row { grid-template-columns: 1fr; }
+    h1 { font-size: 21px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-tag">ITDS 122 — Data Structures</div>
+    <h1>สรุป Tree Traversal ฉบับละเอียด</h1>
+    <div class="subtitle">Lecture 11 · อ่านรอบเดียวเข้าใจ · มีภาพแสดงลำดับการเดิน · มี Quiz 5 ข้อ</div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ═══════════════════════════════════════════
+     INTRO
+═══════════════════════════════════════════ -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--teal-bg);color:var(--teal-text)">0</div>
+    <div class="ch-title">Tree Traversal คืออะไร — ก่อนเริ่ม</div>
+  </div>
+  <div class="card">
+    <span class="badge b-tip">concept</span>
+    <div class="pt"><span class="hl">Tree Traversal</span> = การเยี่ยม (visit) ทุก node ใน tree อย่างเป็นระบบ ไม่เยี่ยมซ้ำ ไม่ข้ามใครไว้</div>
+    <div class="pt">ลำดับที่เลือกเยี่ยมต่างกัน → ได้ผลลัพธ์ต่างกัน → ใช้งานต่างกัน</div>
+    <div class="pt">มี 2 กลุ่มหลัก: <span class="hl">DFS</span> (ดำดิ่งลึกก่อน) และ <span class="hl">BFS</span> (กว้างออก ทีละ level)</div>
+    <div class="eg">
+      ต้นไม้ตัวอย่างที่ใช้ตลอดเอกสารนี้:<br><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;← root<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;\<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;B&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;← internal nodes<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;/&nbsp;\&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\<br>
+      &nbsp;&nbsp;&nbsp;D&nbsp;&nbsp;&nbsp;E&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;F&nbsp;&nbsp;&nbsp;← leaves
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════
+     1. PREORDER
+═══════════════════════════════════════════ -->
+<div class="chapter" id="sec-preorder">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--purple-bg);color:var(--purple-text)">1</div>
+    <div class="ch-title">Preorder — Root → Left → Right</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">แนวคิดหลัก</span>
+    <div class="pt"><span class="hl">เยี่ยมตัวเองก่อน</span> แล้วค่อยลงซ้าย แล้วลงขวา</div>
+    <div class="pt">จำสั้น ๆ: <span class="hl">NLR</span> (Node → Left → Right) หรือ "Root ก่อนเสมอ"</div>
+    <div class="pt">เหมือนอ่านหนังสือ — เห็นชื่อบทก่อน แล้วค่อยอ่านเนื้อหา</div>
+  </div>
+
+  <!-- INTERACTIVE TREE DEMO -->
+  <div class="tree-demo-card">
+    <span class="badge b-exam">ลำดับการเดิน — กด Play ดูได้เลย</span>
+    <div id="demo-pre"></div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-code">Python Code</span>
+    <div class="code-block"><span class="kw">def</span> <span class="fn">preorder</span>(node):
+    <span class="kw">if</span> node <span class="kw">is None</span>:
+        <span class="kw">return</span>
+    <span class="fn">visit</span>(node)           <span class="cm"># 1. เยี่ยมตัวเอง (Root) ก่อน</span>
+    preorder(node.left)   <span class="cm"># 2. ลงซ้าย</span>
+    preorder(node.right)  <span class="cm"># 3. ลงขวา</span>
+<span class="cm"># Output: A → B → D → E → C → F</span></div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-warn">เหมาะใช้เมื่อ</span>
+    <div class="pt"><span class="hl">Copy หรือ Clone tree</span> — ต้องสร้าง parent ก่อน ค่อยสร้างลูก</div>
+    <div class="pt"><span class="hl">Serialize/Save tree</span> — บันทึกโครงสร้าง tree ลง file ให้โหลดกลับมาได้</div>
+    <div class="pt"><span class="hl">Print directory structure</span> — เหมือน <code>ls -R</code> ใน terminal</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════
+     2. INORDER
+═══════════════════════════════════════════ -->
+<div class="chapter" id="sec-inorder">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--teal-bg);color:var(--teal-text)">2</div>
+    <div class="ch-title">Inorder — Left → Root → Right</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">แนวคิดหลัก</span>
+    <div class="pt"><span class="hl">ลงซ้ายจนสุด</span> แล้วค่อยเยี่ยมตัวเอง แล้วไปขวา</div>
+    <div class="pt">จำสั้น ๆ: <span class="hl">LNR</span> (Left → Node → Right) หรือ "Root อยู่กลาง"</div>
+    <div class="pt">🌟 Superpower: ใน <span class="hl">Binary Search Tree (BST)</span> จะได้ข้อมูล <span class="hl">เรียงจากน้อยไปมาก</span> โดยอัตโนมัติ!</div>
+  </div>
+
+  <div class="tree-demo-card">
+    <span class="badge b-exam">ลำดับการเดิน — กด Play ดูได้เลย</span>
+    <div id="demo-in"></div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-code">Python Code</span>
+    <div class="code-block"><span class="kw">def</span> <span class="fn">inorder</span>(node):
+    <span class="kw">if</span> node <span class="kw">is None</span>:
+        <span class="kw">return</span>
+    inorder(node.left)    <span class="cm"># 1. ลงซ้ายก่อน</span>
+    <span class="fn">visit</span>(node)           <span class="cm"># 2. เยี่ยมตัวเอง (Root)</span>
+    inorder(node.right)   <span class="cm"># 3. ลงขวา</span>
+<span class="cm"># Output: D → B → E → A → C → F</span>
+<span class="cm"># ใน BST จะได้ค่าเรียงเสมอ! ✨</span></div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-warn">เหมาะใช้เมื่อ</span>
+    <div class="pt"><span class="hl">BST → Sorted list</span> — ได้ข้อมูลเรียงโดยไม่ต้อง sort เพิ่ม</div>
+    <div class="pt"><span class="hl">Expression tree</span> — ได้ infix notation เช่น 3+5*2</div>
+    <div class="pt"><span class="hl">Validate BST</span> — ตรวจว่า tree เป็น BST ถูกต้องไหม</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════
+     3. POSTORDER
+═══════════════════════════════════════════ -->
+<div class="chapter" id="sec-postorder">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--coral-bg);color:var(--coral-text)">3</div>
+    <div class="ch-title">Postorder — Left → Right → Root</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">แนวคิดหลัก</span>
+    <div class="pt"><span class="hl">ลูกต้องถูกเยี่ยมทั้งหมดก่อน</span> แล้ว Root จึงถูกเยี่ยมสุดท้าย</div>
+    <div class="pt">จำสั้น ๆ: <span class="hl">LRN</span> (Left → Right → Node) หรือ "Root สุดท้ายเสมอ"</div>
+    <div class="pt">เหมือน "ทำการบ้านให้เสร็จก่อน แล้วค่อยส่ง" — เสร็จจากล่างขึ้นบน</div>
+  </div>
+
+  <div class="tree-demo-card">
+    <span class="badge b-exam">ลำดับการเดิน — กด Play ดูได้เลย</span>
+    <div id="demo-post"></div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-code">Python Code</span>
+    <div class="code-block"><span class="kw">def</span> <span class="fn">postorder</span>(node):
+    <span class="kw">if</span> node <span class="kw">is None</span>:
+        <span class="kw">return</span>
+    postorder(node.left)   <span class="cm"># 1. ลงซ้ายก่อน</span>
+    postorder(node.right)  <span class="cm"># 2. ลงขวา</span>
+    <span class="fn">visit</span>(node)            <span class="cm"># 3. เยี่ยมตัวเอง (Root) สุดท้าย</span>
+<span class="cm"># Output: D → E → B → F → C → A</span>
+<span class="cm"># สังเกต: Root (A) อยู่สุดท้ายเสมอ!</span></div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-warn">เหมาะใช้เมื่อ</span>
+    <div class="pt"><span class="hl">Delete tree</span> — ลบลูกก่อน แล้วค่อยลบ parent (ไม่งั้น memory leak)</div>
+    <div class="pt"><span class="hl">Expression calculator</span> — คำนวณ postfix: 3 5 + 2 * = 16</div>
+    <div class="pt"><span class="hl">Directory size</span> — นับขนาดไฟล์จากล่างขึ้นบน (ลูกก่อน แล้วรวมขึ้นพ่อ)</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════
+     4. BFS
+═══════════════════════════════════════════ -->
+<div class="chapter" id="sec-bfs">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--blue-bg);color:var(--blue-text)">4</div>
+    <div class="ch-title">BFS — Breadth-First Search (Level-order)</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">แนวคิดหลัก</span>
+    <div class="pt"><span class="hl">เยี่ยมทีละ Level</span> จากบนลงล่าง ซ้ายไปขวา — ไม่ดำดิ่งลึกก่อน</div>
+    <div class="pt">ใช้ <span class="hl">Queue (FIFO)</span> — ใครมาก่อนออกก่อน เหมือนคิวธนาคาร</div>
+    <div class="pt">🎯 รับประกัน: node ใกล้ root จะถูกเยี่ยมก่อนเสมอ → หาเส้นทางสั้นสุดได้</div>
+  </div>
+
+  <div class="tree-demo-card">
+    <span class="badge b-exam">ลำดับการเดิน — กด Play ดูได้เลย</span>
+    <div id="demo-bfs"></div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-code">Python Code — ใช้ Queue</span>
+    <div class="code-block"><span class="kw">from</span> collections <span class="kw">import</span> deque
+
+<span class="kw">def</span> <span class="fn">bfs</span>(root):
+    <span class="kw">if</span> root <span class="kw">is None</span>: <span class="kw">return</span>
+    queue = deque([root])      <span class="cm"># ใส่ root ลง Queue</span>
+    <span class="kw">while</span> queue:
+        node = queue.popleft() <span class="cm"># นำออกจากหน้า (FIFO)</span>
+        <span class="fn">visit</span>(node)
+        <span class="kw">if</span> node.left:  queue.append(node.left)
+        <span class="kw">if</span> node.right: queue.append(node.right)
+<span class="cm"># Output: A → B → C → D → E → F</span></div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-warn">เหมาะใช้เมื่อ</span>
+    <div class="pt"><span class="hl">Shortest path</span> — GPS, Maps หาเส้นทางสั้นสุด</div>
+    <div class="pt"><span class="hl">Social network</span> — หา degree of separation ระหว่างคน</div>
+    <div class="pt"><span class="hl">Level-order print</span> — พิมพ์ tree ทีละชั้น</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════
+     5. DFS
+═══════════════════════════════════════════ -->
+<div class="chapter" id="sec-dfs">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--amber-bg);color:var(--amber-text)">5</div>
+    <div class="ch-title">DFS — Depth-First Search (Generic)</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">แนวคิดหลัก</span>
+    <div class="pt"><span class="hl">ดำดิ่งลึกในกิ่งหนึ่งจนสุด</span> ก่อนย้อนกลับมาลองกิ่งถัดไป</div>
+    <div class="pt">ใช้ <span class="hl">Stack (LIFO)</span> หรือ Recursion — ใส่ขวาก่อน ซ้ายทีหลัง (ซ้ายออกก่อน)</div>
+    <div class="pt">⚠️ Preorder / Inorder / Postorder ทั้ง 3 แบบ <span class="hl">ล้วนเป็น DFS</span> ต่างกันแค่จังหวะเยี่ยม Root</div>
+  </div>
+
+  <div class="tree-demo-card">
+    <span class="badge b-exam">ลำดับการเดิน — กด Play ดูได้เลย</span>
+    <div id="demo-dfs"></div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-code">Python Code — ใช้ Stack (Iterative)</span>
+    <div class="code-block"><span class="kw">def</span> <span class="fn">dfs</span>(root):
+    <span class="kw">if</span> root <span class="kw">is None</span>: <span class="kw">return</span>
+    stack = [root]              <span class="cm"># ใช้ Stack แทน Queue</span>
+    <span class="kw">while</span> stack:
+        node = stack.pop()      <span class="cm"># นำออกจากบน (LIFO)</span>
+        <span class="fn">visit</span>(node)
+        <span class="kw">if</span> node.right: stack.append(node.right)  <span class="cm"># ใส่ขวาก่อน</span>
+        <span class="kw">if</span> node.left:  stack.append(node.left)   <span class="cm"># ใส่ซ้ายทีหลัง (ออกก่อน)</span>
+<span class="cm"># Output: A → B → D → E → C → F  (เหมือน Preorder)</span></div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-warn">เหมาะใช้เมื่อ</span>
+    <div class="pt"><span class="hl">Pathfinding</span> — ค้นหาว่ามีเส้นทางจาก A → B ไหม</div>
+    <div class="pt"><span class="hl">Cycle detection</span> — ตรวจว่า graph มี cycle ไหม</div>
+    <div class="pt"><span class="hl">Topological sort</span> — จัดลำดับ dependency ของ tasks</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════
+     BFS vs DFS
+═══════════════════════════════════════════ -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--green-bg);color:var(--green-text)">6</div>
+    <div class="ch-title">BFS vs DFS — เปรียบเทียบชัดเจน</div>
+  </div>
+
+  <div class="card">
+    <div class="compare-row">
+      <div class="compare-card good">
+        <div class="compare-title">🌊 BFS — คลื่นน้ำ</div>
+        <div class="compare-body">
+          • ใช้ <b>Queue (FIFO)</b><br>
+          • เยี่ยมทีละ level กว้างออก<br>
+          • memory สูง (เก็บทั้ง level)<br>
+          • รับประกัน Shortest Path ✅<br>
+          • เหมาะกับ tree ตื้น กว้าง
+        </div>
+      </div>
+      <div class="compare-card bad">
+        <div class="compare-title">🕳️ DFS — นักสำรวจถ้ำ</div>
+        <div class="compare-body">
+          • ใช้ <b>Stack / Recursion</b><br>
+          • ดำดิ่งลึกในกิ่งก่อน<br>
+          • memory ต่ำกว่า (เก็บแค่ depth)<br>
+          • ไม่รับประกัน Shortest Path ❌<br>
+          • เหมาะกับ tree ลึก แคบ
+        </div>
+      </div>
+    </div>
+    <div class="eg">
+      <b>อุปมา:</b><br>
+      BFS = หยดน้ำบนพื้น → กระจายออกกว้าง ทีละชั้นเท่า ๆ กัน<br>
+      DFS = นักสำรวจถ้ำ → เลือกทางแล้วเดินลึกสุด แล้วค่อยย้อนกลับมาลองทางอื่น
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════
+     SUMMARY TABLE
+═══════════════════════════════════════════ -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--amber-bg);color:var(--amber-text)">7</div>
+    <div class="ch-title">ตารางสรุปเปรียบเทียบทุก Traversal</div>
+  </div>
+
+  <div class="card">
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Traversal</th>
+            <th>สูตร</th>
+            <th>ผลลัพธ์ (A,B,C,D,E,F)</th>
+            <th>Data Structure</th>
+            <th>Trick จำ</th>
+            <th>ใช้เมื่อ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="chip" style="background:var(--purple-bg);color:var(--purple-text)">Preorder</span></td>
+            <td>NLR</td>
+            <td class="mono">A B D E C F</td>
+            <td>Stack / Recursion</td>
+            <td>Root ก่อนเสมอ</td>
+            <td>Copy, Serialize</td>
+          </tr>
+          <tr>
+            <td><span class="chip" style="background:var(--teal-bg);color:var(--teal-text)">Inorder</span></td>
+            <td>LNR</td>
+            <td class="mono">D B E A C F</td>
+            <td>Stack / Recursion</td>
+            <td>Root อยู่กลาง</td>
+            <td>BST Sort, Validate</td>
+          </tr>
+          <tr>
+            <td><span class="chip" style="background:var(--coral-bg);color:var(--coral-text)">Postorder</span></td>
+            <td>LRN</td>
+            <td class="mono">D E B F C A</td>
+            <td>Stack / Recursion</td>
+            <td>Root สุดท้ายเสมอ</td>
+            <td>Delete, Calculator</td>
+          </tr>
+          <tr>
+            <td><span class="chip" style="background:var(--blue-bg);color:var(--blue-text)">BFS</span></td>
+            <td>Level-by-Level</td>
+            <td class="mono">A B C D E F</td>
+            <td><b>Queue (FIFO)</b></td>
+            <td>คลื่นน้ำ ทีละชั้น</td>
+            <td>Shortest Path</td>
+          </tr>
+          <tr>
+            <td><span class="chip" style="background:var(--amber-bg);color:var(--amber-text)">DFS</span></td>
+            <td>Dive Deep First</td>
+            <td class="mono">A B D E C F</td>
+            <td><b>Stack (LIFO)</b></td>
+            <td>นักสำรวจถ้ำ</td>
+            <td>Path, Cycle, Topo</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="eg">
+      <b>Cheat Sheet — จำก่อนสอบ:</b><br>
+      Pre/In/Post → ดูตำแหน่ง <b>N</b> (Node/Root): <b>N</b>LR · L<b>N</b>R · LR<b>N</b><br>
+      BFS → <b>Queue</b> · DFS → <b>Stack</b><br>
+      Inorder + BST = เรียงอัตโนมัติ 🎯 · Postorder Root = สุดท้ายเสมอ 🎯
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════════════════════════════════════
+     QUIZ
+═══════════════════════════════════════════ -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--purple-bg);color:var(--purple-text)">Q</div>
+    <div class="ch-title">Mini Quiz — ลองทำดูก่อนดูเฉลย</div>
+  </div>
+  <div class="quiz-wrap" id="quiz"></div>
+</div>
+
+</div><!-- end .container -->
+
+<script>
+/* ═══════════════════════════════════════════════
+   TREE DEMO ENGINE
+   Tree: A(root) → B(left), C(right)
+         B → D(left), E(right)
+         C → F(right)
+═══════════════════════════════════════════════ */
+const TREE_NODES = {
+  A: { x: 210, y: 32,  label: 'A' },
+  B: { x: 110, y: 110, label: 'B' },
+  C: { x: 310, y: 110, label: 'C' },
+  D: { x: 55,  y: 185, label: 'D' },
+  E: { x: 165, y: 185, label: 'E' },
+  F: { x: 310, y: 185, label: 'F' },
+};
+const TREE_EDGES = [
+  ['A','B'], ['A','C'], ['B','D'], ['B','E'], ['C','F']
+];
+
+const TRAVERSALS = {
+  pre:  { label: 'Preorder',  color: '#3C3489', bg: '#EEEDFE', order: ['A','B','D','E','C','F'],
+    steps: ['เริ่มที่ A (Root) → เยี่ยม A ✓', 'ลงซ้ายไป B → เยี่ยม B ✓', 'ลงซ้ายอีกไป D (leaf) → เยี่ยม D ✓ ย้อนกลับ', 'กลับ B → ลงขวาไป E (leaf) → เยี่ยม E ✓ ย้อนกลับ', 'กลับ A → ลงขวาไป C → เยี่ยม C ✓', 'ลงขวาไป F (leaf) → เยี่ยม F ✓ จบ!'] },
+  in:   { label: 'Inorder',   color: '#085041', bg: '#E1F5EE', order: ['D','B','E','A','C','F'],
+    steps: ['เริ่ม A → ไม่เยี่ยมก่อน ลงซ้ายไป B → ลงซ้ายอีกไป D', 'D (leaf) → ไม่มีซ้าย เยี่ยม D ✓ ย้อนกลับ B', 'กลับ B → เยี่ยม B ✓ ลงขวาไป E', 'E (leaf) → เยี่ยม E ✓ ย้อนกลับ A', 'กลับ A → เยี่ยม A ✓ ลงขวาไป C → เยี่ยม C ✓', 'ลงขวาไป F (leaf) → เยี่ยม F ✓ จบ!'] },
+  post: { label: 'Postorder', color: '#712B13', bg: '#FAECE7', order: ['D','E','B','F','C','A'],
+    steps: ['เริ่ม A → ไม่เยี่ยม ลงซ้าย B → ลงซ้าย D', 'D (leaf) → เยี่ยม D ✓ ย้อนกลับ B', 'กลับ B → ลงขวาไป E (leaf) → เยี่ยม E ✓', 'ลูก B ครบแล้ว → เยี่ยม B ✓ ย้อนขึ้น A', 'ลงขวา C → ลงขวา F (leaf) → เยี่ยม F ✓ → เยี่ยม C ✓', 'ลูก A ครบแล้ว → เยี่ยม A ✓ จบ!'] },
+  bfs:  { label: 'BFS (Level-order)', color: '#0C447C', bg: '#E6F1FB', order: ['A','B','C','D','E','F'],
+    steps: ['ใส่ A เข้า Queue → Queue: [A]', 'นำ A ออก → เยี่ยม A ✓ ใส่ลูก B,C → Queue: [B, C]', 'นำ B ออก → เยี่ยม B ✓ ใส่ลูก D,E → Queue: [C, D, E]', 'นำ C ออก → เยี่ยม C ✓ ใส่ลูก F → Queue: [D, E, F]', 'นำ D ออก → เยี่ยม D ✓ ไม่มีลูก → Queue: [E, F]', 'นำ E → เยี่ยม E ✓ นำ F → เยี่ยม F ✓ Queue ว่าง จบ!'] },
+  dfs:  { label: 'DFS (Stack)',        color: '#633806', bg: '#FAEEDA', order: ['A','B','D','E','C','F'],
+    steps: ['ใส่ A เข้า Stack → Stack: [A]', 'นำ A ออก → เยี่ยม A ✓ ใส่ C แล้ว B → Stack: [C, B]', 'นำ B ออก (top) → เยี่ยม B ✓ ใส่ E แล้ว D → Stack: [C, E, D]', 'นำ D ออก → เยี่ยม D ✓ ไม่มีลูก → Stack: [C, E]', 'นำ E ออก → เยี่ยม E ✓ → Stack: [C]', 'นำ C ออก → เยี่ยม C ✓ ใส่ F → เยี่ยม F ✓ Stack ว่าง จบ!'] },
+};
+
+function buildDemo(containerId, key) {
+  const t = TRAVERSALS[key];
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const uid = containerId;
+  let step = -1;  // -1 = idle, 0..n-1 = steps
+  let timer = null;
+
+  container.innerHTML = `
+    <svg id="svg-${uid}" width="100%" viewBox="0 0 420 225" style="display:block;margin:0 auto 12px">
+      ${TREE_EDGES.map(([a,b])=>`<line class="tree-edge" x1="${TREE_NODES[a].x}" y1="${TREE_NODES[a].y}" x2="${TREE_NODES[b].x}" y2="${TREE_NODES[b].y}"/>`).join('')}
+      ${Object.entries(TREE_NODES).map(([id,n])=>`
+        <g id="gn-${uid}-${id}">
+          <circle id="c-${uid}-${id}" class="tree-node" cx="${n.x}" cy="${n.y}" r="22"
+            fill="#f8f7f4" stroke="rgba(0,0,0,0.15)" stroke-width="1.5"/>
+          <text class="tree-label" x="${n.x}" y="${n.y}" text-anchor="middle"
+            dominant-baseline="central" fill="#1a1a1a" id="t-${uid}-${id}">${n.label}</text>
+          <text class="tree-order-num" id="ord-${uid}-${id}"
+            x="${n.x + (n.x > 210 ? 18 : n.x < 210 ? -18 : 0)}"
+            y="${n.y - (n.y < 80 ? 20 : 0) + (n.y > 150 ? 20 : 0)}"
+            text-anchor="middle" dominant-baseline="central"
+            fill="${t.color}">?</text>
+        </g>`).join('')}
+    </svg>
+    <div class="walk-row" id="pills-${uid}">
+      <span class="walk-label">ลำดับ:</span>
+      ${t.order.map((n,i)=>`
+        <span class="walk-pill" id="pill-${uid}-${i}"
+          style="background:var(--bg);color:var(--text-3)">${n}</span>
+        ${i < t.order.length-1 ? '<span class="walk-arr">→</span>' : ''}
+      `).join('')}
+    </div>
+    <div class="step-desc" id="desc-${uid}">กด <b>▶ Play</b> เพื่อเริ่มดูลำดับการเดิน</div>
+    <div class="ctrl-row">
+      <button class="ctrl-btn" id="btn-play-${uid}" onclick="togglePlay('${uid}','${key}')">▶ Play</button>
+      <button class="ctrl-btn" id="btn-prev-${uid}" onclick="stepDemo('${uid}','${key}',-1)" style="opacity:.4" disabled>◀ ก่อนหน้า</button>
+      <button class="ctrl-btn" id="btn-next-${uid}" onclick="stepDemo('${uid}','${key}',1)">ถัดไป ▶</button>
+      <button class="ctrl-btn" onclick="resetDemo('${uid}','${key}')">↺ Reset</button>
+      <span class="ctrl-speed" id="prog-${uid}">0 / ${t.order.length}</span>
+    </div>
+  `;
+
+  window[`_demo_${uid}`] = { step: -1, timer: null, key };
+}
+
+function applyStep(uid, key, s) {
+  const t = TRAVERSALS[key];
+  const state = window[`_demo_${uid}`];
+  state.step = s;
+
+  // reset all nodes
+  Object.keys(TREE_NODES).forEach(id => {
+    const c = document.getElementById(`c-${uid}-${id}`);
+    const tx = document.getElementById(`t-${uid}-${id}`);
+    const ord = document.getElementById(`ord-${uid}-${id}`);
+    if (!c) return;
+    c.setAttribute('fill', '#f8f7f4');
+    c.setAttribute('stroke', 'rgba(0,0,0,0.15)');
+    c.setAttribute('stroke-width', '1.5');
+    tx.setAttribute('fill', '#1a1a1a');
+    ord.style.opacity = '0';
+  });
+
+  // mark visited (0..s-1)
+  for (let i = 0; i < s; i++) {
+    const id = t.order[i];
+    const c = document.getElementById(`c-${uid}-${id}`);
+    const tx = document.getElementById(`t-${uid}-${id}`);
+    const ord = document.getElementById(`ord-${uid}-${id}`);
+    if (!c) continue;
+    c.setAttribute('fill', t.bg);
+    c.setAttribute('stroke', t.color);
+    c.setAttribute('stroke-width', '2');
+    tx.setAttribute('fill', t.color);
+    ord.textContent = i + 1;
+    ord.style.opacity = '1';
+  }
+
+  // mark active (step s)
+  if (s >= 0 && s < t.order.length) {
+    const id = t.order[s];
+    const c = document.getElementById(`c-${uid}-${id}`);
+    const tx = document.getElementById(`t-${uid}-${id}`);
+    if (c) {
+      c.setAttribute('fill', t.color);
+      c.setAttribute('stroke', t.color);
+      c.setAttribute('stroke-width', '2.5');
+      tx.setAttribute('fill', '#fff');
+    }
+  }
+
+  // pills
+  for (let i = 0; i < t.order.length; i++) {
+    const pill = document.getElementById(`pill-${uid}-${i}`);
+    if (!pill) continue;
+    if (i < s) {
+      pill.style.background = t.bg;
+      pill.style.color = t.color;
+      pill.style.border = `2px solid ${t.color}`;
+      pill.classList.remove('active'); pill.classList.add('visited');
+    } else if (i === s) {
+      pill.style.background = t.color;
+      pill.style.color = '#fff';
+      pill.style.border = `2px solid ${t.color}`;
+      pill.classList.add('active'); pill.classList.remove('visited');
+    } else {
+      pill.style.background = '#f8f7f4';
+      pill.style.color = '#888';
+      pill.style.border = '2px solid transparent';
+      pill.classList.remove('active','visited');
+    }
+  }
+
+  // step desc
+  const desc = document.getElementById(`desc-${uid}`);
+  if (s < 0) {
+    desc.innerHTML = `กด <b>▶ Play</b> เพื่อเริ่มดูลำดับการเดิน`;
+  } else if (s >= t.order.length) {
+    desc.innerHTML = `<b style="color:${t.color}">✓ เสร็จสิ้น!</b> ลำดับการเดิน: ${t.order.join(' → ')}`;
+  } else {
+    const stepNum = s + 1;
+    desc.innerHTML = `<b style="color:${t.color}">ขั้น ${stepNum}/${t.order.length} — เยี่ยม [${t.order[s]}]:</b> ${t.steps[s]}`;
+  }
+
+  // prog
+  const prog = document.getElementById(`prog-${uid}`);
+  const visited = Math.min(s + 1, t.order.length);
+  if (prog) prog.textContent = `${Math.max(0, s < 0 ? 0 : visited)} / ${t.order.length}`;
+
+  // btn states
+  const btnPrev = document.getElementById(`btn-prev-${uid}`);
+  const btnNext = document.getElementById(`btn-next-${uid}`);
+  if (btnPrev) { btnPrev.disabled = s <= -1; btnPrev.style.opacity = s <= -1 ? '.4' : '1'; }
+  if (btnNext) { btnNext.disabled = s >= t.order.length; btnNext.style.opacity = s >= t.order.length ? '.4' : '1'; }
+}
+
+function stepDemo(uid, key, dir) {
+  const state = window[`_demo_${uid}`];
+  const t = TRAVERSALS[key];
+  let next = state.step + dir;
+  next = Math.max(-1, Math.min(t.order.length, next));
+  applyStep(uid, key, next);
+}
+
+function resetDemo(uid, key) {
+  const state = window[`_demo_${uid}`];
+  if (state.timer) { clearInterval(state.timer); state.timer = null; }
+  const btn = document.getElementById(`btn-play-${uid}`);
+  if (btn) { btn.textContent = '▶ Play'; btn.classList.remove('playing'); }
+  applyStep(uid, key, -1);
+}
+
+function togglePlay(uid, key) {
+  const state = window[`_demo_${uid}`];
+  const t = TRAVERSALS[key];
+  const btn = document.getElementById(`btn-play-${uid}`);
+  if (state.timer) {
+    clearInterval(state.timer); state.timer = null;
+    btn.textContent = '▶ Play'; btn.classList.remove('playing');
+    return;
+  }
+  // start or restart
+  if (state.step >= t.order.length) applyStep(uid, key, -1);
+  btn.textContent = '⏸ Pause'; btn.classList.add('playing');
+  state.timer = setInterval(() => {
+    const next = state.step + 1;
+    applyStep(uid, key, next);
+    if (next >= t.order.length) {
+      clearInterval(state.timer); state.timer = null;
+      btn.textContent = '▶ Play'; btn.classList.remove('playing');
+    }
+  }, 900);
+}
+
+// Build all demos
+buildDemo('demo-pre', 'pre');
+buildDemo('demo-in',  'in');
+buildDemo('demo-post','post');
+buildDemo('demo-bfs', 'bfs');
+buildDemo('demo-dfs', 'dfs');
+
+/* ═══════════════════════════════════════════════
+   QUIZ
+═══════════════════════════════════════════ */
+const QS = [
+  {
+    q: "ต้นไม้ A → B(ซ้าย), C(ขวา); B → D(ซ้าย), E(ขวา); C → F(ขวา)\n\nPostorder traversal จะได้ผลลัพธ์อะไร?",
+    opts: ["A B D E C F", "D E B F C A", "D B E A C F", "A B C D E F"],
+    ans: 1,
+    explain: "Postorder = LRN — เยี่ยมลูกทั้งหมดก่อน Root สุดท้าย: D → E → B (ฝั่งซ้ายเสร็จ) → F → C (ฝั่งขวาเสร็จ) → A (Root สุดท้าย)"
+  },
+  {
+    q: "BFS ใช้ data structure อะไรเป็นหัวใจหลัก?",
+    opts: ["Stack (LIFO)", "Queue (FIFO)", "Array", "Linked List"],
+    ans: 1,
+    explain: "BFS ใช้ Queue (FIFO) — ใครมาก่อนออกก่อน ทำให้เยี่ยม node ในระดับเดียวกันครบก่อนที่จะลงไประดับถัดไป"
+  },
+  {
+    q: "Inorder traversal ของ Binary Search Tree (BST) จะได้ผลลัพธ์ที่มีคุณสมบัติอะไรพิเศษ?",
+    opts: [
+      "ได้ค่า Root ก่อนเสมอ",
+      "ได้ค่า Leaf ก่อนเสมอ",
+      "ได้ข้อมูลเรียงจากน้อยไปมาก (Sorted)",
+      "ได้จำนวน node ทั้งหมด"
+    ],
+    ans: 2,
+    explain: "Inorder (LNR) ใน BST จะได้ข้อมูลเรียงจากน้อยไปมากเสมอ เพราะ BST กำหนดว่าลูกซ้าย < root < ลูกขวา พอเดิน LNR จึงได้ค่าเรียงอัตโนมัติ!"
+  },
+  {
+    q: "ต้องการลบ tree ออกจาก memory ทั้งหมดอย่างถูกต้อง (ไม่ให้ memory leak)\nควรใช้ traversal แบบไหน?",
+    opts: ["Preorder — ลบ Root ก่อน", "Inorder — ลบกลาง", "Postorder — ลบลูกก่อน Root", "BFS — ลบทีละ level"],
+    ans: 2,
+    explain: "Postorder (LRN) — ต้องลบลูกก่อนทุกครั้ง แล้วค่อยลบ parent ถ้าลบ parent ก่อน (Preorder) จะไม่มี pointer ถึงลูกแล้ว ทำให้ลูกค้างอยู่ใน memory"
+  },
+  {
+    q: "DFS และ BFS ต่างกันอย่างไรในเรื่อง 'การรับประกันหาเส้นทางสั้นสุด'?",
+    opts: [
+      "ทั้งคู่รับประกัน shortest path เหมือนกัน",
+      "BFS รับประกัน shortest path, DFS ไม่รับประกัน",
+      "DFS รับประกัน shortest path, BFS ไม่รับประกัน",
+      "ขึ้นอยู่กับขนาดของ tree"
+    ],
+    ans: 1,
+    explain: "BFS รับประกัน shortest path เพราะเยี่ยม node ที่ใกล้ root ก่อนเสมอ (ทีละ level) — node ที่เจอก่อนจึงมาจากเส้นทางสั้นสุด ส่วน DFS อาจเลือกเดินกิ่งยาวก่อนก็ได้ จึงไม่รับประกัน"
+  }
+];
+
+let cur = 0, done = [];
+function renderQ() {
+  const q = QS[cur], a = done[cur];
+  const answered = done.filter(x => x !== undefined).length;
+  const pct = Math.round((answered / QS.length) * 100);
+  const allDone = answered === QS.length;
+  let scoreHtml = '';
+  if (allDone) {
+    const correct = QS.filter((q, i) => done[i] === q.ans).length;
+    scoreHtml = `<div class="score-card"><div class="score-num">${correct} / ${QS.length}</div><div class="score-label">${correct === QS.length ? 'เยี่ยม! ถูกทุกข้อ 🎉' : correct >= 3 ? 'ดีมาก ผ่านแล้ว 👍' : 'ลองทบทวนแล้วทำใหม่นะ 📖'}</div></div>`;
+  }
+  document.getElementById('quiz').innerHTML = `
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <div class="qnum">ข้อ ${cur + 1} จาก ${QS.length}</div>
+    <div class="qtxt">${q.q}</div>
+    <div class="qopts">
+      ${q.opts.map((o, i) => {
+        let cls = 'qopt';
+        if (a !== undefined) { if (i === q.ans) cls += ' correct'; else if (i === a && a !== q.ans) cls += ' wrong'; }
+        return `<button class="${cls}" ${a !== undefined ? 'disabled' : ''} onclick="pickQ(${i})">${String.fromCharCode(65+i)}. ${o}</button>`;
+      }).join('')}
+    </div>
+    <div class="qfb ${a === undefined ? '' : a === q.ans ? 'ok' : 'no'}">
+      ${a === undefined ? '' : (a === q.ans ? '✓ ถูกต้อง — ' : '✗ ไม่ใช่ — ') + q.explain}
+    </div>
+    ${scoreHtml}
+    <div class="qnav">
+      <button class="qbtn" ${cur===0?'disabled':''} onclick="goQ(-1)">← ก่อนหน้า</button>
+      <span class="qctr">${answered} / ${QS.length} ตอบแล้ว</span>
+      <button class="qbtn" ${cur===QS.length-1?'disabled':''} onclick="goQ(1)">ถัดไป →</button>
+    </div>`;
+}
+function pickQ(i) { if (done[cur]!==undefined) return; done[cur]=i; renderQ(); }
+function goQ(d) { cur+=d; renderQ(); }
+renderQ();
+</script>
+</body>
+</html>

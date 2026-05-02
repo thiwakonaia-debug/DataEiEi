@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>สรุป Merge Sort & Quick Sort — ITDS 122</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #f8f7f4;
+    --surface: #ffffff;
+    --border: rgba(0,0,0,0.1);
+    --border-strong: rgba(0,0,0,0.2);
+    --text: #1a1a1a;
+    --text-2: #555;
+    --text-3: #888;
+    --purple-bg: #EEEDFE; --purple-text: #3C3489;
+    --teal-bg: #E1F5EE; --teal-text: #085041;
+    --coral-bg: #FAECE7; --coral-text: #712B13;
+    --blue-bg: #E6F1FB; --blue-text: #0C447C;
+    --amber-bg: #FAEEDA; --amber-text: #633806;
+    --green-bg: #EAF3DE; --green-text: #27500A;
+    --red-bg: #FCEBEB; --red-text: #A32D2D;
+    --accent: #1D9E75;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 15px;
+  }
+
+  .header {
+    background: var(--surface);
+    border-bottom: 0.5px solid var(--border);
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+  .header-inner { max-width: 760px; margin: 0 auto; padding: 0 1.5rem; }
+  .header-tag {
+    display: inline-block;
+    background: var(--purple-bg);
+    color: var(--purple-text);
+    font-size: 11px; font-weight: 600;
+    padding: 3px 10px; border-radius: 20px;
+    letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: .75rem;
+  }
+  h1 { font-size: 26px; font-weight: 600; color: var(--text); margin-bottom: .35rem; }
+  .subtitle { font-size: 14px; color: var(--text-3); }
+
+  .container { max-width: 760px; margin: 0 auto; padding: 0 1.5rem 4rem; }
+  .chapter { margin-bottom: 2.5rem; }
+  .ch-header { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; }
+  .ch-num {
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600; flex-shrink: 0;
+  }
+  .ch-title { font-size: 17px; font-weight: 600; color: var(--text); }
+
+  .card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    padding: 1.1rem 1.3rem;
+    margin-bottom: .75rem;
+  }
+
+  .badge {
+    display: inline-block;
+    font-size: 11px; font-weight: 600;
+    padding: 2px 9px; border-radius: 20px;
+    margin-bottom: .6rem; margin-right: 4px;
+  }
+  .b-exam { background: var(--coral-bg); color: var(--coral-text); }
+  .b-code { background: var(--green-bg); color: var(--green-text); }
+  .b-tip  { background: var(--purple-bg); color: var(--purple-text); }
+  .b-warn { background: var(--amber-bg); color: var(--amber-text); }
+  .b-info { background: var(--blue-bg); color: var(--blue-text); }
+
+  .pt {
+    font-size: 14px; color: var(--text-2); line-height: 1.75;
+    margin-bottom: .4rem; padding-left: 1rem; position: relative;
+  }
+  .pt::before { content: "—"; position: absolute; left: 0; color: var(--text-3); }
+  .hl { color: var(--text); font-weight: 600; }
+
+  .eg {
+    background: var(--bg);
+    border-left: 3px solid #378ADD;
+    border-radius: 0 8px 8px 0;
+    padding: .75rem 1rem;
+    margin: .75rem 0;
+    font-size: 13px; color: var(--text-2); line-height: 1.75;
+  }
+
+  .code-block {
+    background: #1e1e2e;
+    border-radius: 8px;
+    padding: .85rem 1rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px; color: #cdd6f4;
+    line-height: 1.9; margin: .75rem 0; overflow-x: auto;
+  }
+  .kw { color: #89b4fa; } .fn { color: #a6e3a1; }
+  .cm { color: #6c7086; } .st { color: #f38ba8; } .num { color: #fab387; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: .65rem; margin: .75rem 0; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .65rem; margin: .75rem 0; }
+  .mini-card {
+    background: var(--bg); border-radius: 8px;
+    padding: .7rem .9rem; border: 0.5px solid var(--border);
+  }
+  .mini-title { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: .25rem; }
+  .mini-body  { font-size: 12px; color: var(--text-2); line-height: 1.6; }
+
+  .compare-row { display: grid; grid-template-columns: 1fr 1fr; gap: .65rem; margin: .75rem 0; }
+  .compare-card { border-radius: 8px; padding: .75rem 1rem; }
+  .compare-card.bad     { background: var(--red-bg);    border: 0.5px solid #F09595; }
+  .compare-card.good    { background: var(--green-bg);  border: 0.5px solid #97C459; }
+  .compare-card.neutral { background: var(--blue-bg);   border: 0.5px solid #82B8E8; }
+  .compare-card.amber   { background: var(--amber-bg);  border: 0.5px solid #E5C06A; }
+  .compare-card.purple  { background: var(--purple-bg); border: 0.5px solid #A9A3F0; }
+  .compare-title { font-size: 12px; font-weight: 600; margin-bottom: .35rem; }
+  .compare-card.bad     .compare-title { color: var(--red-text); }
+  .compare-card.good    .compare-title { color: var(--green-text); }
+  .compare-card.neutral .compare-title { color: var(--blue-text); }
+  .compare-card.amber   .compare-title { color: var(--amber-text); }
+  .compare-card.purple  .compare-title { color: var(--purple-text); }
+  .compare-body { font-size: 12px; color: var(--text-2); line-height: 1.65; }
+
+  .divider { height: 0.5px; background: var(--border); margin: 2rem 0; }
+
+  .tbl { width: 100%; border-collapse: collapse; font-size: 13px; margin: .75rem 0; }
+  .tbl th {
+    background: var(--bg); color: var(--text); font-weight: 600;
+    padding: 8px 12px; border: 0.5px solid var(--border); text-align: left;
+  }
+  .tbl td {
+    padding: 7px 12px; border: 0.5px solid var(--border);
+    color: var(--text-2); background: var(--surface);
+  }
+  .tbl tr:hover td { background: var(--bg); }
+  .tbl .best  { color: var(--green-text); font-weight: 600; }
+  .tbl .worst { color: var(--red-text); font-weight: 600; }
+  .tbl .mid   { color: var(--amber-text); font-weight: 600; }
+
+  /* ═══════════════════════════════════════
+     VISUALIZER STYLES
+  ═══════════════════════════════════════ */
+  .viz-wrap {
+    background: var(--surface); border: 0.5px solid var(--border);
+    border-radius: 12px; padding: 1.3rem; margin: 1rem 0;
+  }
+  .controls { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+  .btn {
+    font-family: 'Sarabun', sans-serif; font-size: 12px; font-weight: 600;
+    padding: 6px 14px; border-radius: 8px; border: 0.5px solid var(--border-strong);
+    background: var(--bg); color: var(--text); cursor: pointer; transition: all .15s;
+  }
+  .btn:hover:not(:disabled) { background: var(--surface); border-color: var(--accent); }
+  .btn:disabled { opacity: .4; cursor: default; }
+  .btn-primary { background: var(--purple-bg); color: var(--purple-text); border-color: #A9A3F0; }
+  .btn-green { background: var(--green-bg); color: var(--green-text); border-color: #97C459; }
+
+  .array-row { display: flex; align-items: flex-end; gap: 4px; min-height: 45px; flex-wrap: wrap; margin-bottom: .8rem; }
+  .cell {
+    width: 38px; height: 38px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600;
+    border: 1.5px solid var(--border-strong); background: var(--surface); color: var(--text);
+    transition: all .3s ease;
+  }
+  .cell.active { background: var(--purple-bg); border-color: #A9A3F0; color: var(--purple-text); }
+  .cell.pivot { background: var(--amber-bg); border-color: #E5C06A; color: var(--amber-text); }
+  .cell.comparing { background: var(--blue-bg); border-color: #82B8E8; color: var(--blue-text); }
+  .cell.sorted { background: var(--green-bg); border-color: #97C459; color: var(--green-text); }
+  .cell.swapping { background: var(--red-bg); border-color: #F09595; color: var(--red-text); transform: scale(1.1); }
+
+  .pointer-row { display: flex; gap: 4px; min-height: 20px; margin-bottom: 4px; }
+  .ptr { width: 38px; text-align: center; font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 600; color: var(--text-3); }
+  .ptr.j { color: var(--amber-text); }
+  .ptr.k { color: var(--blue-text); }
+
+  .step-info {
+    background: var(--bg); border-radius: 8px; padding: .75rem 1rem;
+    font-size: 13px; color: var(--text-2); line-height: 1.6; min-height: 50px;
+    border: 0.5px solid var(--border);
+  }
+  .step-phase { font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 600; color: var(--accent); text-transform: uppercase; margin-bottom: 2px; }
+
+  /* Quiz */
+  .quiz-wrap {
+    background: var(--surface); border: 0.5px solid var(--border);
+    border-radius: 12px; padding: 1.3rem;
+  }
+  .progress-bar { height: 3px; background: var(--bg); border-radius: 2px; margin-bottom: 1rem; overflow: hidden; border: 0.5px solid var(--border); }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width .4s ease; }
+  .qnum  { font-size: 11px; font-weight: 600; color: var(--text-3); margin-bottom: .5rem; letter-spacing: .04em; text-transform: uppercase; }
+  .qtxt  { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: .85rem; line-height: 1.65; white-space: pre-line; }
+  .qopts { display: flex; flex-direction: column; gap: 7px; margin-bottom: .85rem; }
+  .qopt {
+    text-align: left; background: var(--bg); border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 9px 13px; font-size: 13px;
+    font-family: 'Sarabun', sans-serif; color: var(--text); cursor: pointer;
+    line-height: 1.55; transition: border-color .15s, background .15s;
+  }
+  .qopt:hover:not(:disabled) { border-color: var(--border-strong); background: var(--surface); }
+  .qopt.correct { background: var(--green-bg); border-color: #97C459; color: var(--green-text); }
+  .qopt.wrong   { background: var(--red-bg);   border-color: #F09595; color: var(--red-text); }
+  .qfb { font-size: 13px; min-height: 18px; line-height: 1.65; padding: .1rem 0; }
+  .qfb.ok { color: var(--green-text); } .qfb.no { color: var(--red-text); }
+  .qnav {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 1.1rem; padding-top: 1rem; border-top: 0.5px solid var(--border);
+  }
+  .qbtn {
+    font-size: 13px; font-family: 'Sarabun', sans-serif; background: transparent;
+    border: 0.5px solid var(--border-strong); border-radius: 7px;
+    padding: 6px 16px; color: var(--text); cursor: pointer; transition: background .15s;
+  }
+  .qbtn:hover:not(:disabled) { background: var(--bg); }
+  .qbtn:disabled { opacity: .3; cursor: default; }
+  .qctr { font-size: 12px; color: var(--text-3); }
+  .score-card {
+    background: var(--teal-bg); border: 0.5px solid #5DCAA5;
+    border-radius: 10px; padding: 1rem 1.25rem; text-align: center; margin-top: 1rem;
+  }
+  .score-num   { font-size: 32px; font-weight: 600; color: var(--teal-text); }
+  .score-label { font-size: 13px; color: #085041; margin-top: .25rem; }
+
+  @media (max-width: 540px) {
+    .grid2, .compare-row, .grid3 { grid-template-columns: 1fr; }
+    h1 { font-size: 21px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-tag">ITDS 122 — Data Structures</div>
+    <h1>สรุป Merge Sort & Quick Sort ฉบับละเอียด</h1>
+    <div class="subtitle">Lecture 15 · Divide and Conquer · Efficient Sorting · มี Interactive Visualizer & Quiz</div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- CH1: Divide and Conquer -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--purple-bg);color:var(--purple-text)">1</div>
+    <div class="ch-title">แนวคิด Divide and Conquer (แบ่งแยกและเอาชนะ)</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">concept</span>
+    <div class="pt"><span class="hl">Divide and Conquer</span> คือเทคนิคการแก้ปัญหาแบบ Recursive โดยการแบ่งปัญหาใหญ่ให้เล็กลงเรื่อยๆ</div>
+    <div class="pt">ประกอบด้วย 3 ขั้นตอนหลัก: <span class="hl">Divide (แบ่ง)</span> → <span class="hl">Conquer (เอาชนะ/แก้)</span> → <span class="hl">Combine (รวม)</span></div>
+    <div class="eg">
+      อุปมา: เหมือนการแบ่งงานให้เพื่อนในกลุ่มทำคนละส่วน แล้วสุดท้ายค่อยเอางานของทุกคนมารวมเป็นเล่มเดียว
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">3 ขั้นตอนที่ต้องจำ</span>
+    <div class="grid3">
+      <div class="mini-card">
+        <div class="mini-title" style="color:var(--purple-text)">1. Divide</div>
+        <div class="mini-body">แบ่งปัญหาออกเป็นปัญหาย่อยๆ (Sub-problems) ที่มีลักษณะเหมือนเดิมแต่ขนาดเล็กลง</div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-title" style="color:var(--green-text)">2. Conquer</div>
+        <div class="mini-body">แก้ปัญหาย่อยด้วย Recursion ถ้าปัญหาเล็กพอ (Base Case) ให้แก้โดยตรงทันที</div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-title" style="color:var(--blue-text)">3. Combine</div>
+        <div class="mini-body">นำคำตอบจากปัญหาย่อยๆ มารวมกันเพื่อให้ได้คำตอบของปัญหาดั้งเดิม</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- CH2: Merge Sort -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--teal-bg);color:var(--teal-text)">2</div>
+    <div class="ch-title">Merge Sort — เรียงลำดับด้วยการแบ่งครึ่งและรวม</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">intuition</span>
+    <div class="pt">Merge Sort จะแบ่ง Array ออกเป็น 2 ส่วนเท่าๆ กันเสมอ จนเหลือตัวเดียว (ซึ่งถือว่าเรียงแล้ว) แล้วค่อย <span class="hl">Merge (รวม)</span> กลับขึ้นมาโดยเรียงลำดับไปด้วย</div>
+    <div class="pt">จุดเด่น: <span class="hl">Predictable Performance</span> — ทำงาน O(n log n) เสมอ ไม่ว่าข้อมูลจะมาแบบไหน</div>
+    <div class="pt">จุดด้อย: <span class="hl">ใช้ Memory เยอะ</span> — ต้องสร้าง Array สำรอง (Auxiliary Array) ขนาด O(n)</div>
+  </div>
+
+  <div class="viz-wrap">
+    <div class="step-phase">Merge Sort Visualizer</div>
+    <div class="controls">
+      <button class="btn btn-primary" onclick="msReset()">↺ Reset</button>
+      <button class="btn" id="ms-prev" onclick="msPrev()" disabled>← Prev</button>
+      <button class="btn" id="ms-next" onclick="msNext()">Next →</button>
+      <button class="btn btn-green" id="ms-auto" onclick="msAuto()">▶ Auto Play</button>
+    </div>
+    <div class="array-row" id="ms-array"></div>
+    <div class="step-info" id="ms-info">
+      <div class="step-phase" id="ms-phase">READY</div>
+      <div class="step-msg" id="ms-msg">กด Next เพื่อเริ่มดูขั้นตอนการแบ่งและรวม</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">Complexity Analysis</span>
+    <div class="compare-row">
+      <div class="compare-card good">
+        <div class="compare-title">Time: O(n log n)</div>
+        <div class="compare-body">
+          การแบ่งครึ่งทำให้ต้นไม้สูง log n ชั้น แต่ละชั้นมีการ Merge ทำงาน O(n)<br>
+          → ทุกกรณี (Best/Avg/Worst) คือ O(n log n)
+        </div>
+      </div>
+      <div class="compare-card bad">
+        <div class="compare-title">Space: O(n)</div>
+        <div class="compare-body">
+          ต้องใช้พื้นที่เก็บข้อมูลชั่วคราวระหว่างการ Merge เท่ากับจำนวนข้อมูลดั้งเดิม
+        </div>
+      </div>
+    </div>
+    <div class="pt" style="margin-top:.5rem">Merge Sort เป็น <span class="hl">Stable Sort</span> (รักษาลำดับของค่าที่เท่ากัน)</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- CH3: Quick Sort -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--coral-bg);color:var(--coral-text)">3</div>
+    <div class="ch-title">Quick Sort — เรียงลำดับด้วยการเลือก Pivot</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">intuition</span>
+    <div class="pt">Quick Sort เลือกค่าหนึ่งมาเป็น <span class="hl">Pivot</span> แล้วจัดระเบียบ Array ให้: <br>[ตัวที่เล็กกว่า pivot] | <span class="hl">Pivot</span> | [ตัวที่ใหญ่กว่า pivot]</div>
+    <div class="pt">ทำแบบเดิมซ้ำๆ (Recursion) กับฝั่งซ้ายและฝั่งขวา</div>
+    <div class="pt">จุดเด่น: <span class="hl">In-place Sort</span> — ไม่ต้องใช้ Memory สำรองเยอะ (ใช้แค่ Call Stack) และมักจะเร็วที่สุดในทางปฏิบัติ</div>
+  </div>
+
+  <div class="viz-wrap">
+    <div class="step-phase">Quick Sort Partitioning</div>
+    <div class="controls">
+      <button class="btn btn-primary" onclick="qsReset()">↺ Reset</button>
+      <button class="btn" id="qs-prev" onclick="qsPrev()" disabled>← Prev</button>
+      <button class="btn" id="qs-next" onclick="qsNext()">Next →</button>
+      <button class="btn btn-green" id="qs-auto" onclick="qsAuto()">▶ Auto Play</button>
+    </div>
+    <div class="pointer-row" id="qs-pointers"></div>
+    <div class="array-row" id="qs-array"></div>
+    <div class="step-info" id="qs-info">
+      <div class="step-phase" id="qs-phase">READY</div>
+      <div class="step-msg" id="qs-msg">กด Next เพื่อดูการทำงานของ Partition รอบ Pivot</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">Complexity Analysis</span>
+    <div class="compare-row">
+      <div class="compare-card good">
+        <div class="compare-title">Avg Case: O(n log n)</div>
+        <div class="compare-body">
+          ถ้าเลือก pivot ได้ดี (แบ่งสองฝั่งได้พอๆ กัน) จะเร็วมาก และใช้พื้นที่น้อย O(log n)
+        </div>
+      </div>
+      <div class="compare-card bad">
+        <div class="compare-title">Worst Case: O(n²)</div>
+        <div class="compare-body">
+          ถ้าเลือก pivot ได้แย่ที่สุด (ได้ตัว min หรือ max ทุกรอบ) เช่น array เรียงอยู่แล้วแต่เลือก pivot ตัวแรก
+        </div>
+      </div>
+    </div>
+    <div class="pt" style="margin-top:.5rem">Quick Sort <span class="hl">ไม่ใช่ Stable Sort</span> (ลำดับค่าที่เท่ากันอาจเปลี่ยนไป)</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- CH4: Comparison -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--amber-bg);color:var(--amber-text)">4</div>
+    <div class="ch-title">เปรียบเทียบ Sorting Algorithms ทั้งหมด</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ตารางสรุปประสิทธิภาพ (ออกสอบชัวร์!)</span>
+    <table class="tbl">
+      <tr><th>Algorithm</th><th>Best Case</th><th>Avg/Worst</th><th>Space</th><th>Stable</th></tr>
+      <tr><td>Bubble / Insertion</td><td class="best">Ω(n)</td><td class="worst">O(n²)</td><td class="best">O(1)</td><td class="best">Yes</td></tr>
+      <tr><td>Selection Sort</td><td class="worst">Ω(n²)</td><td class="worst">O(n²)</td><td class="best">O(1)</td><td class="worst">No</td></tr>
+      <tr><td><strong>Merge Sort</strong></td><td class="best">Ω(n log n)</td><td class="best">O(n log n)</td><td class="worst">O(n)</td><td class="best">Yes</td></tr>
+      <tr><td><strong>Quick Sort</strong></td><td class="best">Ω(n log n)</td><td class="mid">O(n log n) / O(n²)</td><td class="mid">O(log n)</td><td class="worst">No</td></tr>
+    </table>
+    <div class="eg">
+      จำง่ายๆ: <br>
+      - <span class="hl">O(n²)</span>: Bubble, Selection, Insertion (ช้า แต่ใช้ง่าย ใช้ memory น้อย)<br>
+      - <span class="hl">O(n log n)</span>: Merge, Quick (เร็วมาก เหมาะกับข้อมูลปริมาณมหาศาล)
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- QUIZ -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--red-bg);color:var(--red-text)">Q</div>
+    <div class="ch-title">Mini Quiz — ทดสอบความเข้าใจ</div>
+  </div>
+  <div class="quiz-wrap" id="quiz"></div>
+</div>
+
+</div>
+
+<script>
+/* ══════════════════════════════════════════
+   MERGE SORT VISUALIZER LOGIC
+══════════════════════════════════════════ */
+const MS_ORIG = [85, 24, 63, 45, 17, 31, 96, 50];
+let msCur = 0, msSteps = [], msTimer = null;
+
+function generateMergeSteps(arr) {
+  const steps = [];
+  let working = [...arr];
+  steps.push({ phase: 'START', msg: 'ข้อมูลตั้งต้นก่อนการแบ่งส่วน', arr: [...working], sorted: [] });
+
+  const sortedIdx = new Set();
+  const pairs = [[0,1],[2,3],[4,5],[6,7]];
+  for (const [i,j] of pairs) {
+    steps.push({ phase: 'DIVIDE', msg: `เปรียบเทียบคู่ A[${i}]=${working[i]} กับ A[${j}]=${working[j]}`, arr: [...working], highlights: [i,j], sorted: [...sortedIdx] });
+    if (working[i] > working[j]) {
+      [working[i], working[j]] = [working[j], working[i]];
+      steps.push({ phase: 'SWAP', msg: `${working[j]} > ${working[i]}: สลับที่ให้เรียงลำดับ`, arr: [...working], swapping: [i,j], sorted: [...sortedIdx] });
+    }
+    sortedIdx.add(i); sortedIdx.add(j);
+  }
+
+  function merge(arr, l, m, r) {
+    const left = arr.slice(l, m+1), right = arr.slice(m+1, r+1);
+    steps.push({ phase: 'MERGE', msg: `กำลังรวมส่วนที่เรียงแล้ว: [${left}] กับ [${right}]`, arr: [...arr], highlights: Array.from({length:r-l+1},(_,i)=>l+i), sorted: [...sortedIdx] });
+    let i=0, j=0, k=l;
+    while(i<left.length && j<right.length) {
+      if(left[i]<=right[j]) arr[k++] = left[i++];
+      else arr[k++] = right[j++];
+    }
+    while(i<left.length) arr[k++] = left[i++];
+    while(j<right.length) arr[k++] = right[j++];
+    for(let x=l;x<=r;x++) sortedIdx.add(x);
+    steps.push({ phase: 'COMBINE', msg: `รวมและเรียงลำดับสำเร็จ: [${arr.slice(l,r+1)}]`, arr: [...arr], sorted: [...sortedIdx] });
+  }
+
+  let temp = [...working];
+  merge(temp, 0, 1, 3);
+  merge(temp, 4, 5, 7);
+  merge(temp, 0, 3, 7);
+  steps.push({ phase: 'FINISH', msg: 'เรียงลำดับเสร็จสิ้นทุกระดับ!', arr: [...temp], sorted: [0,1,2,3,4,5,6,7] });
+  return steps;
+}
+
+function msRender() {
+  const s = msSteps[msCur];
+  const sorted = new Set(s.sorted || []);
+  const highlights = new Set(s.highlights || []);
+  const swapping = new Set(s.swapping || []);
+
+  document.getElementById('ms-array').innerHTML = s.arr.map((v, i) => {
+    let cls = 'cell';
+    if (sorted.has(i)) cls += ' sorted';
+    else if (swapping.has(i)) cls += ' swapping';
+    else if (highlights.has(i)) cls += ' active';
+    return `<div class="${cls}">${v}</div>`;
+  }).join('');
+
+  document.getElementById('ms-phase').textContent = s.phase;
+  document.getElementById('ms-msg').textContent = s.msg;
+  document.getElementById('ms-prev').disabled = msCur === 0;
+  document.getElementById('ms-next').disabled = msCur === msSteps.length - 1;
+}
+
+function msNext() { if(msCur < msSteps.length-1) { msCur++; msRender(); } }
+function msPrev() { if(msCur > 0) { msCur--; msRender(); } }
+function msReset() { 
+  const btn = document.getElementById('ms-auto');
+  clearInterval(msTimer); 
+  msTimer = null; 
+  btn.textContent = '▶ Auto Play';
+  msCur = 0; 
+  msRender(); 
+}
+function msAuto() {
+  const btn = document.getElementById('ms-auto');
+  if(msTimer) { 
+    clearInterval(msTimer); 
+    msTimer = null; 
+    btn.textContent = '▶ Auto Play'; 
+    return; 
+  }
+  btn.textContent = '⏸ Pause';
+  msTimer = setInterval(() => {
+    if(msCur < msSteps.length-1) msNext(); 
+    else { 
+      clearInterval(msTimer); 
+      msTimer = null; 
+      btn.textContent = '▶ Auto Play'; 
+    }
+  }, 1000);
+}
+
+msSteps = generateMergeSteps(MS_ORIG);
+msRender();
+
+/* ══════════════════════════════════════════
+   QUICK SORT VISUALIZER LOGIC
+══════════════════════════════════════════ */
+const QS_ORIG = [45, 23, 87, 12, 72, 4, 54, 32, 52];
+let qsCur = 0, qsSteps = [], qsTimer = null;
+
+function generateQSSteps(arr) {
+  const steps = [];
+  let working = [...arr];
+  const sorted = new Set();
+
+  function partition(A, lo, hi) {
+    const pVal = A[lo];
+    let j = lo + 1, k = hi;
+    steps.push({ phase: 'PIVOT', msg: `เลือก Pivot = ${pVal} (ตัวแรกสุด)`, arr: [...A], pivot: lo, j, k, sorted: [...sorted] });
+
+    while(j <= k) {
+      while(j <= hi && A[j] < pVal) {
+        steps.push({ phase: 'SCAN', msg: `A[${j}]=${A[j]} < Pivot: เลื่อน j ไปขวา`, arr: [...A], pivot: lo, j, k, sorted: [...sorted] });
+        j++;
+      }
+      while(k > lo && A[k] > pVal) {
+        steps.push({ phase: 'SCAN', msg: `A[${k}]=${A[k]} > Pivot: เลื่อน k ไปซ้าย`, arr: [...A], pivot: lo, j, k, sorted: [...sorted] });
+        k--;
+      }
+      if(j < k) {
+        steps.push({ phase: 'SWAP', msg: `สลับ A[j]=${A[j]} กับ A[k]=${A[k]}`, arr: [...A], pivot: lo, j, k, swapping: [j,k], sorted: [...sorted] });
+        [A[j], A[k]] = [A[k], A[j]];
+        j++; k--;
+      } else break;
+    }
+    steps.push({ phase: 'PARTITION', msg: `สลับ Pivot กับ A[k]=${A[k]} เพื่อจบ partition`, arr: [...A], pivot: lo, swapping: [lo, k], sorted: [...sorted] });
+    [A[lo], A[k]] = [A[k], A[lo]];
+    sorted.add(k);
+    steps.push({ phase: 'DONE', msg: `Pivot อยู่ในที่ที่ถูกต้องแล้ว ทุกตัวทางซ้ายน้อยกว่า pivot`, arr: [...A], sorted: [...sorted] });
+    return k;
+  }
+
+  partition([...working], 0, 8);
+  steps.push({ phase: 'END', msg: 'การทำ Partition หนึ่งรอบเสร็จสิ้น (ในโปรแกรมจริงจะทำ Recursion ต่อ)', arr: [...working], sorted: [...sorted] });
+  return steps;
+}
+
+function qsRender() {
+  const s = qsSteps[qsCur];
+  const sorted = new Set(s.sorted || []);
+  const swapping = new Set(s.swapping || []);
+
+  document.getElementById('qs-pointers').innerHTML = s.arr.map((_, i) => {
+    let label = '';
+    if(s.pivot === i) label = 'P';
+    if(s.j === i) label += 'j';
+    if(s.k === i) label += 'k';
+    return `<div class="ptr ${s.j===i?'j':''} ${s.k===i?'k':''}">${label}</div>`;
+  }).join('');
+
+  document.getElementById('qs-array').innerHTML = s.arr.map((v, i) => {
+    let cls = 'cell';
+    if (sorted.has(i)) cls += ' sorted';
+    else if (swapping.has(i)) cls += ' swapping';
+    else if (s.pivot === i) cls += ' pivot';
+    else if (s.j === i || s.k === i) cls += ' comparing';
+    return `<div class="${cls}">${v}</div>`;
+  }).join('');
+
+  document.getElementById('qs-phase').textContent = s.phase;
+  document.getElementById('qs-msg').textContent = s.msg;
+  document.getElementById('qs-prev').disabled = qsCur === 0;
+  document.getElementById('qs-next').disabled = qsCur === qsSteps.length - 1;
+}
+
+function qsNext() { if(qsCur < qsSteps.length-1) { qsCur++; qsRender(); } }
+function qsPrev() { if(qsCur > 0) { qsCur--; qsRender(); } }
+function qsReset() { 
+  const btn = document.getElementById('qs-auto');
+  clearInterval(qsTimer); 
+  qsTimer = null; 
+  btn.textContent = '▶ Auto Play';
+  qsCur = 0; 
+  qsRender(); 
+}
+function qsAuto() {
+  const btn = document.getElementById('qs-auto');
+  if(qsTimer) { 
+    clearInterval(qsTimer); 
+    qsTimer = null; 
+    btn.textContent = '▶ Auto Play'; 
+    return; 
+  }
+  btn.textContent = '⏸ Pause';
+  qsTimer = setInterval(() => {
+    if(qsCur < qsSteps.length-1) qsNext(); 
+    else { 
+      clearInterval(qsTimer); 
+      qsTimer = null; 
+      btn.textContent = '▶ Auto Play'; 
+    }
+  }, 1000);
+}
+
+qsSteps = generateQSSteps(QS_ORIG);
+qsRender();
+
+/* ══════════════════════════════════════════
+   QUIZ LOGIC
+══════════════════════════════════════════ */
+const QS_DATA = [
+  {
+    q: "Merge Sort ใช้พื้นที่หน่วยความจำเพิ่มเติม (Auxiliary Space) เท่าใด?",
+    opts: ["O(1) - ไม่ใช้เลย", "O(log n) - ตามความสูงต้นไม้", "O(n) - ตามจำนวนข้อมูล", "O(n²)"],
+    ans: 2,
+    explain: "Merge Sort ต้องสร้าง array ใหม่เพื่อเก็บผลการรวมข้อมูลในแต่ละรอบ ทำให้ต้องใช้พื้นที่เพิ่มขึ้นเป็นสัดส่วนเดียวกับจำนวนข้อมูล"
+  },
+  {
+    q: "ในกรณีที่ข้อมูลเรียงลำดับอยู่แล้ว และเลือก Pivot เป็นตัวแรกเสมอ Quick Sort จะมีประสิทธิภาพเท่าใด?",
+    opts: ["O(n log n)", "O(n)", "O(n²)", "O(log n)"],
+    ans: 2,
+    explain: "นี่คือ Worst Case ของ Quick Sort เพราะ pivot จะแบ่งข้อมูลได้ไม่สมดุลที่สุด (ฝั่งหนึ่งว่าง ฝั่งหนึ่งเกือบเต็ม) ทำให้ต้นไม้สูงขึ้นเป็น n"
+  },
+  {
+    q: "Algorithm ใดที่รับประกันประสิทธิภาพ O(n log n) ในทุกกรณี (Best/Avg/Worst)?",
+    opts: ["Bubble Sort", "Quick Sort", "Merge Sort", "Insertion Sort"],
+    ans: 2,
+    explain: "Merge Sort มีการแบ่งครึ่งที่แน่นอนเสมอ ไม่ว่าข้อมูลจะเรียงมาอย่างไร จึงได้ประสิทธิภาพที่คงที่แน่นอน"
+  }
+];
+
+let cur = 0, done = [];
+function renderQuiz() {
+  const q = QS_DATA[cur], a = done[cur];
+  const answered = done.filter(x => x !== undefined).length;
+  const pct = Math.round((answered / QS_DATA.length) * 100);
+  const allDone = answered === QS_DATA.length;
+
+  let scoreHtml = '';
+  if (allDone) {
+    const correct = QS_DATA.filter((q, i) => done[i] === q.ans).length;
+    scoreHtml = `<div class="score-card"><div class="score-num">${correct} / ${QS_DATA.length}</div><div class="score-label">${correct === QS_DATA.length ? 'ยอดเยี่ยม!' : 'พยายามได้ดี!'}</div></div>`;
+  }
+
+  document.getElementById('quiz').innerHTML = `
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <div class="qnum">ข้อ ${cur + 1} จาก ${QS_DATA.length}</div>
+    <div class="qtxt">${q.q}</div>
+    <div class="qopts">
+      ${q.opts.map((o, i) => {
+        let cls = 'qopt';
+        if (a !== undefined) {
+          if (i === q.ans) cls += ' correct';
+          else if (i === a && a !== q.ans) cls += ' wrong';
+        }
+        return `<button class="${cls}" ${a !== undefined ? 'disabled' : ''} onclick="pick(${i})">${String.fromCharCode(65+i)}. ${o}</button>`;
+      }).join('')}
+    </div>
+    <div class="qfb ${a === undefined ? '' : (a === q.ans ? 'ok' : 'no')}">
+      ${a === undefined ? '' : (a === q.ans ? '✓ ' : '✗ ') + q.explain}
+    </div>
+    ${scoreHtml}
+    <div class="qnav">
+      <button class="qbtn" ${cur===0?'disabled':''} onclick="go(-1)">← Prev</button>
+      <button class="qbtn" ${cur===QS_DATA.length-1?'disabled':''} onclick="go(1)">Next →</button>
+    </div>
+  `;
+}
+function pick(i) { if (done[cur] === undefined) { done[cur] = i; renderQuiz(); } }
+function go(d) { cur += d; renderQuiz(); }
+renderQuiz();
+</script>
+</body>
+</html>
