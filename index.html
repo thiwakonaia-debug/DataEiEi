@@ -21,7 +21,7 @@
       --amber-bg: #FAEEDA; --amber-text: #633806;
       --green-bg: #EAF3DE; --green-text: #27500A;
       --red-bg: #FCEBEB; --red-text: #A32D2D;
-      --accent: #1D9E75;
+      --accent: #085041;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Sarabun', sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; font-size: 15px; padding: 2rem; }
@@ -31,10 +31,13 @@
     h1 { font-size: 26px; font-weight: 600; color: var(--text); margin-bottom: .35rem; }
     .subtitle { font-size: 14px; color: var(--text-3); }
     .container { max-width: 760px; margin: 0 auto; padding: 0 1.5rem 4rem; }
-    ul { list-style: none; padding: 0; }
-    li { margin: 0.5rem 0; }
-    a { color: var(--accent); text-decoration: none; font-weight: 600; }
-    a:hover { text-decoration: underline; }
+    .lecture-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-top: 1rem; }
+    .lecture-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: 12px; padding: 1rem 1.2rem; text-align: center; transition: transform 0.1s ease, box-shadow 0.1s ease; }
+    .lecture-card:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    .lecture-card a { color: var(--accent); text-decoration: none; font-weight: 600; display: block; }
+    .lecture-card a:hover { text-decoration: underline; }
+    .lecture-number { display: inline-block; background: var(--teal-bg); color: var(--teal-text); width: 26px; height: 26px; line-height: 26px; border-radius: 50%; margin-right: 0.5rem; font-weight: 600; }
+    .footer { text-align: center; font-size: 13px; color: var(--text-2); margin-top: 2rem; }
   </style>
 </head>
 <body>
@@ -46,14 +49,15 @@
     </div>
   </div>
   <div class="container">
-    <ul>
-      <li><a href="Lec1.html">Lecture 1 – Tree คืออะไร (พื้นฐาน)</a></li>
-      <li><a href="Lec2.html">Lecture 2 – Binary Tree &amp; BST พื้นฐาน</a></li>
-      <li><a href="Lec3.html">Lecture 3 – Hashing &amp; Hash Table</a></li>
-      <li><a href="Lec4.html">Lecture 4 – Graph Traversal</a></li>
-      <li><a href="Lec5.html">Lecture 5 – Shortest Path &amp; MST</a></li>
-      <li><a href="Lec6.html">Lecture 6 – Bubble, Selection, Insertion Sorts</a></li>
-    </ul>
+    <div class="lecture-grid">
+      <div class="lecture-card"><span class="lecture-number">1</span><a href="Lec1.html">Lecture 1 – Tree คืออะไร (พื้นฐาน)</a></div>
+      <div class="lecture-card"><span class="lecture-number">2</span><a href="Lec2.html">Lecture 2 – Binary Tree &amp; BST พื้นฐาน</a></div>
+      <div class="lecture-card"><span class="lecture-number">3</span><a href="Lec3.html">Lecture 3 – Hashing &amp; Hash Table</a></div>
+      <div class="lecture-card"><span class="lecture-number">4</span><a href="Lec4.html">Lecture 4 – Graph Traversal</a></div>
+      <div class="lecture-card"><span class="lecture-number">5</span><a href="Lec5.html">Lecture 5 – Shortest Path &amp; MST</a></div>
+      <div class="lecture-card"><span class="lecture-number">6</span><a href="Lec6.html">Lecture 6 – Bubble, Selection, Insertion Sorts</a></div>
+    </div>
   </div>
+  <div class="footer">Created by Thiwakon aiamsamram</div>
 </body>
 </html>
