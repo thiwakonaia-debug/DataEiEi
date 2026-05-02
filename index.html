@@ -180,19 +180,28 @@
   <div class="footer">Created by Thiwakon aiamsamram</div>
 
   <script>
-    // Entrance animation
-    window.addEventListener('DOMContentLoaded', () => {
-      document.body.classList.add('loaded');
+    // Entrance animation (handles both initial load and back button)
+    window.addEventListener('pageshow', (event) => {
+      // Reset body state
+      document.body.classList.remove('page-exit');
+      
+      // Small delay to ensure browser has rendered before fading in
+      setTimeout(() => {
+        document.body.classList.add('loaded');
+      }, 10);
     });
 
     // Exit animation on click
     document.querySelectorAll('.lecture-card').forEach(card => {
       card.addEventListener('click', function(e) {
-        e.preventDefault();
         const targetUrl = this.getAttribute('href');
+        if (!targetUrl) return;
+
+        e.preventDefault();
         
         // Add exit class to body
         document.body.classList.add('page-exit');
+        document.body.classList.remove('loaded');
         
         // Navigate after animation finish
         setTimeout(() => {
