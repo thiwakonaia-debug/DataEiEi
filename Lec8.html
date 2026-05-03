@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>สรุป Selection — ITDS 122</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #f8f7f4;
+    --surface: #ffffff;
+    --border: rgba(0,0,0,0.1);
+    --border-strong: rgba(0,0,0,0.2);
+    --text: #1a1a1a;
+    --text-2: #555;
+    --text-3: #888;
+    --purple-bg: #EEEDFE; --purple-text: #3C3489;
+    --teal-bg:   #E1F5EE; --teal-text:   #085041;
+    --coral-bg:  #FAECE7; --coral-text:  #712B13;
+    --blue-bg:   #E6F1FB; --blue-text:   #0C447C;
+    --amber-bg:  #FAEEDA; --amber-text:  #633806;
+    --green-bg:  #EAF3DE; --green-text:  #27500A;
+    --red-bg:    #FCEBEB; --red-text:    #A32D2D;
+    --accent: #1D9E75;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 15px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.5s cubic-bezier(0.4,0,0.2,1), transform 0.5s cubic-bezier(0.4,0,0.2,1);
+  }
+  body.loaded { opacity: 1; transform: translateY(0); }
+  .page-exit  { opacity: 0 !important; transform: translateY(-10px) !important; pointer-events: none; }
+
+  /* ── header ── */
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    text-decoration: none; color: var(--text-3);
+    font-size: 13px; font-weight: 500; margin-bottom: 1rem; transition: color .2s;
+  }
+  .back-btn:hover { color: var(--text); }
+
+  .header {
+    background: var(--surface);
+    border-bottom: 0.5px solid var(--border);
+    padding: 2rem 0; margin-bottom: 2rem; text-align: center;
+  }
+  .header-inner { max-width: 760px; margin: 0 auto; padding: 0 1.5rem; }
+  .header-tag {
+    display: inline-block; background: var(--coral-bg); color: var(--coral-text);
+    font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px;
+    letter-spacing: .06em; text-transform: uppercase; margin-bottom: .75rem;
+  }
+  h1 { font-size: 26px; font-weight: 600; color: var(--text); margin-bottom: .35rem; }
+  .subtitle { font-size: 14px; color: var(--text-3); }
+
+  /* ── layout ── */
+  .container { max-width: 760px; margin: 0 auto; padding: 0 1.5rem 4rem; }
+  .chapter   { margin-bottom: 2.5rem; }
+  .ch-header { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; }
+  .ch-num {
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600; flex-shrink: 0;
+  }
+  .ch-title { font-size: 17px; font-weight: 600; color: var(--text); }
+
+  /* ── card ── */
+  .card {
+    background: var(--surface); border: 0.5px solid var(--border);
+    border-radius: 12px; padding: 1.1rem 1.3rem; margin-bottom: .75rem;
+  }
+
+  /* ── badge ── */
+  .badge {
+    display: inline-block; font-size: 11px; font-weight: 600;
+    padding: 2px 9px; border-radius: 20px; margin-bottom: .6rem; margin-right: 4px;
+  }
+  .b-exam { background: var(--coral-bg);  color: var(--coral-text); }
+  .b-code { background: var(--green-bg);  color: var(--green-text); }
+  .b-tip  { background: var(--purple-bg); color: var(--purple-text); }
+  .b-warn { background: var(--amber-bg);  color: var(--amber-text); }
+  .b-info { background: var(--blue-bg);   color: var(--blue-text); }
+
+  /* ── bullet point ── */
+  .pt {
+    font-size: 14px; color: var(--text-2); line-height: 1.75;
+    margin-bottom: .4rem; padding-left: 1rem; position: relative;
+  }
+  .pt::before { content: "—"; position: absolute; left: 0; color: var(--text-3); }
+  .hl { color: var(--text); font-weight: 600; }
+
+  /* ── example box ── */
+  .eg {
+    background: var(--bg); border-left: 3px solid #378ADD;
+    border-radius: 0 8px 8px 0; padding: .75rem 1rem;
+    margin: .75rem 0; font-size: 13px; color: var(--text-2); line-height: 1.75;
+  }
+
+  /* ── code ── */
+  .code-block {
+    background: #1e1e2e; border-radius: 8px; padding: .85rem 1rem;
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #cdd6f4;
+    line-height: 1.9; margin: .75rem 0; overflow-x: auto;
+  }
+  .kw  { color: #89b4fa; }
+  .fn  { color: #a6e3a1; }
+  .cm  { color: #6c7086; }
+  .st  { color: #f38ba8; }
+  .num { color: #fab387; }
+
+  /* ── grids ── */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: .65rem; margin: .75rem 0; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .65rem; margin: .75rem 0; }
+  .mini-card {
+    background: var(--bg); border-radius: 8px; padding: .7rem .9rem; border: 0.5px solid var(--border);
+  }
+  .mini-title { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: .25rem; }
+  .mini-body  { font-size: 12px; color: var(--text-2); line-height: 1.6; }
+
+  /* ── compare cards ── */
+  .compare-row { display: grid; grid-template-columns: 1fr 1fr; gap: .65rem; margin: .75rem 0; }
+  .compare-card { border-radius: 8px; padding: .75rem 1rem; }
+  .compare-card.bad     { background: var(--red-bg);    border: 0.5px solid #F09595; }
+  .compare-card.good    { background: var(--green-bg);  border: 0.5px solid #97C459; }
+  .compare-card.neutral { background: var(--blue-bg);   border: 0.5px solid #82B8E8; }
+  .compare-card.amber   { background: var(--amber-bg);  border: 0.5px solid #E5C06A; }
+  .compare-card.purple  { background: var(--purple-bg); border: 0.5px solid #A9A3F0; }
+  .compare-title { font-size: 12px; font-weight: 600; margin-bottom: .35rem; }
+  .compare-card.bad     .compare-title { color: var(--red-text); }
+  .compare-card.good    .compare-title { color: var(--green-text); }
+  .compare-card.neutral .compare-title { color: var(--blue-text); }
+  .compare-card.amber   .compare-title { color: var(--amber-text); }
+  .compare-card.purple  .compare-title { color: var(--purple-text); }
+  .compare-body { font-size: 12px; color: var(--text-2); line-height: 1.65; }
+
+  .divider { height: 0.5px; background: var(--border); margin: 2rem 0; }
+
+  /* ── table ── */
+  .tbl { width: 100%; border-collapse: collapse; font-size: 13px; margin: .75rem 0; }
+  .tbl th {
+    background: var(--bg); color: var(--text); font-weight: 600;
+    padding: 8px 12px; border: 0.5px solid var(--border); text-align: left;
+  }
+  .tbl td {
+    padding: 7px 12px; border: 0.5px solid var(--border);
+    color: var(--text-2); background: var(--surface);
+  }
+  .tbl tr:hover td { background: var(--bg); }
+  .tbl .best  { color: var(--green-text); font-weight: 600; }
+  .tbl .worst { color: var(--red-text);   font-weight: 600; }
+  .tbl .mid   { color: var(--amber-text); font-weight: 600; }
+
+  /* ════════════════════════════════════════
+     VISUALIZER
+  ════════════════════════════════════════ */
+  .viz-wrap {
+    background: var(--surface); border: 0.5px solid var(--border);
+    border-radius: 12px; padding: 1.3rem; margin: 1rem 0;
+  }
+  .controls {
+    display: flex; align-items: center; gap: .5rem;
+    flex-wrap: wrap; margin-bottom: 1rem;
+  }
+  .btn {
+    font-family: 'Sarabun', sans-serif; font-size: 12px; font-weight: 600;
+    padding: 6px 14px; border-radius: 8px; border: 0.5px solid var(--border-strong);
+    background: var(--bg); color: var(--text); cursor: pointer; transition: all .15s;
+  }
+  .btn:hover:not(:disabled) { background: var(--surface); border-color: var(--accent); }
+  .btn:disabled { opacity: .4; cursor: default; }
+  .btn-primary { background: var(--coral-bg);  color: var(--coral-text);  border-color: #F09595; }
+  .btn-green   { background: var(--green-bg);  color: var(--green-text);  border-color: #97C459; }
+  .btn-amber   { background: var(--amber-bg);  color: var(--amber-text);  border-color: #E5C06A; }
+
+  /* array display */
+  .array-row {
+    display: flex; align-items: flex-end; gap: 4px;
+    min-height: 50px; flex-wrap: wrap; margin-bottom: .8rem;
+  }
+  .cell {
+    width: 42px; height: 42px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 6px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600;
+    border: 1.5px solid var(--border-strong);
+    background: var(--surface); color: var(--text);
+    transition: all .3s cubic-bezier(.34,1.56,.64,1);
+    position: relative;
+  }
+  .cell.pivot    { background: var(--amber-bg);  border-color: #E5C06A; color: var(--amber-text); transform: scale(1.1); z-index:2; }
+  .cell.less     { background: var(--green-bg);  border-color: #97C459; color: var(--green-text); }
+  .cell.greater  { background: var(--red-bg);    border-color: #F09595; color: var(--red-text); }
+  .cell.equal    { background: var(--blue-bg);   border-color: #82B8E8; color: var(--blue-text); }
+  .cell.result   { background: var(--teal-bg);   border-color: #5DCAA5; color: var(--teal-text); transform: scale(1.15); z-index:3; }
+  .cell.dimmed   { opacity: .35; }
+  .cell.scanning { background: var(--purple-bg); border-color: #A9A3F0; color: var(--purple-text); }
+
+  /* group labels row */
+  .group-label-row {
+    display: flex; gap: 4px; flex-wrap: wrap;
+    min-height: 18px; margin-bottom: 4px;
+  }
+  .glabel {
+    width: 42px; text-align: center;
+    font-family: 'IBM Plex Mono', monospace; font-size: 9px; font-weight: 600;
+    color: var(--text-3); transition: color .3s;
+  }
+  .glabel.less    { color: var(--green-text); }
+  .glabel.greater { color: var(--red-text);   }
+  .glabel.equal   { color: var(--blue-text);  }
+  .glabel.pivot   { color: var(--amber-text); }
+  .glabel.result  { color: var(--teal-text);  }
+
+  /* k input */
+  .k-row {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: .85rem; flex-wrap: wrap;
+  }
+  .k-label { font-size: 13px; font-weight: 600; color: var(--text-2); }
+  .k-input {
+    width: 58px; padding: 5px 8px;
+    border: 0.5px solid var(--border-strong); border-radius: 7px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 14px;
+    color: var(--text); background: var(--bg); outline: none;
+    text-align: center;
+  }
+  .k-input:focus { border-color: var(--accent); }
+
+  /* step info box */
+  .step-info {
+    background: var(--bg); border-radius: 8px; padding: .75rem 1rem;
+    font-size: 13px; color: var(--text-2); line-height: 1.6; min-height: 54px;
+    border: 0.5px solid var(--border);
+  }
+  .step-phase {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 600;
+    color: var(--accent); text-transform: uppercase; margin-bottom: 2px;
+  }
+
+  /* groups summary strip */
+  .groups-strip {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: .5rem; margin: .75rem 0;
+  }
+  .gs-box {
+    border-radius: 8px; padding: .55rem .75rem; text-align: center;
+    border: 0.5px solid var(--border);
+  }
+  .gs-box.less    { background: var(--green-bg);  border-color: #97C459; }
+  .gs-box.equal   { background: var(--blue-bg);   border-color: #82B8E8; }
+  .gs-box.greater { background: var(--red-bg);    border-color: #F09595; }
+  .gs-title { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 2px; }
+  .gs-box.less    .gs-title { color: var(--green-text); }
+  .gs-box.equal   .gs-title { color: var(--blue-text);  }
+  .gs-box.greater .gs-title { color: var(--red-text);   }
+  .gs-nums { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-2); }
+  .gs-count { font-size: 10px; color: var(--text-3); }
+
+  /* decision highlight */
+  .decision-box {
+    background: var(--amber-bg); border: 0.5px solid #E5C06A;
+    border-radius: 8px; padding: .55rem .9rem; margin-top: .5rem;
+    font-size: 13px; font-weight: 600; color: var(--amber-text);
+    display: none;
+  }
+  .decision-box.show { display: block; }
+
+  /* ── QUIZ ── */
+  .quiz-wrap {
+    background: var(--surface); border: 0.5px solid var(--border);
+    border-radius: 12px; padding: 1.3rem;
+  }
+  .progress-bar { height: 3px; background: var(--bg); border-radius: 2px; margin-bottom: 1rem; overflow: hidden; border: 0.5px solid var(--border); }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width .4s ease; }
+  .qnum  { font-size: 11px; font-weight: 600; color: var(--text-3); margin-bottom: .5rem; letter-spacing: .04em; text-transform: uppercase; }
+  .qtxt  { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: .85rem; line-height: 1.65; white-space: pre-line; }
+  .qopts { display: flex; flex-direction: column; gap: 7px; margin-bottom: .85rem; }
+  .qopt  {
+    text-align: left; background: var(--bg); border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 9px 13px; font-size: 13px;
+    font-family: 'Sarabun', sans-serif; color: var(--text); cursor: pointer;
+    line-height: 1.55; transition: border-color .15s, background .15s;
+  }
+  .qopt:hover:not(:disabled) { border-color: var(--border-strong); background: var(--surface); }
+  .qopt.correct { background: var(--green-bg); border-color: #97C459; color: var(--green-text); }
+  .qopt.wrong   { background: var(--red-bg);   border-color: #F09595; color: var(--red-text);   }
+  .qfb { font-size: 13px; min-height: 18px; line-height: 1.65; padding: .1rem 0; }
+  .qfb.ok { color: var(--green-text); }
+  .qfb.no { color: var(--red-text);   }
+  .qnav {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 1.1rem; padding-top: 1rem; border-top: 0.5px solid var(--border);
+  }
+  .qbtn {
+    font-size: 13px; font-family: 'Sarabun', sans-serif; background: transparent;
+    border: 0.5px solid var(--border-strong); border-radius: 7px;
+    padding: 6px 16px; color: var(--text); cursor: pointer; transition: background .15s;
+  }
+  .qbtn:hover:not(:disabled) { background: var(--bg); }
+  .qbtn:disabled { opacity: .3; cursor: default; }
+  .qctr { font-size: 12px; color: var(--text-3); }
+  .score-card {
+    background: var(--teal-bg); border: 0.5px solid #5DCAA5;
+    border-radius: 10px; padding: 1rem 1.25rem; text-align: center; margin-top: 1rem;
+  }
+  .score-num   { font-size: 32px; font-weight: 600; color: var(--teal-text); }
+  .score-label { font-size: 13px; color: #085041; margin-top: .25rem; }
+
+  @media (max-width: 540px) {
+    .grid2, .compare-row, .grid3, .groups-strip { grid-template-columns: 1fr; }
+    h1 { font-size: 21px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═════════════ HEADER ═════════════ -->
+<div class="header">
+  <div class="header-inner">
+    <a href="index.html" class="back-btn">← กลับหน้าหลัก</a>
+    <div class="header-tag">ITDS 122 — Data Structures</div>
+    <h1>สรุป Selection (การเลือก) ฉบับละเอียด</h1>
+    <div class="subtitle">Lecture 15 · Prune-and-Search · Randomized Quick Select · มี Interactive Visualizer & Quiz</div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ════════════════════════════════════
+     CH1 — ภาพรวมปัญหา
+════════════════════════════════════ -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--coral-bg);color:var(--coral-text)">1</div>
+    <div class="ch-title">Selection Problem (ปัญหาการเลือก) คืออะไร?</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">concept</span>
+    <div class="pt"><span class="hl">Selection</span> คือการหาข้อมูล <span class="hl">อันดับที่ k</span> จากข้อมูลที่ยังไม่ได้เรียงลำดับ (Unsorted)</div>
+    <div class="pt">เช่น ต้องการรู้ว่า "คะแนนสอบสูงสุดอันดับ 3" หรือ "ราคา median" คือเท่าใด โดยไม่ต้องเรียงลำดับข้อมูลทั้งหมดก่อน</div>
+    <div class="pt">k=1 คือค่าน้อยสุด, k=n คือค่ามากสุด, k=⌊n/2⌋ คือ median</div>
+    <div class="eg">
+      อุปมา: สมมติมีนักเรียน 30 คนถือตั๋วหมายเลขสุ่มไว้ เราต้องการรู้ว่าคนถือหมายเลขอันดับที่ 10 คือใคร<br>
+      วิธีง่าย: เรียงทุกคน → ดูคนที่ 10 — แต่ใช้เวลามาก!<br>
+      วิธีฉลาด: แบ่งกลุ่มด้วยตัวกลาง → ตัดกลุ่มที่ไม่ใช่คำตอบออก → ทำซ้ำในกลุ่มที่เหลือ
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">เปรียบประสิทธิภาพ</span>
+    <div class="compare-row">
+      <div class="compare-card bad">
+        <div class="compare-title">❌ วิธีซื่อ — Sort แล้วเข้าถึง</div>
+        <div class="compare-body">Sort ข้อมูลทั้งหมดก่อน แล้วจึงดูค่าที่ตำแหน่ง k<br><br><strong>Time: O(n log n)</strong><br>ทำงานมากเกินความจำเป็น เพราะ Sort ข้อมูลทั้งหมดทั้งที่ต้องการแค่ตัวเดียว</div>
+      </div>
+      <div class="compare-card good">
+        <div class="compare-title">✅ วิธีฉลาด — Quick Select</div>
+        <div class="compare-body">ใช้เทคนิค Prune-and-Search ตัดข้อมูลที่ไม่ต้องการออกทีละรอบ<br><br><strong>Time: O(n) expected</strong><br>เร็วกว่ามาก โดยไม่จำเป็นต้อง sort ทั้งหมดเลย</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════════════════
+     CH2 — Prune-and-Search
+════════════════════════════════════ -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--purple-bg);color:var(--purple-text)">2</div>
+    <div class="ch-title">Prune-and-Search — เทคนิคสำคัญ</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">concept</span>
+    <div class="pt"><span class="hl">Prune-and-Search</span> (หรือ Decrease-and-Conquer) คือเทคนิคที่ <span class="hl">ตัด (Prune)</span> ข้อมูลส่วนที่แน่ใจว่าไม่ใช่คำตอบออก แล้วเรียกซ้ำ (Recursive) ในส่วนที่เหลือ</div>
+    <div class="pt">เทคนิคนี้เหมือนกับที่ใช้ใน <span class="hl">Binary Search</span> แต่ใช้กับข้อมูลที่ยังไม่เรียงลำดับ</div>
+    <div class="eg">
+      Binary Search ต้องการข้อมูลเรียงแล้ว → ตัดครึ่งทีละรอบ<br>
+      Prune-and-Search ไม่ต้องการข้อมูลเรียงแล้ว → ตัดส่วนที่ไม่ต้องการออก แต่ไม่จำเป็นต้องตัดครึ่งเสมอ
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">2 ขั้นตอนหลักที่ต้องจำ</span>
+    <div class="grid2">
+      <div class="mini-card">
+        <div class="mini-title" style="color:var(--red-text)">✂️ Prune (ขจัด)</div>
+        <div class="mini-body">ตัดข้อมูลบางส่วนที่แน่ใจว่าไม่ใช่คำตอบออก แล้วเรียกซ้ำ (Recursive) หาค่าอันดับที่ k จากข้อมูลที่เหลือ</div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-title" style="color:var(--green-text)">🔍 Search (ค้นหา)</div>
+        <div class="mini-body">เมื่อข้อมูลที่เหลือมีจำนวนเท่ากับค่าคงที่ที่กำหนด ให้ค้นหาด้วย Brute-Force แล้วคืนค่ากลับขึ้นไป</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════════════════
+     CH3 — Randomized Quick Select
+════════════════════════════════════ -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--amber-bg);color:var(--amber-text)">3</div>
+    <div class="ch-title">Randomized Quick Select — วิธีทำทีละขั้น</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">intuition</span>
+    <div class="pt">เริ่มต้นด้วยการ <span class="hl">สุ่มเลือก Pivot</span> 1 ตัวจากข้อมูล</div>
+    <div class="pt">เปรียบเทียบ Pivot กับข้อมูลทุกตัว แล้ว <span class="hl">แบ่งออกเป็น 3 กลุ่ม:</span></div>
+    <div class="grid3">
+      <div class="mini-card">
+        <div class="mini-title" style="color:var(--green-text)">A1 — น้อยกว่า Pivot</div>
+        <div class="mini-body">ข้อมูลทุกตัวที่มีค่า &lt; Pivot รวมกันเป็นกลุ่ม A1</div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-title" style="color:var(--blue-text)">A2 — เท่ากับ Pivot</div>
+        <div class="mini-body">ข้อมูลทุกตัวที่มีค่า = Pivot รวมกัน (รวม Pivot ตัวเองด้วย)</div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-title" style="color:var(--red-text)">A3 — มากกว่า Pivot</div>
+        <div class="mini-body">ข้อมูลทุกตัวที่มีค่า &gt; Pivot รวมกันเป็นกลุ่ม A3</div>
+      </div>
+    </div>
+    <div class="pt" style="margin-top:.5rem">จากนั้น <span class="hl">เปรียบ k กับขนาดแต่ละกลุ่ม</span> เพื่อตัดสินว่าจะค้นต่อในกลุ่มไหน:</div>
+    <div class="code-block">
+<span class="cm"># กฎการตัดสิน (Decision Rule)</span>
+<span class="kw">if</span>   k <= |A1|:           <span class="cm"># คำตอบอยู่ใน A1</span>
+     <span class="fn">quick_select</span>(A1, k)
+<span class="kw">elif</span> k <= |A1| + |A2|:   <span class="cm"># คำตอบคือ Pivot เอง!</span>
+     <span class="kw">return</span> pivot
+<span class="kw">else</span>:                    <span class="cm"># คำตอบอยู่ใน A3</span>
+     new_k = k - |A1| - |A2|
+     <span class="fn">quick_select</span>(A3, new_k)
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ตัวอย่างจากสไลด์ — Walk-through ทีละรอบ</span>
+    <div class="pt" style="margin-bottom:.5rem">ข้อมูล A = [55, 29, 32, 43, 43, 9, 19, 90, 76, 13, 43, 29, 65, 88, 76], หา <span class="hl">k=6</span></div>
+    <div class="eg">
+      <strong>รอบที่ 1:</strong> Pivot = 43<br>
+      &nbsp;&nbsp;A1 (น้อยกว่า 43) = [29,32,9,19,13,29] → |A1|=6<br>
+      &nbsp;&nbsp;A2 (เท่ากับ 43)  = [43,43,43]          → |A2|=3<br>
+      &nbsp;&nbsp;A3 (มากกว่า 43)  = [55,90,76,65,88,76] → |A3|=6<br>
+      ตรวจสอบ: k=6 ≤ |A1|=6 → <strong>เรียกซ้ำกับ A1, k=6</strong>
+    </div>
+    <div class="eg">
+      <strong>รอบที่ 2:</strong> ข้อมูลคือ A1=[29,32,9,19,13,29], Pivot = 29<br>
+      &nbsp;&nbsp;A11 = [9,19,13] → |A11|=3<br>
+      &nbsp;&nbsp;A12 = [29,29]   → |A12|=2<br>
+      &nbsp;&nbsp;A13 = [32]      → |A13|=1<br>
+      ตรวจสอบ: k=6 &gt; |A11|+|A12|=5 → k ใหม่ = 6−3−2 = <strong>1</strong><br>
+      <strong>เรียกซ้ำกับ A13=[32], k=1</strong>
+    </div>
+    <div class="eg">
+      <strong>รอบที่ 3:</strong> ข้อมูลคือ [32], k=1, |A13|=1<br>
+      → มีข้อมูลตัวเดียวและ k=1 → <strong style="color:var(--green-text)">คืนค่า 32 ✓</strong><br><br>
+      ตรวจสอบ: เรียงจริงคือ [9,13,19,29,29,<strong>32</strong>,43,43,43,55,...] → อันดับที่ 6 = 32 ✅
+    </div>
+  </div>
+
+  <!-- ════ VISUALIZER ════ -->
+  <div class="viz-wrap">
+    <div class="step-phase">Quick Select Visualizer — กดเล่นทีละขั้นหรือ Auto Play</div>
+
+    <div class="k-row">
+      <span class="k-label">หาค่าอันดับที่ k =</span>
+      <input type="number" id="kInput" class="k-input" value="6" min="1" max="15">
+      <span style="font-size:12px;color:var(--text-3)">(ข้อมูล 15 ตัว, ลองเปลี่ยน k แล้วกด Reset!)</span>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-primary" onclick="qsReset()">↺ Reset</button>
+      <button class="btn" id="qs-prev" onclick="qsPrev()" disabled>← Prev</button>
+      <button class="btn" id="qs-next" onclick="qsNext()">Next →</button>
+      <button class="btn btn-green" id="qs-auto" onclick="qsAuto()">▶ Auto Play</button>
+    </div>
+
+    <!-- legend -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:.75rem;">
+      <span style="font-size:11px;padding:2px 8px;border-radius:4px;background:var(--amber-bg);color:var(--amber-text);font-weight:600;">Pivot</span>
+      <span style="font-size:11px;padding:2px 8px;border-radius:4px;background:var(--green-bg);color:var(--green-text);font-weight:600;">A1 น้อยกว่า</span>
+      <span style="font-size:11px;padding:2px 8px;border-radius:4px;background:var(--blue-bg);color:var(--blue-text);font-weight:600;">A2 เท่ากับ</span>
+      <span style="font-size:11px;padding:2px 8px;border-radius:4px;background:var(--red-bg);color:var(--red-text);font-weight:600;">A3 มากกว่า</span>
+      <span style="font-size:11px;padding:2px 8px;border-radius:4px;background:var(--teal-bg);color:var(--teal-text);font-weight:600;">คำตอบ!</span>
+    </div>
+
+    <div class="group-label-row" id="qs-labels"></div>
+    <div class="array-row" id="qs-array"></div>
+
+    <div id="qs-groups" style="display:none">
+      <div class="groups-strip" id="qs-strip"></div>
+      <div class="decision-box" id="qs-decision"></div>
+    </div>
+
+    <div class="step-info">
+      <div class="step-phase" id="qs-phase">READY</div>
+      <div id="qs-msg">กด Next เพื่อเริ่มดูการทำงานของ Quick Select</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════════════════
+     CH4 — Complexity
+════════════════════════════════════ -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--blue-bg);color:var(--blue-text)">4</div>
+    <div class="ch-title">Time Complexity — ทำไม O(n)?</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">วิเคราะห์ความซับซ้อน</span>
+    <div class="pt"><span class="hl">Expected Time: O(n)</span> ภายใต้สมมติฐานว่าการเปรียบเทียบแต่ละคู่ใช้เวลา O(1)</div>
+    <div class="pt">แต่ละรอบทำงาน O(n) เพื่อแบ่ง 3 กลุ่ม แต่รอบถัดไปข้อมูลจะลดลงเรื่อยๆ</div>
+    <div class="eg">
+      ถ้า Pivot ดี (แบ่งข้อมูลได้ประมาณครึ่ง) งานแต่ละรอบลดลงแบบ:<br>
+      n + n/2 + n/4 + n/8 + ... ≈ 2n = O(n)
+    </div>
+
+    <table class="tbl">
+      <tr><th>กรณี</th><th>Complexity</th><th>เหตุผล</th></tr>
+      <tr>
+        <td>Best Case (Pivot ดีมาก)</td>
+        <td class="best">Ω(n)</td>
+        <td>ตัดข้อมูลได้ครึ่งทุกรอบ รวมแค่ 2n</td>
+      </tr>
+      <tr>
+        <td>Expected (เฉลี่ย)</td>
+        <td class="best">O(n)</td>
+        <td>โดยเฉลี่ยแล้ว Pivot ที่สุ่มได้จะดีพอ</td>
+      </tr>
+      <tr>
+        <td>Worst Case (Pivot แย่มาก)</td>
+        <td class="worst">O(n²)</td>
+        <td>ได้ min หรือ max ทุกรอบ ตัดได้แค่ 1 ตัว</td>
+      </tr>
+      <tr>
+        <td>Sort แล้วเข้าถึง (เปรียบ)</td>
+        <td class="mid">O(n log n)</td>
+        <td>Merge/Quick Sort ช้ากว่า Quick Select</td>
+      </tr>
+    </table>
+
+    <div class="compare-row">
+      <div class="compare-card good">
+        <div class="compare-title">ทำไมต้องสุ่ม Pivot?</div>
+        <div class="compare-body">การสุ่มทำให้โอกาสได้ Pivot แย่ทุกรอบน้อยมาก ทำให้ Expected Time เป็น O(n) แม้ worst case ยังเป็น O(n²)</div>
+      </div>
+      <div class="compare-card neutral">
+        <div class="compare-title">Median of Medians</div>
+        <div class="compare-body">วิธีขั้นสูงกว่าที่รับประกัน O(n) แม้ worst case โดยการเลือก Pivot อย่างชาญฉลาด (ศึกษาเพิ่มใน Textbook)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════════════════
+     CH5 — Cheatsheet
+════════════════════════════════════ -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--green-bg);color:var(--green-text)">5</div>
+    <div class="ch-title">สรุปย่อ — จำก่อนสอบ</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-warn">cheatsheet</span>
+    <div class="grid2">
+      <div class="mini-card">
+        <div class="mini-title">📌 Selection Problem</div>
+        <div class="mini-body">หาค่าอันดับที่ k จาก array ไม่เรียงลำดับ ใน O(n) expected</div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-title">✂️ Prune-and-Search</div>
+        <div class="mini-body">ตัดข้อมูลที่ไม่ต้องการออกทีละรอบ แล้วเรียกซ้ำในส่วนที่เหลือ</div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-title">🎲 Pivot + 3 Groups</div>
+        <div class="mini-body">สุ่ม Pivot → แบ่ง A1(&lt;), A2(=), A3(&gt;) → ตัด 2 กลุ่มออก</div>
+      </div>
+      <div class="mini-card">
+        <div class="mini-title">⚡ Complexity</div>
+        <div class="mini-body">Expected O(n) · Worst O(n²) · Better than Sort O(n log n)</div>
+      </div>
+    </div>
+    <div class="eg" style="margin-top:.75rem">
+      <strong>กฎตัดสิน (จำให้ขึ้นใจ!):</strong><br>
+      k ≤ |A1| → ค้นใน A1, k เดิม<br>
+      k ≤ |A1|+|A2| → คืน Pivot ทันที!<br>
+      k &gt; |A1|+|A2| → ค้นใน A3, k ใหม่ = k − |A1| − |A2|
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════════════════
+     QUIZ
+════════════════════════════════════ -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--red-bg);color:var(--red-text)">Q</div>
+    <div class="ch-title">Mini Quiz — ทดสอบความเข้าใจ</div>
+  </div>
+  <div class="quiz-wrap" id="quiz"></div>
+</div>
+
+</div><!-- /container -->
+
+<!-- ════════════════════════════════════
+     VISUALIZER SCRIPT
+════════════════════════════════════ -->
+<script>
+const ORIG = [55,29,32,43,43,9,19,90,76,13,43,29,65,88,76];
+let steps = [], cur = 0, autoTimer = null;
+
+/* ── build step list ── */
+function buildSteps(data, k) {
+  const out = [];
+  out.push({ phase:'START', msg:`ข้อมูลตั้งต้น ${data.length} ตัว, หาค่าอันดับที่ k=${k}`,
+             cells: data.map(v=>({v,cls:''})), groups: null, decision:'' });
+
+  function qs(arr, kk, depth) {
+    if (depth > 6) return;                         // safety
+    if (arr.length === 0) return;
+
+    // pick pivot (middle index for determinism)
+    const pivIdx = Math.floor(arr.length / 2);
+    const piv    = arr[pivIdx];
+    const a1 = arr.filter(v => v < piv);
+    const a2 = arr.filter(v => v === piv);
+    const a3 = arr.filter(v => v > piv);
+
+    // step: show pivot
+    out.push({
+      phase: 'PIVOT',
+      msg: `สุ่มได้ Pivot = ${piv}  |  กำลังแบ่ง ${arr.length} ตัวออกเป็น 3 กลุ่ม`,
+      cells: arr.map(v => ({ v, cls: v===piv ? 'pivot' : 'scanning' })),
+      groups: null, decision: ''
+    });
+
+    // step: show groups
+    out.push({
+      phase: 'PARTITION',
+      msg: `แบ่งเสร็จ: A1(น้อยกว่า ${piv})=${JSON.stringify(a1)}  A2(เท่ากับ)=${JSON.stringify(a2)}  A3(มากกว่า)=${JSON.stringify(a3)}`,
+      cells: arr.map(v => ({
+        v,
+        cls: v < piv ? 'less' : v === piv ? 'equal' : 'greater'
+      })),
+      groups: { a1, a2, a3, piv },
+      decision: ''
+    });
+
+    // decision
+    let dec = '', nextArr = null, nextK = kk;
+    if (kk <= a1.length) {
+      dec = `k=${kk} ≤ |A1|=${a1.length} → คำตอบอยู่ใน A1  ตัดทิ้ง A2 + A3`;
+      nextArr = a1; nextK = kk;
+    } else if (kk <= a1.length + a2.length) {
+      dec = `|A1|=${a1.length} < k=${kk} ≤ |A1|+|A2|=${a1.length+a2.length} → คำตอบคือ Pivot = ${piv} 🎉`;
+      nextArr = null;
+    } else {
+      const nk = kk - a1.length - a2.length;
+      dec = `k=${kk} > |A1|+|A2|=${a1.length+a2.length} → ค้นใน A3  k ใหม่ = ${kk}−${a1.length}−${a2.length} = ${nk}`;
+      nextArr = a3; nextK = nk;
+    }
+
+    out.push({
+      phase: 'DECISION',
+      msg: dec,
+      cells: arr.map(v => ({
+        v,
+        cls: v < piv ? (nextArr===a1?'less':'dimmed') :
+             v===piv ? (nextArr===null?'result':'equal') :
+             (nextArr===a3?'greater':'dimmed')
+      })),
+      groups: { a1, a2, a3, piv },
+      decision: dec
+    });
+
+    if (nextArr === null) {
+      // found!
+      out.push({
+        phase: 'FOUND',
+        msg: `✅ ค่าอันดับที่ ${k} = ${piv}`,
+        cells: arr.map(v => ({ v, cls: v===piv ? 'result' : 'dimmed' })),
+        groups: { a1, a2, a3, piv },
+        decision: `✅ คำตอบ = ${piv}`
+      });
+    } else {
+      qs(nextArr, nextK, depth+1);
+    }
+  }
+
+  qs(data, k, 0);
+  return out;
+}
+
+/* ── render ── */
+function render() {
+  const s = steps[cur];
+
+  // cells
+  document.getElementById('qs-array').innerHTML =
+    s.cells.map(({v,cls}) => `<div class="cell ${cls}">${v}</div>`).join('');
+
+  // group labels
+  document.getElementById('qs-labels').innerHTML =
+    s.cells.map(({cls}) => {
+      const lbl = {less:'A1',equal:'A2',greater:'A3',pivot:'P',result:'★',dimmed:'',scanning:''}[cls]||'';
+      return `<div class="glabel ${cls}">${lbl}</div>`;
+    }).join('');
+
+  // groups strip
+  const gs = document.getElementById('qs-groups');
+  if (s.groups) {
+    gs.style.display = 'block';
+    document.getElementById('qs-strip').innerHTML = `
+      <div class="gs-box less">
+        <div class="gs-title">A1 &lt; ${s.groups.piv}</div>
+        <div class="gs-nums">[${s.groups.a1.join(', ')||'—'}]</div>
+        <div class="gs-count">|A1| = ${s.groups.a1.length}</div>
+      </div>
+      <div class="gs-box equal">
+        <div class="gs-title">A2 = ${s.groups.piv}</div>
+        <div class="gs-nums">[${s.groups.a2.join(', ')}]</div>
+        <div class="gs-count">|A2| = ${s.groups.a2.length}</div>
+      </div>
+      <div class="gs-box greater">
+        <div class="gs-title">A3 &gt; ${s.groups.piv}</div>
+        <div class="gs-nums">[${s.groups.a3.join(', ')||'—'}]</div>
+        <div class="gs-count">|A3| = ${s.groups.a3.length}</div>
+      </div>`;
+
+    const dec = document.getElementById('qs-decision');
+    if (s.decision) { dec.textContent = '👉 ' + s.decision; dec.classList.add('show'); }
+    else             { dec.classList.remove('show'); }
+  } else {
+    gs.style.display = 'none';
+  }
+
+  document.getElementById('qs-phase').textContent = s.phase;
+  document.getElementById('qs-msg').textContent   = s.msg;
+  document.getElementById('qs-prev').disabled = cur === 0;
+  document.getElementById('qs-next').disabled = cur === steps.length - 1;
+}
+
+function qsNext() { if(cur < steps.length-1){ cur++; render(); } }
+function qsPrev() { if(cur > 0){ cur--; render(); } }
+
+function qsReset() {
+  clearInterval(autoTimer); autoTimer = null;
+  document.getElementById('qs-auto').textContent = '▶ Auto Play';
+  const k = parseInt(document.getElementById('kInput').value) || 6;
+  steps = buildSteps(ORIG, Math.max(1,Math.min(15,k)));
+  cur = 0; render();
+}
+
+function qsAuto() {
+  const btn = document.getElementById('qs-auto');
+  if (autoTimer) {
+    clearInterval(autoTimer); autoTimer = null;
+    btn.textContent = '▶ Auto Play'; return;
+  }
+  btn.textContent = '⏸ Pause';
+  autoTimer = setInterval(() => {
+    if (cur < steps.length-1) qsNext();
+    else { clearInterval(autoTimer); autoTimer = null; btn.textContent = '▶ Auto Play'; }
+  }, 1100);
+}
+
+qsReset();
+</script>
+
+<!-- ════════════════════════════════════
+     QUIZ SCRIPT
+════════════════════════════════════ -->
+<script>
+const QS_DATA = [
+  {
+    q: "ข้อมูล A = [10, 5, 8, 3, 7, 2, 9], สุ่ม Pivot = 7\nได้ A1=[5,3,2], A2=[7], A3=[10,8,9]\nต้องการหา k=3  ขั้นถัดไปควรทำอะไร?",
+    opts: [
+      "เรียกซ้ำใน A1 โดย k ยังคงเป็น 3",
+      "คืนค่า Pivot = 7 ทันที",
+      "เรียกซ้ำใน A3 โดย k ใหม่ = 3",
+      "เรียกซ้ำใน A3 โดย k ใหม่ = 1"
+    ],
+    ans: 0,
+    explain: "|A1|=3  →  k=3 ≤ |A1|=3 ✓  คำตอบอยู่ใน A1!  เรียกซ้ำกับ A1=[5,3,2] และ k ยังคงเป็น 3 (ยังนับจากต้น A1 ใหม่)"
+  },
+  {
+    q: "ข้อมูล A = [10, 5, 8, 3, 7, 2, 9], สุ่ม Pivot = 7\nได้ A1=[5,3,2] |A1|=3,  A2=[7] |A2|=1,  A3=[10,8,9] |A3|=3\nต้องการหา k=4  ควรทำอะไร?",
+    opts: [
+      "เรียกซ้ำใน A1 โดย k=4",
+      "คืนค่า Pivot = 7 ทันที",
+      "เรียกซ้ำใน A3 โดย k ใหม่ = 4",
+      "เรียกซ้ำใน A3 โดย k ใหม่ = 1"
+    ],
+    ans: 1,
+    explain: "|A1|=3 < k=4 ≤ |A1|+|A2|=4  → คำตอบอยู่ใน A2 พอดี!  คืนค่า Pivot = 7 ทันที ✅  ตรวจสอบ: เรียงจริง [2,3,5,7,8,9,10] อันดับที่ 4 = 7 ถูกต้อง"
+  },
+  {
+    q: "ถ้าสุ่ม Pivot ได้ค่าน้อยที่สุดของ array ทุกรอบ\nความซับซ้อนในกรณีแย่ที่สุด (Worst Case) ของ Randomized Quick Select คือ?",
+    opts: ["O(n)", "O(n log n)", "O(n²)", "O(log n)"],
+    ans: 2,
+    explain: "Worst case คือ O(n²) เกิดขึ้นเมื่อ Pivot ที่สุ่มได้เป็นค่าน้อยสุดหรือมากสุดทุกรอบ ทำให้ตัดข้อมูลออกได้แค่ทีละตัว ต้องวนซ้ำ n รอบ แต่ละรอบทำงาน O(n)  →  รวม O(n²)"
+  },
+  {
+    q: "เทคนิค Prune-and-Search ที่ใช้ใน Quick Select\nมีความเหมือนกับ algorithm ใดมากที่สุด?",
+    opts: ["Bubble Sort", "Binary Search", "BFS (Breadth-First Search)", "Merge Sort"],
+    ans: 1,
+    explain: "Prune-and-Search เหมือน Binary Search ตรงที่ตัดครึ่ง (หรือบางส่วน) ออกในแต่ละรอบ แล้วค้นหาในส่วนที่เหลือ แตกต่างกันที่ Binary Search ต้องการข้อมูลเรียงแล้ว ส่วน Quick Select ทำกับข้อมูลที่ยังไม่เรียงได้เลย"
+  },
+  {
+    q: "Quick Select แบ่งข้อมูลออกเป็น 3 กลุ่มแล้วได้:\n|A1|=5,  |A2|=3,  |A3|=7\nถ้า k=9 ควรเรียกซ้ำกับกลุ่มใด และด้วย k เท่าใด?",
+    opts: [
+      "เรียกซ้ำ A1 ด้วย k=9",
+      "คืนค่า Pivot ทันที",
+      "เรียกซ้ำ A3 ด้วย k=9",
+      "เรียกซ้ำ A3 ด้วย k=1"
+    ],
+    ans: 3,
+    explain: "|A1|+|A2| = 5+3 = 8  →  k=9 > 8 ดังนั้นคำตอบอยู่ใน A3  k ใหม่ = 9 − |A1| − |A2| = 9−5−3 = 1  เรียกซ้ำกับ A3 และ k=1 (หาค่าน้อยสุดใน A3)"
+  }
+];
+
+let qCur = 0, qDone = [];
+
+function renderQuiz() {
+  const q = QS_DATA[qCur], a = qDone[qCur];
+  const answered = qDone.filter(x => x !== undefined).length;
+  const pct = Math.round((answered / QS_DATA.length) * 100);
+  const allDone = answered === QS_DATA.length;
+
+  let scoreHtml = '';
+  if (allDone) {
+    const correct = QS_DATA.filter((q,i) => qDone[i] === q.ans).length;
+    const msg = correct === QS_DATA.length ? 'ยอดเยี่ยม! ถูกทุกข้อ 🎉' :
+                correct >= 3 ? 'ดีมาก! ผ่านแล้ว 👍' : 'ทบทวนแล้วลองอีกรอบนะ 💪';
+    scoreHtml = `<div class="score-card">
+      <div class="score-num">${correct} / ${QS_DATA.length}</div>
+      <div class="score-label">${msg}</div>
+    </div>`;
+  }
+
+  document.getElementById('quiz').innerHTML = `
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <div class="qnum">ข้อ ${qCur+1} จาก ${QS_DATA.length}</div>
+    <div class="qtxt">${q.q}</div>
+    <div class="qopts">
+      ${q.opts.map((o,i) => {
+        let cls = 'qopt';
+        if (a !== undefined) {
+          if (i === q.ans)             cls += ' correct';
+          else if (i === a && a !== q.ans) cls += ' wrong';
+        }
+        return `<button class="${cls}" ${a!==undefined?'disabled':''} onclick="qPick(${i})">${String.fromCharCode(65+i)}. ${o}</button>`;
+      }).join('')}
+    </div>
+    <div class="qfb ${a===undefined?'':a===q.ans?'ok':'no'}">
+      ${a===undefined ? '' : (a===q.ans ? '✓ ถูกต้อง — ' : '✗ ไม่ใช่ — ') + q.explain}
+    </div>
+    ${scoreHtml}
+    <div class="qnav">
+      <button class="qbtn" ${qCur===0?'disabled':''} onclick="qGo(-1)">← ก่อนหน้า</button>
+      <span class="qctr">${answered} / ${QS_DATA.length} ตอบแล้ว</span>
+      <button class="qbtn" ${qCur===QS_DATA.length-1?'disabled':''} onclick="qGo(1)">ถัดไป →</button>
+    </div>`;
+}
+
+function qPick(i) { if (qDone[qCur]!==undefined) return; qDone[qCur]=i; renderQuiz(); }
+function qGo(d)   { qCur+=d; renderQuiz(); }
+renderQuiz();
+</script>
+
+<!-- ════════════════════════════════════
+     PAGE TRANSITION
+════════════════════════════════════ -->
+<script>
+function showPage() {
+  document.body.classList.remove('page-exit');
+  setTimeout(() => document.body.classList.add('loaded'), 50);
+}
+window.addEventListener('pageshow', showPage);
+document.querySelectorAll('a').forEach(link => {
+  link.addEventListener('click', function(e) {
+    const href = this.getAttribute('href');
+    if (!href || href.startsWith('#') || this.target==='_blank') return;
+    e.preventDefault();
+    document.body.classList.add('page-exit');
+    setTimeout(() => window.location.href = href, 400);
+  });
+});
+</script>
+</body>
+</html>
