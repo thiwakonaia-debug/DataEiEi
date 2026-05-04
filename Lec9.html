@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>สรุป Algorithm Evaluation — ITDS 122</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #f8f7f4;
+    --surface: #ffffff;
+    --border: rgba(0,0,0,0.1);
+    --border-strong: rgba(0,0,0,0.2);
+    --text: #1a1a1a;
+    --text-2: #555;
+    --text-3: #888;
+    --purple-bg: #EEEDFE; --purple-text: #3C3489;
+    --teal-bg:   #E1F5EE; --teal-text:   #085041;
+    --coral-bg:  #FAECE7; --coral-text:  #712B13;
+    --blue-bg:   #E6F1FB; --blue-text:   #0C447C;
+    --amber-bg:  #FAEEDA; --amber-text:  #633806;
+    --green-bg:  #EAF3DE; --green-text:  #27500A;
+    --red-bg:    #FCEBEB; --red-text:    #A32D2D;
+    --accent: #1D9E75;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: var(--bg); color: var(--text);
+    line-height: 1.7; font-size: 15px;
+    opacity: 0; transform: translateY(10px);
+    transition: opacity .5s cubic-bezier(.4,0,.2,1), transform .5s cubic-bezier(.4,0,.2,1);
+  }
+  body.loaded { opacity: 1; transform: translateY(0); }
+  .page-exit { opacity: 0 !important; transform: translateY(-10px) !important; pointer-events: none; }
+
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    text-decoration: none; color: var(--text-3);
+    font-size: 13px; font-weight: 500; margin-bottom: 1rem; transition: color .2s;
+  }
+  .back-btn:hover { color: var(--text); }
+
+  .header {
+    background: var(--surface); border-bottom: 0.5px solid var(--border);
+    padding: 2rem 0; margin-bottom: 2rem; text-align: center;
+  }
+  .header-inner { max-width: 760px; margin: 0 auto; padding: 0 1.5rem; }
+  .header-tag {
+    display: inline-block; background: var(--blue-bg); color: var(--blue-text);
+    font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px;
+    letter-spacing: .06em; text-transform: uppercase; margin-bottom: .75rem;
+  }
+  h1 { font-size: 26px; font-weight: 600; color: var(--text); margin-bottom: .35rem; }
+  .subtitle { font-size: 14px; color: var(--text-3); }
+
+  .container { max-width: 760px; margin: 0 auto; padding: 0 1.5rem 4rem; }
+  .chapter   { margin-bottom: 2.5rem; }
+  .ch-header { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; }
+  .ch-num {
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600; flex-shrink: 0;
+  }
+  .ch-title { font-size: 17px; font-weight: 600; color: var(--text); }
+
+  .card {
+    background: var(--surface); border: 0.5px solid var(--border);
+    border-radius: 12px; padding: 1.1rem 1.3rem; margin-bottom: .75rem;
+  }
+  .badge {
+    display: inline-block; font-size: 11px; font-weight: 600;
+    padding: 2px 9px; border-radius: 20px; margin-bottom: .6rem; margin-right: 4px;
+  }
+  .b-exam { background: var(--coral-bg);  color: var(--coral-text); }
+  .b-code { background: var(--green-bg);  color: var(--green-text); }
+  .b-tip  { background: var(--purple-bg); color: var(--purple-text); }
+  .b-warn { background: var(--amber-bg);  color: var(--amber-text); }
+  .b-info { background: var(--blue-bg);   color: var(--blue-text); }
+
+  .pt {
+    font-size: 14px; color: var(--text-2); line-height: 1.75;
+    margin-bottom: .4rem; padding-left: 1rem; position: relative;
+  }
+  .pt::before { content: "—"; position: absolute; left: 0; color: var(--text-3); }
+  .hl { color: var(--text); font-weight: 600; }
+
+  .eg {
+    background: var(--bg); border-left: 3px solid #378ADD;
+    border-radius: 0 8px 8px 0; padding: .75rem 1rem;
+    margin: .75rem 0; font-size: 13px; color: var(--text-2); line-height: 1.75;
+  }
+
+  .code-block {
+    background: #1e1e2e; border-radius: 8px; padding: .85rem 1rem;
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #cdd6f4;
+    line-height: 1.9; margin: .75rem 0; overflow-x: auto;
+  }
+  .kw  { color: #89b4fa; } .fn  { color: #a6e3a1; }
+  .cm  { color: #6c7086; } .st  { color: #f38ba8; } .num { color: #fab387; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: .65rem; margin: .75rem 0; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .65rem; margin: .75rem 0; }
+  .mini-card {
+    background: var(--bg); border-radius: 8px; padding: .7rem .9rem; border: 0.5px solid var(--border);
+  }
+  .mini-title { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: .25rem; }
+  .mini-body  { font-size: 12px; color: var(--text-2); line-height: 1.6; }
+
+  .compare-row { display: grid; grid-template-columns: 1fr 1fr; gap: .65rem; margin: .75rem 0; }
+  .compare-card { border-radius: 8px; padding: .75rem 1rem; }
+  .compare-card.bad     { background: var(--red-bg);    border: 0.5px solid #F09595; }
+  .compare-card.good    { background: var(--green-bg);  border: 0.5px solid #97C459; }
+  .compare-card.neutral { background: var(--blue-bg);   border: 0.5px solid #82B8E8; }
+  .compare-card.amber   { background: var(--amber-bg);  border: 0.5px solid #E5C06A; }
+  .compare-card.purple  { background: var(--purple-bg); border: 0.5px solid #A9A3F0; }
+  .compare-title { font-size: 12px; font-weight: 600; margin-bottom: .35rem; }
+  .compare-card.bad     .compare-title { color: var(--red-text); }
+  .compare-card.good    .compare-title { color: var(--green-text); }
+  .compare-card.neutral .compare-title { color: var(--blue-text); }
+  .compare-card.amber   .compare-title { color: var(--amber-text); }
+  .compare-card.purple  .compare-title { color: var(--purple-text); }
+  .compare-body { font-size: 12px; color: var(--text-2); line-height: 1.65; }
+
+  .divider { height: 0.5px; background: var(--border); margin: 2rem 0; }
+
+  .tbl { width: 100%; border-collapse: collapse; font-size: 13px; margin: .75rem 0; }
+  .tbl th {
+    background: var(--bg); color: var(--text); font-weight: 600;
+    padding: 8px 12px; border: 0.5px solid var(--border); text-align: left;
+  }
+  .tbl td { padding: 7px 12px; border: 0.5px solid var(--border); color: var(--text-2); background: var(--surface); }
+  .tbl tr:hover td { background: var(--bg); }
+  .tbl .best  { color: var(--green-text); font-weight: 600; }
+  .tbl .worst { color: var(--red-text);   font-weight: 600; }
+  .tbl .mid   { color: var(--amber-text); font-weight: 600; }
+
+  /* ══════════════════════════════
+     NOTATION VISUALIZER
+  ══════════════════════════════ */
+  .viz-wrap {
+    background: var(--surface); border: 0.5px solid var(--border);
+    border-radius: 12px; padding: 1.3rem; margin: 1rem 0;
+  }
+  .controls { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+  .btn {
+    font-family: 'Sarabun', sans-serif; font-size: 12px; font-weight: 600;
+    padding: 6px 14px; border-radius: 8px; border: 0.5px solid var(--border-strong);
+    background: var(--bg); color: var(--text); cursor: pointer; transition: all .15s;
+  }
+  .btn:hover:not(:disabled) { background: var(--surface); border-color: var(--accent); }
+  .btn:disabled { opacity: .4; cursor: default; }
+  .btn-primary { background: var(--blue-bg);   color: var(--blue-text);   border-color: #82B8E8; }
+  .btn-green   { background: var(--green-bg);  color: var(--green-text);  border-color: #97C459; }
+  .btn-purple  { background: var(--purple-bg); color: var(--purple-text); border-color: #A9A3F0; }
+
+  /* canvas chart */
+  #notationCanvas {
+    width: 100%; height: 260px; border-radius: 8px;
+    background: #1e1e2e; display: block; cursor: crosshair;
+  }
+  .chart-legend {
+    display: flex; gap: 12px; flex-wrap: wrap; margin-top: .75rem;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 12px; color: var(--text-2); font-weight: 600;
+    cursor: pointer; padding: 3px 8px; border-radius: 6px;
+    border: 0.5px solid var(--border); background: var(--bg);
+    transition: opacity .2s;
+  }
+  .legend-item.hidden { opacity: .3; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .chart-info {
+    background: var(--bg); border-radius: 8px; padding: .65rem 1rem;
+    font-size: 13px; color: var(--text-2); margin-top: .5rem;
+    border: 0.5px solid var(--border); min-height: 40px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  /* big-o practice */
+  .practice-wrap {
+    background: var(--surface); border: 0.5px solid var(--border);
+    border-radius: 12px; padding: 1.3rem; margin: 1rem 0;
+  }
+  .practice-title {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 600;
+    color: var(--accent); text-transform: uppercase; margin-bottom: 1rem;
+  }
+  .pq-row {
+    display: flex; align-items: center; gap: 10px; margin-bottom: .75rem; flex-wrap: wrap;
+  }
+  .pq-fn {
+    font-family: 'IBM Plex Mono', monospace; font-size: 14px;
+    color: var(--text); font-weight: 600; min-width: 200px;
+  }
+  .pq-opts { display: flex; gap: 6px; flex-wrap: wrap; }
+  .pq-opt {
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600;
+    padding: 4px 10px; border-radius: 6px; border: 0.5px solid var(--border-strong);
+    background: var(--bg); color: var(--text); cursor: pointer; transition: all .15s;
+  }
+  .pq-opt:hover { background: var(--surface); border-color: var(--accent); }
+  .pq-opt.correct { background: var(--green-bg); border-color: #97C459; color: var(--green-text); }
+  .pq-opt.wrong   { background: var(--red-bg);   border-color: #F09595; color: var(--red-text); }
+  .pq-opt:disabled { pointer-events: none; }
+  .pq-msg { font-size: 12px; margin-top: 2px; color: var(--text-3); }
+  .pq-msg.ok { color: var(--green-text); }
+  .pq-msg.no { color: var(--red-text); }
+
+  /* notation cards */
+  .notation-card {
+    border-radius: 10px; padding: 1rem 1.1rem; margin-bottom: .65rem;
+    border: 0.5px solid var(--border);
+  }
+  .nc-header {
+    display: flex; align-items: center; gap: 10px; margin-bottom: .5rem;
+  }
+  .nc-symbol {
+    font-size: 22px; font-weight: 700; font-family: 'IBM Plex Mono', monospace;
+    width: 36px; text-align: center;
+  }
+  .nc-name { font-size: 14px; font-weight: 600; }
+  .nc-def  { font-size: 12.5px; color: var(--text-2); line-height: 1.7; margin-bottom: .4rem; }
+  .nc-rule {
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+    background: rgba(0,0,0,0.04); border-radius: 6px; padding: 4px 8px;
+    display: inline-block; color: var(--text); margin-bottom: .4rem;
+  }
+  .nc-example { font-size: 12px; color: var(--text-3); }
+
+  .nc-bigoh   { background: #EEF4FE; border-color: #82B8E8; }
+  .nc-omega   { background: #EAF3DE; border-color: #97C459; }
+  .nc-theta   { background: #EEEDFE; border-color: #A9A3F0; }
+  .nc-little  { background: #FAEEDA; border-color: #E5C06A; }
+
+  .nc-bigoh  .nc-symbol { color: var(--blue-text); }
+  .nc-omega  .nc-symbol { color: var(--green-text); }
+  .nc-theta  .nc-symbol { color: var(--purple-text); }
+  .nc-little .nc-symbol { color: var(--amber-text); }
+
+  /* complexity ranking */
+  .rank-strip {
+    display: flex; align-items: center; gap: 0;
+    margin: .85rem 0; overflow-x: auto; padding-bottom: 4px;
+  }
+  .rank-box {
+    padding: 6px 10px; font-size: 11.5px; font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600; text-align: center; white-space: nowrap;
+    border-top: 2px solid; border-bottom: 2px solid;
+    flex-shrink: 0;
+  }
+  .rank-box:first-child { border-left: 2px solid; border-radius: 6px 0 0 6px; }
+  .rank-box:last-child  { border-right: 2px solid; border-radius: 0 6px 6px 0; }
+  .rank-arr { font-size: 14px; color: var(--text-3); padding: 0 3px; flex-shrink: 0; }
+
+  .r1 { background: #E1F5EE; border-color: #5DCAA5; color: #085041; }
+  .r2 { background: #EAF3DE; border-color: #97C459; color: #27500A; }
+  .r3 { background: #E6F1FB; border-color: #82B8E8; color: #0C447C; }
+  .r4 { background: #EEEDFE; border-color: #A9A3F0; color: #3C3489; }
+  .r5 { background: #FAEEDA; border-color: #E5C06A; color: #633806; }
+  .r6 { background: #FAECE7; border-color: #F09595; color: #712B13; }
+  .r7 { background: #FCEBEB; border-color: #F09595; color: #A32D2D; }
+
+  /* ── Quiz ── */
+  .quiz-wrap {
+    background: var(--surface); border: 0.5px solid var(--border);
+    border-radius: 12px; padding: 1.3rem;
+  }
+  .progress-bar { height: 3px; background: var(--bg); border-radius: 2px; margin-bottom: 1rem; overflow: hidden; border: 0.5px solid var(--border); }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width .4s ease; }
+  .qnum  { font-size: 11px; font-weight: 600; color: var(--text-3); margin-bottom: .5rem; letter-spacing: .04em; text-transform: uppercase; }
+  .qtxt  { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: .85rem; line-height: 1.65; white-space: pre-line; }
+  .qopts { display: flex; flex-direction: column; gap: 7px; margin-bottom: .85rem; }
+  .qopt  {
+    text-align: left; background: var(--bg); border: 0.5px solid var(--border);
+    border-radius: 8px; padding: 9px 13px; font-size: 13px;
+    font-family: 'Sarabun', sans-serif; color: var(--text); cursor: pointer;
+    line-height: 1.55; transition: border-color .15s, background .15s;
+  }
+  .qopt:hover:not(:disabled) { border-color: var(--border-strong); background: var(--surface); }
+  .qopt.correct { background: var(--green-bg); border-color: #97C459; color: var(--green-text); }
+  .qopt.wrong   { background: var(--red-bg);   border-color: #F09595; color: var(--red-text);   }
+  .qfb { font-size: 13px; min-height: 18px; line-height: 1.65; padding: .1rem 0; }
+  .qfb.ok { color: var(--green-text); } .qfb.no { color: var(--red-text); }
+  .qnav {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 1.1rem; padding-top: 1rem; border-top: 0.5px solid var(--border);
+  }
+  .qbtn {
+    font-size: 13px; font-family: 'Sarabun', sans-serif; background: transparent;
+    border: 0.5px solid var(--border-strong); border-radius: 7px;
+    padding: 6px 16px; color: var(--text); cursor: pointer; transition: background .15s;
+  }
+  .qbtn:hover:not(:disabled) { background: var(--bg); }
+  .qbtn:disabled { opacity: .3; cursor: default; }
+  .qctr { font-size: 12px; color: var(--text-3); }
+  .score-card {
+    background: var(--teal-bg); border: 0.5px solid #5DCAA5;
+    border-radius: 10px; padding: 1rem 1.25rem; text-align: center; margin-top: 1rem;
+  }
+  .score-num   { font-size: 32px; font-weight: 600; color: var(--teal-text); }
+  .score-label { font-size: 13px; color: #085041; margin-top: .25rem; }
+
+  @media (max-width: 540px) {
+    .grid2, .compare-row, .grid3 { grid-template-columns: 1fr; }
+    h1 { font-size: 21px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <a href="index.html" class="back-btn">← กลับหน้าหลัก</a>
+    <div class="header-tag">ITDS 122 — Data Structures</div>
+    <h1>สรุป Algorithm Evaluation ฉบับละเอียด</h1>
+    <div class="subtitle">Lecture 15c · Space/Time Complexity · Asymptotic Notations · มี Interactive Chart & Practice</div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ════════════════════════
+     CH1 — ภาพรวม
+════════════════════════ -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--blue-bg);color:var(--blue-text)">1</div>
+    <div class="ch-title">Algorithm Evaluation คืออะไร — ภาพรวม</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">concept</span>
+    <div class="pt"><span class="hl">Algorithm Evaluation</span> คือการประเมินว่า algorithm ที่ออกแบบมานั้นดีแค่ไหน โดยดูจากการใช้ทรัพยากร 2 อย่างหลัก คือ <span class="hl">เวลา</span> และ <span class="hl">หน่วยความจำ</span></div>
+    <div class="pt">เป้าหมายคือนำไปเปรียบเทียบกับ algorithm อื่น เพื่อเลือกตัวที่ดีที่สุดสำหรับงานนั้น ๆ</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">2 ระยะที่ต้องรู้</span>
+    <div class="compare-row">
+      <div class="compare-card neutral">
+        <div class="compare-title">📐 A Priori Estimates — การวิเคราะห์สมรรถนะ</div>
+        <div class="compare-body">ทำก่อนรันโปรแกรม หลังจากออกแบบ algorithm แล้ว<br>วิเคราะห์จาก pseudo-code หรือตัวโปรแกรม<br><strong>อิสระจากสภาพแวดล้อม</strong> (hardware/software)</div>
+      </div>
+      <div class="compare-card amber">
+        <div class="compare-title">🧪 A Posterior Testing — การวัดสมรรถนะ</div>
+        <div class="compare-body">ทำหลังจาก implement โปรแกรมแล้ว ทดสอบจริง<br>เปรียบเทียบโปรแกรมที่พัฒนาจาก algorithm ต่างกัน<br><strong>ขึ้นอยู่กับ</strong> hardware, software, network, ข้อมูลที่ใช้ทดสอบ</div>
+      </div>
+    </div>
+    <div class="eg">
+      💡 ง่าย ๆ: A Priori = วิเคราะห์บนกระดาษก่อนเขียนโค้ด | A Posterior = รันจริงแล้ววัดเวลา
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════
+     CH2 — Space Complexity
+════════════════════════ -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--green-bg);color:var(--green-text)">2</div>
+    <div class="ch-title">Space Complexity — ความซับซ้อนเชิงพื้นที่</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">concept</span>
+    <div class="pt"><span class="hl">Space Complexity</span> คือจำนวนหน่วยความจำที่โปรแกรมใช้ในการทำงาน <span class="hl">นอกเหนือจาก</span>หน่วยความจำที่ใช้เก็บข้อมูลเข้า</div>
+    <div class="pt">สูตร: <span class="hl">S(P) = c + s(n)</span> โดย c คือส่วนที่คงที่ และ s(n) คือส่วนที่แปรผัน</div>
+    <div class="compare-row">
+      <div class="compare-card neutral">
+        <div class="compare-title">🔒 Fixed Part [c]</div>
+        <div class="compare-body">อิสระจากขนาดข้อมูล n เช่น ตัวแปรทั่วไปที่ประกาศไว้ ไม่ว่า n จะเป็นเท่าไหร่ ส่วนนี้ก็เท่าเดิม</div>
+      </div>
+      <div class="compare-card amber">
+        <div class="compare-title">📈 Variable Part [s(n)]</div>
+        <div class="compare-body">ขึ้นอยู่กับขนาดข้อมูล n เช่น array ขนาด n หรือ recursive stack ที่ลึกตาม n</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ตัวอย่างที่ 1 — ฟังก์ชันธรรมดา</span>
+    <div class="code-block"><span class="kw">def</span> <span class="fn">abc</span>(a, b, c):
+    <span class="kw">return</span> (a + b + b*c +(a+b-c)/(a+b) + <span class="num">4.0</span>)
+
+<span class="fn">abc</span>(<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>)</div>
+    <div class="grid3">
+      <div class="mini-card"><div class="mini-title">Fixed [c]</div><div class="mini-body">= 3 หน่วย (a, b, c)</div></div>
+      <div class="mini-card"><div class="mini-title">Variable [s(n)]</div><div class="mini-body">= 0 (ไม่มี array หรือ recursion)</div></div>
+      <div class="mini-card"><div class="mini-title">S(P)</div><div class="mini-body">>= 3 หน่วย คงที่เสมอ</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ตัวอย่างที่ 2 — วนลูปกับ List</span>
+    <div class="code-block"><span class="kw">def</span> <span class="fn">sum</span>(given_list):
+    s = <span class="num">0</span>
+    <span class="kw">for</span> i <span class="kw">in</span> range(<span class="num">0</span>, len(given_list)):
+        s = s + given_list[i]
+    <span class="kw">return</span> s</div>
+    <div class="grid3">
+      <div class="mini-card"><div class="mini-title">Fixed [c]</div><div class="mini-body">>= 3 (s, i, len)</div></div>
+      <div class="mini-card"><div class="mini-title">Variable [s(n)]</div><div class="mini-body">>= n (given_list)</div></div>
+      <div class="mini-card"><div class="mini-title">S(P)</div><div class="mini-body">>= n + 3</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ตัวอย่างที่ 3 — Recursive Function (สำคัญ!)</span>
+    <div class="code-block"><span class="kw">def</span> <span class="fn">rsum</span>(given_list, length):
+    <span class="kw">if</span> length &lt;= <span class="num">0</span>: <span class="kw">return</span> <span class="num">0</span>
+    <span class="kw">return</span> <span class="fn">rsum</span>(given_list, length-<span class="num">1</span>) + given_list[length-<span class="num">1</span>]</div>
+    <div class="pt" style="margin-top:.5rem"><span class="hl">Recursive Stack</span> ต้องการพื้นที่ต่อ 1 รอบ: Formal param (1) + Local var (1) + Return address (1) = 3 หน่วย</div>
+    <div class="pt">Depth of Recursion = n+1 → s(n) = 3(n+1)</div>
+    <div class="grid3">
+      <div class="mini-card"><div class="mini-title">Fixed [c]</div><div class="mini-body">มีบ้าง (ขึ้นกับ impl)</div></div>
+      <div class="mini-card"><div class="mini-title">Variable [s(n)]</div><div class="mini-body">= 3(n+1)</div></div>
+      <div class="mini-card"><div class="mini-title">S(P)</div><div class="mini-body">>= 3(n+1)</div></div>
+    </div>
+    <div class="eg">
+      ⚠️ จำไว้: ฟังก์ชัน Recursive จะกินพื้นที่เพิ่มขึ้นตาม <strong>ความลึกของการเรียกซ้ำ</strong> เพราะต้องเก็บ state ของแต่ละรอบไว้ใน call stack
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════
+     CH3 — Time Complexity
+════════════════════════ -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--coral-bg);color:var(--coral-text)">3</div>
+    <div class="ch-title">Time Complexity — ความซับซ้อนเชิงเวลา</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">concept</span>
+    <div class="pt">T(P) ของโปรแกรมประกอบด้วย <span class="hl">compile time</span> (อิสระจาก n) และ <span class="hl">run time t(n)</span> (ขึ้นกับ n)</div>
+    <div class="pt">เวลาพูดถึง time complexity ในวิชานี้ หมายถึง <span class="hl">run time t(n)</span> เสมอ</div>
+    <div class="pt">วิธีวิเคราะห์: <span class="hl">นับจำนวน statement / step / operations</span> ที่โปรแกรมต้องทำ (ไม่ได้จับเวลาจริง)</div>
+    <div class="eg">
+      🧠 ทำไมไม่จับเวลาจริง? เพราะเวลาจริงขึ้นอยู่กับ hardware — คอมเร็วก็เร็ว คอมช้าก็ช้า วิเคราะห์จากจำนวน step แทน ก็จะ hardware-independent
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ตัวอย่างที่ 1 — ฟังก์ชันธรรมดา</span>
+    <div class="code-block"><span class="kw">def</span> <span class="fn">abc</span>(a, b, c):
+    <span class="kw">return</span> (a + b + b*c +(a+b-c)/(a+b) + <span class="num">4.0</span>)  <span class="cm"># 1 step เท่านั้น</span></div>
+    <div class="eg"><strong>t(n) = 1</strong> — มีแค่ return statement เดียว ไม่ว่าข้อมูลจะมีกี่ตัว ก็ทำ 1 step เสมอ</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ตัวอย่างที่ 2 — วนลูป</span>
+    <div class="code-block"><span class="kw">def</span> <span class="fn">sum</span>(given_list):
+    s = <span class="num">0</span>           <span class="cm"># 1 step (count for s)</span>
+    <span class="kw">for</span> i <span class="kw">in</span> range(<span class="num">0</span>, len(given_list)):  <span class="cm"># n+1 steps (for loop)</span>
+        s = s + given_list[i]           <span class="cm"># n steps (assignment)</span>
+    <span class="kw">return</span> s                          <span class="cm"># 1 step (return)</span></div>
+    <div class="eg"><strong>t(n) = 1 + (n+1) + n + 1 = 2n + 3</strong> — ยิ่ง n มาก ยิ่งใช้เวลามาก แบบ linear</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ตัวอย่างที่ 3 — Recursive (สำคัญ!)</span>
+    <div class="code-block"><span class="kw">def</span> <span class="fn">rsum</span>(given_list, length):
+    <span class="kw">if</span> length &lt;= <span class="num">0</span>: <span class="kw">return</span> <span class="num">0</span>  <span class="cm"># count for "if" และ "return"</span>
+    <span class="kw">return</span> <span class="fn">rsum</span>(given_list, length-<span class="num">1</span>) + given_list[length-<span class="num">1</span>]</div>
+    <div class="pt" style="margin-top:.5rem">กรณี n=0: t(0) = 2</div>
+    <div class="pt">กรณี n>0: t(n) = 2 + t(n-1)</div>
+    <div class="eg">
+      แก้ recurrence relation:<br>
+      t(n) = 2 + t(n-1)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 2 + 2 + t(n-2)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 2 + 2 + 2 + ... + t(0)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 2n + t(0) = 2n + 2<br>
+      <strong>→ t(n) = 2n + 2</strong>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════
+     CH4 — Asymptotic Notations
+════════════════════════ -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--purple-bg);color:var(--purple-text)">4</div>
+    <div class="ch-title">Asymptotic Notations — สัญกรณ์เชิงกำกับ</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-tip">ทำไมต้องมี?</span>
+    <div class="pt">เราไม่ได้อยากรู้ค่า t(n) แบบ exact เช่น "2n+3 steps" เราอยากรู้ <span class="hl">แนวโน้ม</span> เมื่อ n ใหญ่มาก ๆ</div>
+    <div class="pt">เช่น 2n+3 กับ 100n+6 ต่างกันในรายละเอียด แต่ทั้งคู่เติบโตแบบ linear เหมือนกัน → จัดกลุ่มเป็น O(n) ได้</div>
+    <div class="pt">ผลการวิเคราะห์แสดงในรูป <span class="hl">Asymptotic Notation</span>: Big-O, Omega, Theta, Little-o, Little-omega</div>
+  </div>
+
+  <!-- Big-O -->
+  <div class="notation-card nc-bigoh">
+    <div class="nc-header">
+      <div class="nc-symbol">O</div>
+      <div>
+        <div class="nc-name">Big-O — ขอบเขตบน (Upper Bound)</div>
+        <div class="nc-rule">f(n) ≤ c·g(n)  สำหรับทุก n ≥ n₀</div>
+      </div>
+    </div>
+    <div class="nc-def">f(n) = O(g(n)) ถ้ามีค่าคงที่ c และ n₀ ที่เป็นบวก ทำให้ f(n) ≤ c·g(n) สำหรับทุก n ≥ n₀<br>แปลไทย: g(n) คือ <strong>เพดานบน</strong> ของ f(n) — f(n) จะโตได้ไม่เกิน g(n) (คูณด้วยค่าคงที่)</div>
+    <div class="nc-example">ตัวอย่าง: 3n+3 = O(n) เพราะ 3n+3 ≤ 4n สำหรับ n ≥ 3 | 10n²+4n+2 = O(n²) เพราะ 10n²+4n+2 ≤ 11n² สำหรับ n ≥ 5<br>ข้อสังเกต: 3n+3 = O(n²) ก็ได้ (upper bound ไม่จำเป็นต้องแน่น) | แต่ 3n+3 ≠ O(1)</div>
+  </div>
+
+  <!-- Omega -->
+  <div class="notation-card nc-omega">
+    <div class="nc-header">
+      <div class="nc-symbol">Ω</div>
+      <div>
+        <div class="nc-name">Omega — ขอบเขตล่าง (Lower Bound)</div>
+        <div class="nc-rule">f(n) ≥ c·g(n)  สำหรับทุก n ≥ n₀</div>
+      </div>
+    </div>
+    <div class="nc-def">f(n) = Ω(g(n)) ถ้ามีค่าคงที่ c และ n₀ ที่เป็นบวก ทำให้ f(n) ≥ c·g(n) สำหรับทุก n ≥ n₀<br>แปลไทย: g(n) คือ <strong>พื้นล่าง</strong> ของ f(n) — f(n) จะโตเร็วกว่า g(n) เสมอ (อย่างน้อย)</div>
+    <div class="nc-example">ตัวอย่าง: 3n+3 = Ω(n) เพราะ 3n+3 ≥ 3n สำหรับ n ≥ 1 | 3n+3 = Ω(1) เพราะ 3n+3 ≥ 1 สำหรับ n ≥ 1</div>
+  </div>
+
+  <!-- Theta -->
+  <div class="notation-card nc-theta">
+    <div class="nc-header">
+      <div class="nc-symbol">Θ</div>
+      <div>
+        <div class="nc-name">Theta — ขอบเขตแน่น (Tight Bound)</div>
+        <div class="nc-rule">c₁·g(n) ≤ f(n) ≤ c₂·g(n)  สำหรับทุก n ≥ n₀</div>
+      </div>
+    </div>
+    <div class="nc-def">f(n) = Θ(g(n)) ถ้ามีค่าคงที่ c₁, c₂ และ n₀ ทำให้ c₁·g(n) ≤ f(n) ≤ c₂·g(n)<br>แปลไทย: g(n) เป็นทั้ง upper bound และ lower bound ของ f(n) พร้อมกัน — แม่นยำที่สุด</div>
+    <div class="nc-example">ตัวอย่าง: 3n+3 = Θ(n) เพราะ 3n ≤ 3n+3 ≤ 4n สำหรับ n ≥ 2 | ทฤษฎี: polynomial degree m → Θ(nᵐ)</div>
+  </div>
+
+  <!-- Little-o / omega -->
+  <div class="notation-card nc-little">
+    <div class="nc-header">
+      <div class="nc-symbol" style="font-size:16px">o/ω</div>
+      <div>
+        <div class="nc-name">Little-o และ Little-omega — ขอบเขตเข้ม (Strict)</div>
+      </div>
+    </div>
+    <div class="nc-def">
+      <strong>Little-o:</strong> f(n) = o(g(n)) ก็ต่อเมื่อ lim(n→∞) f(n)/g(n) = 0 → f(n) โตช้ากว่า g(n) อย่างเข้ม<br>
+      <strong>Little-ω:</strong> f(n) = ω(g(n)) ก็ต่อเมื่อ lim(n→∞) g(n)/f(n) = 0 → f(n) โตเร็วกว่า g(n) อย่างเข้ม
+    </div>
+    <div class="nc-example">ความสัมพันธ์: o(n) ⊂ O(n) เหมือน &lt; และ ≤ ในคณิตศาสตร์ — little-o เข้มกว่า Big-O</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════
+     CH5 — Interactive Chart
+════════════════════════ -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--amber-bg);color:var(--amber-text)">5</div>
+    <div class="ch-title">เปรียบเทียบ Complexity — Interactive Chart</div>
+  </div>
+
+  <div class="card">
+    <span class="badge b-exam">ลำดับความซับซ้อน (ดีสุด → แย่สุด)</span>
+    <div class="rank-strip">
+      <div class="rank-box r1">O(1)</div><div class="rank-arr">→</div>
+      <div class="rank-box r2">O(log n)</div><div class="rank-arr">→</div>
+      <div class="rank-box r3">O(n)</div><div class="rank-arr">→</div>
+      <div class="rank-box r4">O(n log n)</div><div class="rank-arr">→</div>
+      <div class="rank-box r5">O(n²)</div><div class="rank-arr">→</div>
+      <div class="rank-box r6">O(2ⁿ)</div><div class="rank-arr">→</div>
+      <div class="rank-box r7">O(n!)</div>
+    </div>
+    <div class="eg">
+      เปรียบเทียบสมรรถนะ: O(log n) ดีกว่า O(n) ดีกว่า O(n log n) ดีกว่า O(n²)<br>ตอบโจทย์: #2 &gt; #1 &gt; #4 &gt; #3 (โดย #2=O(log n), #1=O(n), #4=O(n log n), #3=O(n²))
+    </div>
+  </div>
+
+  <div class="viz-wrap">
+    <div class="step-phase" style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;color:var(--accent);text-transform:uppercase;margin-bottom:.85rem;">
+      Growth Rate Visualizer — Hover เพื่อดูค่า | คลิก Legend เพื่อซ่อน/แสดง
+    </div>
+
+    <canvas id="notationCanvas"></canvas>
+
+    <div class="chart-legend" id="chartLegend"></div>
+    <div class="chart-info" id="chartInfo">เลื่อน mouse บน chart เพื่อดูค่าของแต่ละ function</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════
+     CH6 — Practice
+════════════════════════ -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--green-bg);color:var(--green-text)">6</div>
+    <div class="ch-title">แบบฝึกหัด Big-O — ลองตอบเองก่อน</div>
+  </div>
+
+  <div class="practice-wrap" id="practiceArea">
+    <div class="practice-title">Big-O Practice — จงหา O(f(n)) ที่แน่นที่สุด</div>
+    <div id="practiceList"></div>
+    <div style="margin-top:.75rem;font-size:12px;color:var(--text-3)">เฉลย: ดูจากกฎ — เก็บเฉพาะ term ที่โตเร็วที่สุด, ตัดค่าคงที่ออก</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ════════════════════════
+     QUIZ
+════════════════════════ -->
+<div class="chapter">
+  <div class="ch-header">
+    <div class="ch-num" style="background:var(--red-bg);color:var(--red-text)">Q</div>
+    <div class="ch-title">Mini Quiz — ทดสอบความเข้าใจ</div>
+  </div>
+  <div class="quiz-wrap" id="quiz"></div>
+</div>
+
+</div><!-- /container -->
+
+<!-- ════════════════════════
+     CHART SCRIPT
+════════════════════════ -->
+<script>
+const CURVES = [
+  { label: 'O(1)',       color: '#5DCAA5', fn: n => 1,                  visible: true },
+  { label: 'O(log n)',   color: '#97C459', fn: n => Math.log2(n),       visible: true },
+  { label: 'O(n)',       color: '#82B8E8', fn: n => n,                  visible: true },
+  { label: 'O(n log n)', color: '#A9A3F0', fn: n => n * Math.log2(n),   visible: true },
+  { label: 'O(n²)',      color: '#E5C06A', fn: n => n * n,              visible: true },
+  { label: 'O(2ⁿ)',      color: '#F09595', fn: n => Math.pow(2, n),     visible: true },
+];
+
+const canvas = document.getElementById('notationCanvas');
+const ctx = canvas.getContext('2d');
+const N_MAX = 20, PAD = { t: 20, r: 20, b: 40, l: 50 };
+
+function drawChart(mouseX) {
+  const W = canvas.width, H = canvas.height;
+  const chartW = W - PAD.l - PAD.r;
+  const chartH = H - PAD.t - PAD.b;
+
+  // background
+  ctx.fillStyle = '#1e1e2e';
+  ctx.fillRect(0, 0, W, H);
+
+  // compute visible max Y (cap at n²×1.2)
+  const maxY = N_MAX * N_MAX * 1.2;
+
+  const toX = n => PAD.l + (n / N_MAX) * chartW;
+  const toY = v => PAD.t + chartH - Math.min(v / maxY, 1) * chartH;
+
+  // grid lines
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 5; i++) {
+    const y = PAD.t + (i / 5) * chartH;
+    ctx.beginPath(); ctx.moveTo(PAD.l, y); ctx.lineTo(W - PAD.r, y); ctx.stroke();
+    const v = Math.round(maxY * (1 - i / 5));
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.font = '10px IBM Plex Mono, monospace'; ctx.textAlign = 'right';
+    ctx.fillText(v, PAD.l - 5, y + 4);
+  }
+  for (let i = 0; i <= N_MAX; i += 4) {
+    const x = toX(i);
+    ctx.beginPath(); ctx.moveTo(x, PAD.t); ctx.lineTo(x, PAD.t + chartH); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.textAlign = 'center';
+    ctx.fillText(i, x, PAD.t + chartH + 18);
+  }
+
+  // axes labels
+  ctx.fillStyle = 'rgba(255,255,255,0.4)';
+  ctx.font = '11px Sarabun, sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText('n (ขนาดข้อมูล)', PAD.l + chartW / 2, H - 5);
+
+  // draw curves
+  CURVES.forEach(c => {
+    if (!c.visible) return;
+    ctx.beginPath(); ctx.strokeStyle = c.color; ctx.lineWidth = 2.5;
+    for (let nx = 0; nx <= N_MAX; nx += 0.2) {
+      const x = toX(nx), y = toY(c.fn(nx));
+      nx === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  });
+
+  // hover line
+  if (mouseX !== undefined) {
+    const x = Math.max(PAD.l, Math.min(W - PAD.r, mouseX));
+    const n = ((x - PAD.l) / chartW) * N_MAX;
+    ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+    ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(x, PAD.t); ctx.lineTo(x, PAD.t + chartH); ctx.stroke();
+    ctx.setLineDash([]);
+
+    const vals = CURVES.filter(c => c.visible).map(c => {
+      const v = c.fn(n);
+      return `<span style="color:${c.color}">${c.label}</span> = ${v > 1e6 ? v.toExponential(1) : v.toFixed(1)}`;
+    }).join('  |  ');
+    document.getElementById('chartInfo').innerHTML = `n = ${n.toFixed(1)}  →  ${vals}`;
+  }
+}
+
+function resizeCanvas() {
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width  = rect.width  - 2;
+  canvas.height = 260;
+  drawChart();
+}
+
+canvas.addEventListener('mousemove', e => {
+  const rect = canvas.getBoundingClientRect();
+  drawChart(e.clientX - rect.left);
+});
+canvas.addEventListener('mouseleave', () => {
+  drawChart();
+  document.getElementById('chartInfo').textContent = 'เลื่อน mouse บน chart เพื่อดูค่าของแต่ละ function';
+});
+
+// legend
+const legend = document.getElementById('chartLegend');
+CURVES.forEach((c, i) => {
+  const item = document.createElement('div');
+  item.className = 'legend-item';
+  item.innerHTML = `<div class="legend-dot" style="background:${c.color}"></div>${c.label}`;
+  item.onclick = () => {
+    c.visible = !c.visible;
+    item.classList.toggle('hidden', !c.visible);
+    drawChart();
+  };
+  legend.appendChild(item);
+});
+
+window.addEventListener('resize', resizeCanvas);
+setTimeout(resizeCanvas, 100);
+</script>
+
+<!-- ════════════════════════
+     PRACTICE SCRIPT
+════════════════════════ -->
+<script>
+const PRACTICE = [
+  { fn: '2000',              ans: 'O(1)',       opts: ['O(1)', 'O(log n)', 'O(n)'],    explain: 'ค่าคงที่ → O(1)' },
+  { fn: '3 log n + 4',      ans: 'O(log n)',   opts: ['O(1)', 'O(log n)', 'O(n)'],    explain: 'term ที่โตเร็วสุดคือ log n → O(log n)' },
+  { fn: '7n − 2',           ans: 'O(n)',       opts: ['O(log n)', 'O(n)', 'O(n²)'],   explain: 'term ที่โตเร็วสุดคือ n → O(n)' },
+  { fn: '9n² − 3n + 4',     ans: 'O(n²)',      opts: ['O(n)', 'O(n log n)', 'O(n²)'], explain: 'term ที่โตเร็วสุดคือ n² → O(n²)' },
+  { fn: '6n³ + 5n² − 4n',   ans: 'O(n³)',      opts: ['O(n²)', 'O(n³)', 'O(2ⁿ)'],    explain: 'term ที่โตเร็วสุดคือ n³ → O(n³)' },
+  { fn: '2ⁿ + 3n',          ans: 'O(2ⁿ)',      opts: ['O(n)', 'O(n²)', 'O(2ⁿ)'],     explain: '2ⁿ โตเร็วกว่า polynomial ทุกอย่าง → O(2ⁿ)' },
+  { fn: '5/n',              ans: 'O(1)',       opts: ['O(1)', 'O(1/n)', 'O(n)'],      explain: 'ลดลงเมื่อ n มาก → ถือเป็น O(1) (upper bound)' },
+  { fn: 'n + 2√n',          ans: 'O(n)',       opts: ['O(√n)', 'O(n)', 'O(n²)'],      explain: 'term ที่โตเร็วสุดคือ n → O(n)' },
+];
+
+function buildPractice() {
+  const list = document.getElementById('practiceList');
+  PRACTICE.forEach((q, qi) => {
+    const row = document.createElement('div');
+    row.style.cssText = 'margin-bottom:1rem;';
+    row.innerHTML = `
+      <div class="pq-row">
+        <div class="pq-fn">${qi+1}. f(n) = ${q.fn}</div>
+        <div class="pq-opts" id="opts-${qi}">
+          ${q.opts.map(o =>
+            `<button class="pq-opt" onclick="pqPick(${qi},'${o}')">${o}</button>`
+          ).join('')}
+        </div>
+      </div>
+      <div class="pq-msg" id="pq-msg-${qi}"></div>`;
+    list.appendChild(row);
+  });
+}
+
+function pqPick(qi, chosen) {
+  const q = PRACTICE[qi];
+  const opts = document.querySelectorAll(`#opts-${qi} .pq-opt`);
+  opts.forEach(btn => {
+    btn.disabled = true;
+    if (btn.textContent === q.ans) btn.classList.add('correct');
+    else if (btn.textContent === chosen && chosen !== q.ans) btn.classList.add('wrong');
+  });
+  const msg = document.getElementById(`pq-msg-${qi}`);
+  if (chosen === q.ans) {
+    msg.textContent = '✓ ถูกต้อง! — ' + q.explain;
+    msg.className = 'pq-msg ok';
+  } else {
+    msg.textContent = `✗ ไม่ใช่ — คำตอบที่ถูกคือ ${q.ans}: ${q.explain}`;
+    msg.className = 'pq-msg no';
+  }
+}
+
+buildPractice();
+</script>
+
+<!-- ════════════════════════
+     QUIZ SCRIPT
+════════════════════════ -->
+<script>
+const QS_DATA = [
+  {
+    q: "S(P) = c + s(n) ในสูตร Space Complexity\nส่วน s(n) (Variable Part) หมายถึงอะไร?",
+    opts: [
+      "หน่วยความจำที่ใช้สำหรับตัวแปรที่ประกาศไว้ในฟังก์ชันหลัก",
+      "หน่วยความจำที่ไม่ขึ้นอยู่กับขนาดข้อมูล n",
+      "หน่วยความจำที่ขึ้นอยู่กับ n เช่น array ขนาด n หรือ recursive stack",
+      "เวลาที่ใช้ในการทำงานของโปรแกรม"
+    ],
+    ans: 2,
+    explain: "s(n) คือ Variable Part ที่แปรผันตาม n เช่น ถ้ารับ array ขนาด n มา ก็ต้องเก็บ n หน่วย หรือถ้ามี recursion ลึก n ชั้น ก็ต้องมี stack n ชั้น"
+  },
+  {
+    q: "ฟังก์ชัน rsum ที่ recursive ลึก n+1 ครั้ง\nแต่ละรอบใช้พื้นที่ 3 หน่วย (param, local var, return addr)\nS(P) เท่ากับเท่าใด?",
+    opts: ["S(P) >= 3", "S(P) >= n", "S(P) >= 3(n+1)", "S(P) >= n+3"],
+    ans: 2,
+    explain: "ความลึกของ recursion = n+1 รอบ แต่ละรอบต้องการ 3 หน่วยพื้นที่ใน call stack ดังนั้น s(n) = 3(n+1) → S(P) >= 3(n+1)"
+  },
+  {
+    q: "Time complexity ของ sum(given_list) ที่วนลูป n รอบ\nt(n) คือเท่าใด?\n(นับ: s=0 = 1 step, for loop ทำ n+1 ครั้ง, s=s+list[i] ทำ n ครั้ง, return = 1 step)",
+    opts: ["t(n) = n", "t(n) = 2n+3", "t(n) = n+2", "t(n) = 2n+2"],
+    ans: 1,
+    explain: "นับทุก step: 1 (s=0) + (n+1) (for loop ทดสอบ) + n (assignment) + 1 (return) = 2n+3"
+  },
+  {
+    q: "f(n) = O(g(n)) หมายความว่าอะไร?",
+    opts: [
+      "f(n) และ g(n) มีค่าเท่ากันพอดีเมื่อ n ใหญ่",
+      "g(n) คือ upper bound ของ f(n) — f(n) จะโตได้ไม่เกิน c·g(n)",
+      "g(n) คือ lower bound ของ f(n) — f(n) จะโตเร็วกว่า g(n) เสมอ",
+      "g(n) เป็นทั้ง upper และ lower bound ของ f(n)"
+    ],
+    ans: 1,
+    explain: "Big-O คือขอบเขตบน (upper bound): f(n) ≤ c·g(n) สำหรับ n ≥ n₀ แปลว่า f(n) จะไม่โตเร็วกว่า g(n) (คูณค่าคงที่) เมื่อ n ใหญ่พอ"
+  },
+  {
+    q: "จงเรียงลำดับจากดีสุดไปแย่สุด:\n#A: O(n²)  #B: O(log n)  #C: O(n log n)  #D: O(n)",
+    opts: [
+      "B → D → C → A",
+      "A → C → D → B",
+      "D → B → C → A",
+      "B → C → D → A"
+    ],
+    ans: 0,
+    explain: "เรียงจาก complexity น้อยสุด (ดีสุด) ไปมากสุด: O(log n) < O(n) < O(n log n) < O(n²) → B → D → C → A"
+  }
+];
+
+let qCur = 0, qDone = [];
+
+function renderQuiz() {
+  const q = QS_DATA[qCur], a = qDone[qCur];
+  const answered = qDone.filter(x => x !== undefined).length;
+  const pct = Math.round((answered / QS_DATA.length) * 100);
+  const allDone = answered === QS_DATA.length;
+
+  let scoreHtml = '';
+  if (allDone) {
+    const correct = QS_DATA.filter((q,i) => qDone[i] === q.ans).length;
+    const msg = correct === QS_DATA.length ? 'เยี่ยมมาก! ถูกทุกข้อ 🎉' :
+                correct >= 3 ? 'ดีมาก! เข้าใจแล้ว 👍' : 'ลองทบทวนแล้วทำใหม่นะ 💪';
+    scoreHtml = `<div class="score-card"><div class="score-num">${correct} / ${QS_DATA.length}</div><div class="score-label">${msg}</div></div>`;
+  }
+
+  document.getElementById('quiz').innerHTML = `
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    <div class="qnum">ข้อ ${qCur+1} จาก ${QS_DATA.length}</div>
+    <div class="qtxt">${q.q}</div>
+    <div class="qopts">
+      ${q.opts.map((o,i) => {
+        let cls = 'qopt';
+        if (a !== undefined) {
+          if (i === q.ans)             cls += ' correct';
+          else if (i === a && a !== q.ans) cls += ' wrong';
+        }
+        return `<button class="${cls}" ${a!==undefined?'disabled':''} onclick="qPick(${i})">${String.fromCharCode(65+i)}. ${o}</button>`;
+      }).join('')}
+    </div>
+    <div class="qfb ${a===undefined?'':a===q.ans?'ok':'no'}">
+      ${a===undefined ? '' : (a===q.ans ? '✓ ถูกต้อง — ' : '✗ ไม่ใช่ — ') + q.explain}
+    </div>
+    ${scoreHtml}
+    <div class="qnav">
+      <button class="qbtn" ${qCur===0?'disabled':''} onclick="qGo(-1)">← ก่อนหน้า</button>
+      <span class="qctr">${answered} / ${QS_DATA.length} ตอบแล้ว</span>
+      <button class="qbtn" ${qCur===QS_DATA.length-1?'disabled':''} onclick="qGo(1)">ถัดไป →</button>
+    </div>`;
+}
+
+function qPick(i) { if (qDone[qCur]!==undefined) return; qDone[qCur]=i; renderQuiz(); }
+function qGo(d)   { qCur+=d; renderQuiz(); }
+renderQuiz();
+</script>
+
+<!-- ════════════════════════
+     PAGE TRANSITION
+════════════════════════ -->
+<script>
+function showPage() {
+  document.body.classList.remove('page-exit');
+  setTimeout(() => document.body.classList.add('loaded'), 50);
+}
+window.addEventListener('pageshow', showPage);
+document.querySelectorAll('a').forEach(link => {
+  link.addEventListener('click', function(e) {
+    const href = this.getAttribute('href');
+    if (!href || href.startsWith('#') || this.target==='_blank') return;
+    e.preventDefault();
+    document.body.classList.add('page-exit');
+    setTimeout(() => window.location.href = href, 400);
+  });
+});
+</script>
+</body>
+</html>
