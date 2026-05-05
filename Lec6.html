@@ -17,7 +17,7 @@
     --text-3: #888;
     --purple-bg: #EEEDFE; --purple-text: #3C3489;
     --teal-bg: #E1F5EE; --teal-text: #085041;
-    --coral-bg: #FAECE7; --coral-text: #712B13;
+    --coral-bg: #FAECE7; --corONal-text: #712B13;
     --blue-bg: #E6F1FB; --blue-text: #0C447C;
     --amber-bg: #FAEEDA; --amber-text: #633806;
     --green-bg: #EAF3DE; --green-text: #27500A;
@@ -340,7 +340,7 @@
     <div class="code-block"><span class="kw">def</span> <span class="fn">bubble_sort</span>(A):<br>    n = <span class="fn">len</span>(A)<br>    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n - <span class="num">1</span>):           <span class="cm"># n-1 รอบ</span><br>        <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(n - <span class="num">1</span> - i):    <span class="cm"># ลดขอบขวาทุกรอบ</span><br>            <span class="kw">if</span> A[j] > A[j+<span class="num">1</span>]:<br>                A[j], A[j+<span class="num">1</span>] = A[j+<span class="num">1</span>], A[j]  <span class="cm"># Swap!</span><br>    <span class="kw">return</span> A<br><br><span class="cm"># Optimized: หยุดถ้าไม่มี swap เลย (Best Case O(n))</span><br><span class="kw">def</span> <span class="fn">bubble_sort_optimized</span>(A):<br>    n = <span class="fn">len</span>(A)<br>    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n - <span class="num">1</span>):<br>        swapped = <span class="kw">False</span><br>        <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(n - <span class="num">1</span> - i):<br>            <span class="kw">if</span> A[j] > A[j+<span class="num">1</span>]:<br>                A[j], A[j+<span class="num">1</span>] = A[j+<span class="num">1</span>], A[j]<br>                swapped = <span class="kw">True</span><br>        <span class="kw">if not</span> swapped: <span class="kw">break</span>   <span class="cm"># ไม่มี swap = เรียงแล้ว!</span><br>    <span class="kw">return</span> A</div>
     <div class="eg">
       เพิ่ม swapped flag → ถ้าทั้งรอบไม่มี swap เลย = array เรียงแล้ว → หยุดได้ทันที<br>
-      นี่คือเหตุผลที่ Bubble Sort Best Case = Ω(n) (ถ้าใช้ optimized version)
+      นี่คือเหตุผลที่ Bubble Sort Best Case = O(n) (ถ้าใช้ optimized version)
     </div>
   </div>
 </div>
@@ -467,29 +467,29 @@
       <tr><th>Algorithm</th><th>Best Case</th><th>Average Case</th><th>Worst Case</th><th>Swaps/Copies</th></tr>
       <tr>
         <td><strong>Bubble Sort</strong></td>
-        <td class="best">Ω(n)</td>
+        <td class="best">O(n)</td>
         <td class="mid">θ(n²)</td>
         <td class="worst">O(n²)</td>
         <td>Swap ≤ O(n²)</td>
       </tr>
       <tr>
         <td><strong>Selection Sort</strong></td>
-        <td class="worst">Ω(n²)</td>
+        <td class="worst">O(n²)</td>
         <td class="mid">θ(n²)</td>
         <td class="worst">O(n²)</td>
         <td><span style="color:var(--green-text);font-weight:600">Swap ≤ n-1 ✓</span></td>
       </tr>
       <tr>
         <td><strong>Insertion Sort</strong></td>
-        <td class="best">Ω(n)</td>
+        <td class="best">O(n)</td>
         <td class="mid">θ(n²)</td>
         <td class="worst">O(n²)</td>
         <td>Copy ≤ O(n²)</td>
       </tr>
     </table>
     <div class="eg">
-      จุดต่างสำคัญ: Selection Sort Best Case = Ω(n²) — แม้ข้อมูลเรียงแล้ว ยังต้องไล่หา minimum ทุก round<br>
-      Bubble และ Insertion สามารถหยุดได้เร็วกว่าถ้าข้อมูลเรียงแล้ว → Best Case = Ω(n)
+      จุดต่างสำคัญ: Selection Sort Best Case = O(n²) — แม้ข้อมูลเรียงแล้ว ยังต้องไล่หา minimum ทุก round<br>
+      Bubble และ Insertion สามารถหยุดได้เร็วกว่าถ้าข้อมูลเรียงแล้ว → Best Case = O(n)
     </div>
   </div>
 
@@ -547,7 +547,7 @@
         <div class="compare-body">
           ✓ Swap น้อยที่สุด (≤ n-1 ครั้ง)<br>
           ✓ เหมาะเมื่อ cost ของ swap แพง<br>
-          ✗ Best case = Ω(n²) เสมอ<br>
+          ✗ Best case = O(n²) เสมอ<br>
           ✗ ไม่สามารถ early-stop ได้<br><br>
           <strong>เหมาะกับ:</strong> เมื่อ memory write มีราคาแพง
         </div>
@@ -586,7 +586,7 @@
       <div class="flow-box">Insertion = หยิบมา 1 ตัว สอดเข้าที่ถูกต้อง</div>
     </div>
     <div class="pt" style="margin-top:.5rem">ทั้ง 3 ตัว: Worst/Average = <span class="hl">O(n²)</span>, Space = <span class="hl">O(n)</span></div>
-    <div class="pt">Best Case: Bubble = <span class="hl">Ω(n)</span>, Selection = <span class="hl">Ω(n²)</span>, Insertion = <span class="hl">Ω(n)</span></div>
+    <div class="pt">Best Case: Bubble = <span class="hl">O(n)</span>, Selection = <span class="hl">O(n²)</span>, Insertion = <span class="hl">O(n)</span></div>
   </div>
 </div>
 
@@ -610,14 +610,14 @@ const QS = [
     opts: [
       "Bubble Sort swap น้อยกว่า Selection Sort เสมอ",
       "Selection Sort หา minimum แล้ว swap ครั้งเดียวต่อรอบ ส่วน Bubble Sort อาจ swap หลายครั้งต่อรอบ",
-      "ทั้งคู่มี Best Case = Ω(n) เท่ากันทุกกรณี",
+      "ทั้งคู่มี Best Case = O(n) เท่ากันทุกกรณี",
       "Selection Sort เร็วกว่า Bubble Sort ในทุก case"
     ],
     ans: 1,
     explain: "Selection Sort วิ่งหา minimum ใน unsorted part แล้ว swap เพียงครั้งเดียวต่อรอบ (≤ n-1 swap ทั้งหมด) ส่วน Bubble Sort เปรียบเทียบคู่ข้างกันและอาจ swap หลายครั้งต่อรอบ ทำให้ swap รวมได้ถึง O(n²) — นี่คือเหตุผลที่ Selection Sort ดีกว่าเมื่อ swap มีต้นทุนสูง"
   },
   {
-    q: "ทำไม Selection Sort ถึงมี Best Case = Ω(n²) แต่ Bubble Sort และ Insertion Sort มี Best Case = Ω(n)?",
+    q: "ทำไม Selection Sort ถึงมี Best Case = O(n²) แต่ Bubble Sort และ Insertion Sort มี Best Case = O(n)?",
     opts: [
       "Selection Sort ใช้ recursion จึงช้ากว่า",
       "Selection Sort ต้องไล่หา minimum ทุก round แม้ข้อมูลจะเรียงอยู่แล้ว ส่วนอีกสองตัวสามารถ detect ว่าเรียงแล้วและหยุดได้",
