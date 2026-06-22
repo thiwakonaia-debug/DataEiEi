@@ -916,6 +916,7 @@ function renderQuiz() {
         <div class="quiz-exp">${q.exp}</div>
       </div>`;
   });
+  wrap.innerHTML += `<button class="quiz-submit" id="quizBtn" onclick="submitQuiz()">ตรวจคำตอบ</button>`;
 }
 
 const answers = {};
