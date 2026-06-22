@@ -1,222 +1,215 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ITDS 122 – Tree Lectures Index</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
-    :root {
-      --bg: #f8f7f4;
-      --surface: #ffffff;
-      --border: rgba(0,0,0,0.1);
-      --border-strong: rgba(0,0,0,0.2);
-      --text: #1a1a1a;
-      --text-2: #555;
-      --text-3: #888;
-      --purple-bg: #EEEDFE; --purple-text: #3C3489;
-      --teal-bg: #E1F5EE; --teal-text: #085041;
-      --coral-bg: #FAECE7; --coral-text: #712B13;
-      --blue-bg: #E6F1FB; --blue-text: #0C447C;
-      --amber-bg: #FAEEDA; --amber-text: #633806;
-      --green-bg: #EAF3DE; --green-text: #27500A;
-      --red-bg: #FCEBEB; --red-text: #A32D2D;
-      --accent: #085041;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    
-    body { 
-      font-family: 'Sarabun', sans-serif; 
-      background: var(--bg); 
-      color: var(--text); 
-      line-height: 1.7; 
-      font-size: 15px; 
-      padding: 2rem;
-      opacity: 0;
-      transform: translateY(10px);
-      transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    body.loaded { opacity: 1; transform: translateY(0); }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DBMS Learning Hub</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap');
 
-    .header { background: var(--surface); border-bottom: 0.5px solid var(--border); padding: 2rem 0; margin-bottom: 2rem; text-align: center; }
-    .header-inner { max-width: 760px; margin: 0 auto; padding: 0 1.5rem; }
-    .header-tag { display: inline-block; background: var(--amber-bg); color: var(--amber-text); font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: .75rem; }
-    h1 { font-size: 26px; font-weight: 600; color: var(--text); margin-bottom: .35rem; }
-    .subtitle { font-size: 14px; color: var(--text-3); }
-    .container { max-width: 760px; margin: 0 auto; padding: 0 1.5rem 4rem; }
-    
-    .section-label { 
-      font-size: 14px; 
-      font-weight: 600; 
-      color: var(--text-3); 
-      text-transform: uppercase; 
-      letter-spacing: 0.05em; 
-      margin-bottom: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      animation: fadeIn 0.8s ease forwards;
-    }
-    .section-label::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-    .lecture-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 2.5rem; }
-    
-    /* Card Animation */
-    @keyframes cardEntrance {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+:root {
+  --bg: #0f1117;
+  --bg2: #161822;
+  --bg3: #1e2030;
+  --card: #1a1d2e;
+  --border: rgba(255,255,255,0.06);
+  --text: #e2e4ed;
+  --text2: #9ba0b8;
+  --muted: #5c6078;
+  --blue: #6c72cb;
+  --purple: #9b6dff;
+  --cyan: #38bdf8;
+  --green: #34d399;
+  --amber: #fbbf24;
+  --red: #f87171;
+  --pink: #f472b6;
+}
 
-    .lecture-card { 
-      background: var(--surface); 
-      border: 0.5px solid var(--border); 
-      border-radius: 12px; 
-      padding: 1rem 1.2rem; 
-      display: flex;
-      align-items: center;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-      text-decoration: none;
-      animation: cardEntrance 0.6s cubic-bezier(0.4, 0, 0.2, 1) backwards;
-    }
-    
-    /* Staggered entrance */
-    .lecture-card:nth-child(1) { animation-delay: 0.1s; }
-    .lecture-card:nth-child(2) { animation-delay: 0.15s; }
-    .lecture-card:nth-child(3) { animation-delay: 0.2s; }
-    .lecture-card:nth-child(4) { animation-delay: 0.25s; }
-    .lecture-card:nth-child(5) { animation-delay: 0.3s; }
-    .lecture-card:nth-child(6) { animation-delay: 0.35s; }
-    .lecture-card:nth-child(7) { animation-delay: 0.4s; }
-    .lecture-card:nth-child(8) { animation-delay: 0.45s; }
-    .lecture-card:nth-child(9) { animation-delay: 0.5s; }
+html { scroll-behavior: smooth; }
+body { font-family: 'Inter','Noto Sans Thai',sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; min-height: 100vh; }
 
-    .lecture-card:hover { 
-      transform: translateY(-5px); 
-      box-shadow: 0 8px 20px rgba(0,0,0,0.06); 
-      border-color: var(--accent);
-      background: #fff;
-    }
-    .lecture-card:active { transform: scale(0.96); }
+.hero {
+  text-align: center;
+  padding: 4rem 1.5rem 2rem;
+  background: linear-gradient(135deg, rgba(108,114,203,0.12) 0%, rgba(155,109,255,0.08) 50%, rgba(56,189,248,0.06) 100%);
+  border-bottom: 1px solid var(--border);
+}
+.hero h1 {
+  font-size: 2.2rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--blue), var(--purple), var(--cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 0.5rem;
+}
+.hero p { color: var(--text2); font-size: 1rem; max-width: 600px; margin: 0 auto; }
+.hero-stats {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+.hero-stat { text-align: center; }
+.hero-stat .num { font-size: 1.8rem; font-weight: 700; color: var(--purple); }
+.hero-stat .label { font-size: 0.8rem; color: var(--muted); }
 
-    .lecture-card span:last-child { color: var(--text); font-weight: 600; flex: 1; font-size: 15px; }
-    
-    .lecture-number { 
-      display: inline-block; 
-      width: 32px; 
-      height: 32px; 
-      line-height: 32px; 
-      border-radius: 8px; 
-      margin-right: 1rem; 
-      font-weight: 600; 
-      text-align: center;
-      font-size: 13px;
-      transition: transform 0.3s ease;
-    }
-    .lecture-card:hover .lecture-number { transform: rotate(10deg) scale(1.1); }
-    
-    .n-lec { background: var(--teal-bg); color: var(--teal-text); }
-    .n-ex { background: var(--amber-bg); color: var(--amber-text); }
+.container { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
 
-    /* Page Exit effect */
-    .page-exit { opacity: 0 !important; transform: translateY(-10px) !important; pointer-events: none; }
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text2);
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
 
-    .footer { text-align: center; font-size: 13px; color: var(--text-2); margin-top: 2rem; }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
 
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-  </style>
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.5rem;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.card:hover {
+  transform: translateY(-4px);
+  border-color: var(--blue);
+  box-shadow: 0 8px 30px rgba(108,114,203,0.15);
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--blue), var(--purple));
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.card:hover::before { opacity: 1; }
+
+.card-tag {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  margin-bottom: 0.75rem;
+}
+.card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 0.4rem; }
+.card p { font-size: 0.85rem; color: var(--text2); line-height: 1.6; }
+.card-arrow {
+  position: absolute;
+  bottom: 1.25rem; right: 1.25rem;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--bg3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  color: var(--muted);
+  transition: 0.2s;
+}
+.card:hover .card-arrow { background: var(--blue); color: #fff; }
+
+.tag-intro { background: rgba(108,114,203,0.15); color: var(--blue); }
+.tag-arch { background: rgba(56,189,248,0.15); color: var(--cyan); }
+.tag-model { background: rgba(155,109,255,0.15); color: var(--purple); }
+.tag-erd { background: rgba(52,211,153,0.15); color: var(--green); }
+
+.footer {
+  text-align: center;
+  padding: 2rem 1rem;
+  border-top: 1px solid var(--border);
+  margin-top: 2rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+@media (max-width: 640px) {
+  .hero h1 { font-size: 1.6rem; }
+  .cards { grid-template-columns: 1fr; }
+}
+</style>
 </head>
 <body>
-  <div class="header">
-    <div class="header-inner">
-      <div class="header-tag">ITDS 122 — Data Structures</div>
-      <h1>สรุป Lectures ในโฟลเดอร์ Tree</h1>
-      <div class="subtitle">คลิกเพื่อเปิดบทเรียนและแบบฝึกหัด</div>
-    </div>
+
+<div class="hero">
+  <h1>DBMS Learning Hub</h1>
+  <p>รวมบทเรียน Database Management Systems ทั้งหมด เลือกบทเรียนที่ต้องการเพื่อเริ่มเรียนได้เลย</p>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="num">6</div><div class="label">บทเรียน</div></div>
+    <div class="hero-stat"><div class="num">6</div><div class="label">หัวข้อหลัก</div></div>
+    <div class="hero-stat"><div class="num">∞</div><div class="label">ความรู้</div></div>
   </div>
-  
-  <div class="container">
-    
-    <!-- Section: Lectures -->
-    <div class="section-label">All Lectures</div>
-    <div class="lecture-grid">
-      <a href="Lec1.html" class="lecture-card">
-        <span class="lecture-number n-lec">1</span>
-        <span>Lecture 1 – Tree คืออะไร (พื้นฐาน)</span>
-      </a>
-      <a href="Lec2.html" class="lecture-card">
-        <span class="lecture-number n-lec">2</span>
-        <span>Lecture 2 – Binary Tree &amp; BST พื้นฐาน</span>
-      </a>
-      <a href="Lec3.html" class="lecture-card">
-        <span class="lecture-number n-lec">3</span>
-        <span>Lecture 3 – Hashing &amp; Hash Table</span>
-      </a>
-      <a href="Lec4.html" class="lecture-card">
-        <span class="lecture-number n-lec">4</span>
-        <span>Lecture 4 – Graph Traversal</span>
-      </a>
-      <a href="Lec5.html" class="lecture-card">
-        <span class="lecture-number n-lec">5</span>
-        <span>Lecture 5 – Shortest Path &amp; MST</span>
-      </a>
-      <a href="Lec6.html" class="lecture-card">
-        <span class="lecture-number n-lec">6</span>
-        <span>Lecture 6 – Bubble, Selection, Insertion Sorts</span>
-      </a>
-      <a href="Lec7.html" class="lecture-card">
-        <span class="lecture-number n-lec">7</span>
-        <span>Lecture 7 – Merge Sort &amp; Quick Sort</span>
-      </a>
-      <a href="Lec8.html" class="lecture-card">
-        <span class="lecture-number n-lec">8</span>
-        <span>Lecture 8 – Selection (การเลือก)</span>
-      </a>
-      <a href="Lec9.html" class="lecture-card">
-        <span class="lecture-number n-lec">9</span>
-        <span>Lecture 9 – Review Algorithm Evaluation (สรุปภาพรวม)</span>
-      </a>
-    </div>
+</div>
 
-    <!-- Section: Exercises -->
-    <div class="section-label">Exercises & Quizzes</div>
-    <div class="lecture-grid">
-      <a href="Ex.html" class="lecture-card">
-        <span class="lecture-number n-ex">Ex</span>
-        <span>Exercise – Tree Traversal Summary &amp; Quiz</span>
-      </a>
-    </div>
+<div class="container">
+  <h2 class="section-title">บทเรียนทั้งหมด</h2>
+  <div class="cards">
+
+    <a href="SQL1.html" class="card">
+      <span class="card-tag tag-intro">1.1</span>
+      <h3>Introduction to DBMS</h3>
+      <p>ภาพรวมของระบบจัดการฐานข้อมูล แนวคิดพื้นฐาน ประเภทของ DBMS และองค์ประกอบที่สำคัญ</p>
+      <div class="card-arrow">→</div>
+    </a>
+
+    <a href="SQL1_2.html" class="card">
+      <span class="card-tag tag-intro">1.2</span>
+      <h3>องค์ประกอบ DBMS & สายอาชีพ</h3>
+      <p>องค์ประกอบของ DBMS ข้อมูลแบบ Sparse/Dense และสายอาชีพที่เกี่ยวข้อง</p>
+      <div class="card-arrow">→</div>
+    </a>
+
+    <a href="SQL2.html" class="card">
+      <span class="card-tag tag-arch">2</span>
+      <h3>Database Systems & Architecture</h3>
+      <p>สถาปัตยกรรมฐานข้อมูล 3 ชั้น องค์ประกอบ 5 ประการ หน้าที่ของ DBMS และโครงสร้างข้อมูล</p>
+      <div class="card-arrow">→</div>
+    </a>
+
+    <a href="SQL3.html" class="card">
+      <span class="card-tag tag-model">3</span>
+      <h3>Data Modeling</h3>
+      <p>แนวคิด Data Modeling กระบวนการสร้างฐานข้อมูล Building Blocks และวิวัฒนาการ Data Models</p>
+      <div class="card-arrow">→</div>
+    </a>
+
+    <a href="SQL4.html" class="card">
+      <span class="card-tag tag-erd">4.1</span>
+      <h3>ERD & EER Diagram</h3>
+      <p>โครงสร้าง ERD ชนิด Entity/Attribute Constraints Degree of Relationship และ EER Diagram</p>
+      <div class="card-arrow">→</div>
+    </a>
+
+    <a href="SQL4.2.html" class="card">
+      <span class="card-tag tag-erd">4.2</span>
+      <h3>ER & EER Modeling</h3>
+      <p>Entity Attribute Relationship Chen vs Crow's Foot Participation และการสร้าง M:N Relationship</p>
+      <div class="card-arrow">→</div>
+    </a>
+
+    <a href="SQL4.3.html" class="card">
+      <span class="card-tag tag-erd">4.3</span>
+      <h3>Database Concept Design</h3>
+      <p>การออกแบบ Conceptual Design ER & EER Diagram Constraints Business Rules และ Exam Tips</p>
+      <div class="card-arrow">→</div>
+    </a>
 
   </div>
-  
-  <div class="footer">Created by Thiwakon aiamsamram</div>
+</div>
 
-  <script>
-    // Entrance animation
-    function showPage() {
-      document.body.classList.remove('page-exit');
-      setTimeout(() => {
-        document.body.classList.add('loaded');
-      }, 50);
-    }
+<div class="footer">DBMS Learning Hub — บทเรียน DBMS ทั้งหมดรวมอยู่ที่นี่</div>
 
-    window.addEventListener('pageshow', (event) => {
-      showPage();
-    });
-
-    // Exit animation on click
-    document.querySelectorAll('.lecture-card').forEach(card => {
-      card.addEventListener('click', function(e) {
-        const targetUrl = this.getAttribute('href');
-        if (!targetUrl || targetUrl.startsWith('#')) return;
-
-        e.preventDefault();
-        document.body.classList.add('page-exit');
-        
-        setTimeout(() => {
-          window.location.href = targetUrl;
-        }, 400);
-      });
-    });
-  </script>
 </body>
 </html>

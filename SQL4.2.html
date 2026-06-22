@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ER &amp; EER Modeling - การสร้างแบบจำลองข้อมูล ER และ EER</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap');
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0f1117;
+  --bg2: #161822;
+  --bg3: #1e2030;
+  --card: #1a1d2e;
+  --border: rgba(255,255,255,0.06);
+  --text: #e2e4ed;
+  --text2: #9ba0b8;
+  --muted: #5c6078;
+  --blue: #6c72cb;
+  --purple: #9b6dff;
+  --cyan: #38bdf8;
+  --green: #34d399;
+  --amber: #fbbf24;
+  --red: #f87171;
+  --pink: #f472b6;
+  --sidebar-w: 260px;
+}
+
+html { scroll-behavior: smooth; scrollbar-width: thin; scrollbar-color: var(--blue) var(--bg2); }
+body { font-family: 'Inter','Noto Sans Thai',sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--bg2); }
+::-webkit-scrollbar-thumb { background: var(--blue); border-radius: 3px; }
+
+#progress { position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg,var(--blue),var(--purple)); z-index: 9999; transition: width 0.1s; }
+
+.sidebar { position: fixed; top: 0; left: -280px; width: var(--sidebar-w); height: 100vh; background: var(--bg2); border-right: 1px solid var(--border); z-index: 1000; transition: left 0.25s; overflow-y: auto; padding: 1.25rem 0; }
+.sidebar.open { left: 0; }
+.sidebar-head { padding: 0 1.25rem 1rem; border-bottom: 1px solid var(--border); }
+.sidebar-head h3 { font-size: 0.95rem; font-weight: 700; }
+.sidebar-head p { font-size: 0.75rem; color: var(--muted); }
+.sidebar-nav a { display: block; padding: 9px 1.25rem; color: var(--text2); text-decoration: none; font-size: 0.85rem; border-left: 3px solid transparent; transition: 0.15s; }
+.sidebar-nav a:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+.sidebar-nav a.active { color: var(--blue); border-left-color: var(--blue); background: rgba(108,114,203,0.08); }
+.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999; }
+.overlay.show { display: block; }
+
+.topbar { position: fixed; top: 0; left: 0; right: 0; height: 52px; background: rgba(15,17,23,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); z-index: 998; display: flex; align-items: center; padding: 0 1rem; gap: 0.75rem; }
+.menu-btn { background: none; border: 1px solid var(--border); color: var(--text); width: 36px; height: 36px; border-radius: 8px; cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.menu-btn:hover { background: var(--bg3); }
+.search-wrap { flex: 1; max-width: 320px; margin-left: auto; }
+.search-wrap input { width: 100%; padding: 7px 12px; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 0.85rem; outline: none; font-family: inherit; }
+.search-wrap input::placeholder { color: var(--muted); }
+.search-wrap input:focus { border-color: var(--blue); }
+.search-dropdown { position: absolute; top: 48px; right: 1rem; width: 320px; max-height: 350px; overflow-y: auto; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; display: none; }
+.search-dropdown.show { display: block; }
+.search-item { padding: 10px 14px; cursor: pointer; border-bottom: 1px solid var(--border); }
+.search-item:last-child { border-bottom: none; }
+.search-item:hover { background: rgba(255,255,255,0.03); }
+.search-item h4 { font-size: 0.85rem; font-weight: 600; }
+.search-item p { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+
+.main { padding: 72px 1.5rem 3rem; max-width: 860px; margin: 0 auto; }
+
+.hero { text-align: center; padding: 3rem 0 2rem; }
+.hero-badge { display: inline-block; padding: 5px 14px; background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.2); border-radius: 20px; font-size: 0.8rem; color: var(--cyan); margin-bottom: 1.25rem; }
+.hero h1 { font-size: clamp(1.8rem, 5vw, 2.8rem); font-weight: 800; line-height: 1.2; margin-bottom: 1rem; }
+.hero p { color: var(--text2); max-width: 560px; margin: 0 auto 1.5rem; font-size: 0.95rem; }
+.hero-btns { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2rem; }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 24px; border-radius: 10px; font-size: 0.9rem; font-weight: 600; text-decoration: none; border: none; cursor: pointer; font-family: inherit; transition: 0.2s; }
+.btn-primary { background: linear-gradient(135deg,var(--blue),var(--purple)); color: #fff; }
+.btn-primary:hover { opacity: 0.9; }
+.btn-ghost { background: var(--bg3); border: 1px solid var(--border); color: var(--text); }
+.btn-ghost:hover { background: rgba(255,255,255,0.06); }
+.hero-stats { display: flex; justify-content: center; gap: 2.5rem; }
+.hero-stats .num { font-size: 1.5rem; font-weight: 800; color: var(--blue); }
+.hero-stats .label { font-size: 0.8rem; color: var(--muted); }
+
+.section { margin-bottom: 3rem; }
+.section-num { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(135deg,var(--blue),var(--purple)); color: #fff; font-size: 0.8rem; font-weight: 700; margin-bottom: 0.5rem; }
+.section h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.25rem; }
+.section .sub { color: var(--text2); font-size: 0.9rem; margin-bottom: 1.5rem; }
+
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin-bottom: 0.75rem; }
+.card p { color: var(--text2); line-height: 1.8; }
+.card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.75rem; }
+
+.box { border-radius: 12px; padding: 1.25rem; margin: 1rem 0; }
+.box h4 { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.5rem; }
+.box p, .box ul { color: var(--text2); }
+.box ul { padding-left: 1.25rem; }
+.box li { margin-bottom: 0.4rem; }
+.box-blue { background: rgba(108,114,203,0.1); border: 1px solid rgba(108,114,203,0.2); }
+.box-blue h4 { color: var(--blue); }
+.box-cyan { background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.15); }
+.box-cyan h4 { color: var(--cyan); }
+.box-amber { background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.15); }
+.box-amber h4 { color: var(--amber); }
+.box-red { background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.15); }
+.box-red h4 { color: var(--red); }
+.box-pink { background: rgba(244,114,182,0.08); border: 1px solid rgba(244,114,182,0.15); }
+.box-pink h4 { color: var(--pink); }
+.box-purple { background: rgba(155,109,255,0.08); border: 1px solid rgba(155,109,255,0.15); }
+.box-purple h4 { color: var(--purple); }
+.box-green { background: rgba(52,211,153,0.08); border: 1px solid rgba(52,211,153,0.15); }
+.box-green h4 { color: var(--green); }
+
+.coll { background: var(--card); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 0.5rem; overflow: hidden; }
+.coll-head { padding: 0.85rem 1.25rem; cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-weight: 600; font-size: 0.9rem; user-select: none; }
+.coll-head:hover { background: rgba(255,255,255,0.02); }
+.coll-head .arr { font-size: 0.7rem; color: var(--muted); transition: transform 0.2s; }
+.coll.open .coll-head .arr { transform: rotate(180deg); }
+.coll-body { max-height: 0; overflow: hidden; transition: max-height 0.3s; }
+.coll.open .coll-body { max-height: 8000px; }
+.coll-inner { padding: 0 1.25rem 1.25rem; color: var(--text2); }
+.coll-inner p { margin-bottom: 0.6rem; }
+.coll-inner ul { padding-left: 1.25rem; }
+.coll-inner li { margin-bottom: 0.4rem; }
+
+table { width: 100%; border-collapse: collapse; margin: 0.75rem 0; font-size: 0.85rem; }
+thead { background: linear-gradient(135deg,var(--blue),var(--purple)); }
+th { padding: 10px 14px; text-align: left; font-weight: 600; }
+td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text2); }
+tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+.tabs { margin: 1rem 0; }
+.tab-btns { display: flex; gap: 3px; background: var(--bg3); border-radius: 8px; padding: 3px; margin-bottom: 0.75rem; flex-wrap: wrap; }
+.tab-btn { padding: 7px 14px; border-radius: 6px; border: none; background: none; color: var(--text2); font-size: 0.8rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+.tab-btn.active { background: var(--blue); color: #fff; }
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+
+.hier { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; margin: 1.5rem 0; }
+.hier-step { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1.25rem; background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; width: 100%; max-width: 420px; }
+.hier-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; background: rgba(108,114,203,0.15); }
+.hier-step:nth-child(3) .hier-icon { background: rgba(56,189,248,0.15); }
+.hier-step:nth-child(5) .hier-icon { background: rgba(155,109,255,0.15); }
+.hier-step:nth-child(7) .hier-icon { background: rgba(244,114,182,0.15); }
+.hier-text h5 { font-size: 0.85rem; font-weight: 600; }
+.hier-text p { font-size: 0.75rem; color: var(--muted); }
+.hier-arr { color: var(--muted); font-size: 0.9rem; }
+
+.er { display: flex; flex-wrap: wrap; gap: 1.5rem; justify-content: center; margin: 1.5rem 0; padding: 1.5rem; background: var(--bg3); border: 1px solid var(--border); border-radius: 12px; }
+.entity { background: var(--bg2); border: 2px solid var(--blue); border-radius: 10px; min-width: 200px; overflow: hidden; }
+.entity-head { padding: 0.6rem 0.75rem; text-align: center; font-weight: 700; font-size: 0.9rem; background: linear-gradient(135deg,var(--blue),var(--purple)); color: #fff; }
+.entity.purple { border-color: var(--purple); }
+.entity.purple .entity-head { background: linear-gradient(135deg,var(--purple),var(--pink)); }
+.entity.cyan { border-color: var(--cyan); }
+.entity.cyan .entity-head { background: linear-gradient(135deg,var(--cyan),var(--blue)); }
+.entity.green { border-color: var(--green); }
+.entity.green .entity-head { background: linear-gradient(135deg,var(--green),var(--cyan)); }
+.entity.amber { border-color: var(--amber); }
+.entity.amber .entity-head { background: linear-gradient(135deg,var(--amber),var(--red)); }
+.entity.pink { border-color: var(--pink); }
+.entity.pink .entity-head { background: linear-gradient(135deg,var(--pink),var(--purple)); }
+.entity-field { padding: 6px 0.75rem; border-bottom: 1px solid var(--border); font-size: 0.8rem; display: flex; align-items: center; gap: 6px; }
+.entity-field:last-child { border-bottom: none; }
+.entity-field.weak { font-style: italic; opacity: 0.7; }
+.entity-field.multi { text-decoration: underline double; }
+.entity-field.derived { color: var(--muted); font-style: italic; }
+.entity-field.composite { border-left: 3px solid var(--cyan); padding-left: 12px; margin-left: 8px; }
+.pk { color: var(--amber); font-weight: 700; font-size: 0.65rem; padding: 1px 5px; background: rgba(251,191,36,0.12); border-radius: 3px; }
+.fk { color: var(--cyan); font-weight: 700; font-size: 0.65rem; padding: 1px 5px; background: rgba(56,189,248,0.12); border-radius: 3px; }
+.er-link { display: flex; align-items: center; justify-content: center; color: var(--purple); font-size: 1.5rem; flex-direction: column; gap: 0.25rem; }
+.er-label { font-size: 0.7rem; color: var(--text2); background: var(--bg3); padding: 2px 8px; border-radius: 4px; border: 1px solid var(--border); }
+
+.sql { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin: 0.75rem 0; }
+.sql-head { padding: 8px 14px; background: rgba(108,114,203,0.1); border-bottom: 1px solid var(--border); font-size: 0.8rem; font-weight: 600; color: var(--blue); }
+.sql-body { padding: 0.75rem 1rem; }
+.sql-body pre { font-family: 'JetBrains Mono',monospace; font-size: 0.8rem; color: var(--cyan); line-height: 1.8; white-space: pre-wrap; }
+.sk { color: var(--purple); font-weight: 600; }
+.ss { color: var(--green); }
+.sc { color: var(--muted); font-style: italic; }
+
+.fc-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(240px,1fr)); gap: 0.75rem; margin: 1rem 0; }
+.fc { perspective: 800px; height: 170px; cursor: pointer; }
+.fc-inner { position: relative; width: 100%; height: 100%; transition: transform 0.45s; transform-style: preserve-3d; }
+.fc.flipped .fc-inner { transform: rotateY(180deg); }
+.fc-front, .fc-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.25rem; text-align: center; border: 1px solid var(--border); }
+.fc-front { background: rgba(108,114,203,0.1); }
+.fc-back { background: rgba(56,189,248,0.08); transform: rotateY(180deg); }
+.fc-front h4 { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.3rem; }
+.fc-front p { font-size: 0.8rem; color: var(--muted); }
+.fc-back h4 { font-size: 0.9rem; font-weight: 700; color: var(--cyan); margin-bottom: 0.3rem; }
+.fc-back p { font-size: 0.8rem; color: var(--text2); line-height: 1.5; }
+.fc-hint { position: absolute; bottom: 10px; font-size: 0.7rem; color: var(--muted); }
+
+.quiz-q { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin-bottom: 0.75rem; }
+.quiz-q h4 { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.75rem; }
+.quiz-q .qtext { font-weight: 600; margin-bottom: 0.75rem; }
+.quiz-opts { display: flex; flex-direction: column; gap: 0.4rem; }
+.quiz-opt { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; font-size: 0.85rem; transition: 0.15s; }
+.quiz-opt:hover { background: rgba(255,255,255,0.03); border-color: var(--blue); }
+.quiz-opt.selected { background: rgba(108,114,203,0.12); border-color: var(--blue); }
+.quiz-opt.correct { background: rgba(52,211,153,0.12); border-color: var(--green); color: var(--green); }
+.quiz-opt.wrong { background: rgba(248,113,113,0.12); border-color: var(--red); color: var(--red); }
+.opt-mark { width: 24px; height: 24px; border-radius: 6px; background: var(--bg3); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.75rem; flex-shrink: 0; }
+.quiz-exp { margin-top: 0.75rem; padding: 0.75rem; background: var(--bg3); border-radius: 8px; display: none; font-size: 0.85rem; color: var(--text2); }
+.quiz-exp.show { display: block; }
+.quiz-submit { display: block; width: 100%; padding: 11px; background: linear-gradient(135deg,var(--blue),var(--purple)); color: #fff; border: none; border-radius: 10px; font-size: 0.9rem; font-weight: 600; cursor: pointer; margin-top: 0.75rem; font-family: inherit; }
+.quiz-score { text-align: center; padding: 1.5rem; background: var(--card); border: 1px solid var(--border); border-radius: 12px; margin-top: 0.75rem; display: none; }
+.quiz-score.show { display: block; }
+.quiz-score .sv { font-size: 2.5rem; font-weight: 900; color: var(--blue); }
+
+.cheat { background: rgba(108,114,203,0.06); border: 1px solid rgba(108,114,203,0.15); border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0; }
+.cheat h3 { text-align: center; font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; color: var(--blue); }
+.cheat-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(240px,1fr)); gap: 0.75rem; }
+.cheat-item { padding: 0.75rem; background: var(--card); border: 1px solid var(--border); border-radius: 8px; }
+.cheat-item h4 { font-size: 0.8rem; font-weight: 700; color: var(--blue); margin-bottom: 0.3rem; }
+.cheat-item p { font-size: 0.8rem; color: var(--text2); line-height: 1.5; }
+
+.btt { position: fixed; bottom: 24px; right: 24px; width: 42px; height: 42px; border-radius: 10px; background: linear-gradient(135deg,var(--blue),var(--purple)); color: #fff; border: none; font-size: 1.1rem; cursor: pointer; z-index: 997; opacity: 0; visibility: hidden; transform: translateY(12px); transition: 0.25s; display: flex; align-items: center; justify-content: center; }
+.btt.show { opacity: 1; visibility: visible; transform: translateY(0); }
+.btt:hover { opacity: 0.85; }
+
+.footer { text-align: center; padding: 2rem 1rem; border-top: 1px solid var(--border); margin-top: 3rem; color: var(--muted); font-size: 0.8rem; }
+
+.cl { padding-left: 1.25rem; margin: 0.4rem 0; }
+.cl li { margin-bottom: 0.4rem; color: var(--text2); line-height: 1.7; }
+.cl li strong { color: var(--text); }
+strong { color: var(--text); }
+
+/* EER Visual Diagram */
+.eer-visual { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; margin: 1.5rem 0; padding: 2rem; background: var(--bg3); border: 1px solid var(--border); border-radius: 12px; position: relative; }
+.eer-entity { background: var(--bg2); border: 2px solid var(--blue); border-radius: 10px; min-width: 180px; text-align: center; padding: 0.6rem; font-weight: 700; font-size: 0.9rem; position: relative; z-index: 2; }
+.eer-entity.super { border-color: var(--purple); background: linear-gradient(135deg, rgba(155,109,255,0.1), rgba(108,114,203,0.05)); }
+.eer-entity.sub { border-color: var(--cyan); font-size: 0.8rem; min-width: 140px; }
+.eer-circle { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--amber); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; color: var(--amber); background: var(--bg3); z-index: 2; }
+.eer-line { width: 2px; background: var(--text2); }
+.eer-line.double { width: 4px; background: repeating-linear-gradient(180deg, var(--text2) 0px, var(--text2) 4px, transparent 4px, transparent 8px); }
+.eer-branch { display: flex; gap: 2rem; align-items: flex-start; }
+.eer-col { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+
+/* Constraint Box */
+.constraint-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; }
+.constraint-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; }
+.constraint-card h4 { font-size: 0.85rem; font-weight: 700; margin-bottom: 0.5rem; }
+.constraint-card p { font-size: 0.8rem; color: var(--text2); line-height: 1.6; }
+.constraint-card.d { border-color: rgba(248,113,113,0.3); }
+.constraint-card.d h4 { color: var(--red); }
+.constraint-card.o { border-color: rgba(52,211,153,0.3); }
+.constraint-card.o h4 { color: var(--green); }
+.constraint-card.t { border-color: rgba(108,114,203,0.3); }
+.constraint-card.t h4 { color: var(--blue); }
+.constraint-card.p { border-color: rgba(251,191,36,0.3); }
+.constraint-card.p h4 { color: var(--amber); }
+
+/* Notation comparison */
+.notation-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; }
+
+@media (max-width: 768px) {
+  .main { padding: 64px 1rem 2rem; }
+  .hero h1 { font-size: 1.6rem; }
+  .hero-stats { gap: 1.5rem; }
+  .er { flex-direction: column; align-items: center; }
+  .er-link { transform: rotate(90deg); }
+  .fc-grid { grid-template-columns: 1fr; }
+  .cheat-grid { grid-template-columns: 1fr; }
+  .constraint-grid { grid-template-columns: 1fr; }
+  .notation-compare { grid-template-columns: 1fr; }
+  .section h2 { font-size: 1.25rem; }
+  .eer-branch { flex-direction: column; gap: 1rem; }
+}
+.cross-nav { border-top: 1px solid var(--border); margin-top: 0.5rem; padding-top: 0.75rem; }
+.cross-nav-title { font-size: 0.7rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; padding: 0 1.25rem; margin-bottom: 0.5rem; }
+.cross-nav a { display: block; padding: 7px 1.25rem; color: var(--cyan); text-decoration: none; font-size: 0.8rem; border-left: 3px solid transparent; transition: 0.15s; }
+.cross-nav a:hover { background: rgba(56,189,248,0.06); border-left-color: var(--cyan); }
+.cross-nav a.current { color: var(--muted); pointer-events: none; }
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+
+<div class="overlay" id="overlay"></div>
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-head">
+    <h3>ER &amp; EER Modeling</h3>
+    <p>บทที่ 3.2 - Database Design</p>
+  </div>
+  <div class="sidebar-nav" id="sideNav">
+    <a href="#s-overview" class="active">ภาพรวมบทเรียน</a>
+    <a href="#s-objectives">วัตถุประสงค์</a>
+    <a href="#s-keyconcepts">แนวคิดสำคัญ</a>
+    <a href="#s-terms">คำศัพท์</a>
+    <a href="#s-relationships">Relationships &amp; Constraints</a>
+    <a href="#s-eer">EER Diagram</a>
+    <a href="#s-eer-constraints">Constraints ใน EER</a>
+    <a href="#s-examples">ตัวอย่างประกอบ</a>
+    <a href="#s-er">Visual ER Diagram</a>
+    <a href="#s-flash">Flashcards</a>
+    <a href="#s-quiz">Quiz</a>
+    <a href="#s-cheat">Cheat Sheet</a>
+    <a href="#s-exam">Exam Notes</a>
+  </div>
+  <div class="cross-nav">
+    <div class="cross-nav-title">Go to other lessons</div>
+    <a href="index.html">&#127968; หน้าหลัก</a>
+    <a href="SQL1.html">1.1 Introduction to DBMS</a>
+    <a href="SQL1_2.html">1.2 องค์ประกอบ DBMS</a>
+    <a href="SQL2.html">1.3 Database Systems</a>
+    <a href="SQL3.html">2.1 Data Modeling</a>
+    <a href="SQL4.html">3.1 ERD &amp; EER Diagram</a>
+    <a href="SQL4.2.html" class="current">3.2 ER &amp; EER Modeling (นี้)</a>
+  </div>
+</nav>
+
+<div class="topbar">
+  <button class="menu-btn" id="menuBtn">&#9776;</button>
+  <div class="search-wrap" style="position:relative;">
+    <input type="text" id="searchIn" placeholder="ค้นหาเนื้อหา..." />
+    <div class="search-dropdown" id="searchDrop"></div>
+  </div>
+</div>
+
+<main class="main">
+
+<!-- Hero -->
+<section class="hero" id="hero">
+  <div class="hero-badge">Database Design - ER &amp; EER Modeling</div>
+  <h1>การสร้างแบบจำลองข้อมูล<br>ER และ EER</h1>
+  <p>เรียนรู้วิธีการออกแบบโครงสร้างการเก็บข้อมูล ตั้งแต่ ER Model พื้นฐานไปจนถึง Extended/Enhanced ER Model (EER) รวมถึง Constraints ที่สำคัญ</p>
+  <div class="hero-btns">
+    <a href="#s-overview" class="btn btn-primary">เริ่มเรียนเลย</a>
+    <a href="#s-quiz" class="btn btn-ghost">ทดสอบความรู้</a>
+  </div>
+  <div class="hero-stats">
+    <div><div class="num">13</div><div class="label">หัวข้อเรียน</div></div>
+    <div><div class="num">12</div><div class="label">Flashcards</div></div>
+    <div><div class="num">6</div><div class="label">Quiz ข้อ</div></div>
+  </div>
+</section>
+
+<!-- 1 Overview -->
+<div class="section" id="s-overview">
+  <div class="section-num">1</div>
+  <h2>ภาพรวมบทเรียน</h2>
+  <p class="sub">บทนี้เรียนเรื่องอะไร?</p>
+  <div class="card">
+    <p>บทนี้ครอบคลุมกระบวนการออกแบบโครงสร้างการเก็บข้อมูลในฐานข้อมูล ตั้งแต่แนวคิดพื้นฐาน (<strong>ER Model</strong>) ไปจนถึงแบบจำลองขั้นสูง (<strong>Extended/Enhanced ER Model หรือ EER</strong>) ผู้เรียนจะได้เรียนรู้วิธีการแปลงกฎเกณฑ์ทางธุรกิจ (<strong>Business Rules</strong>) ให้กลายเป็นแผนภาพที่ระบบฐานข้อมูลสามารถเข้าใจและนำไปสร้างเป็นตารางข้อมูลได้จริง รวมถึงการกำหนดข้อบังคับต่างๆ (<strong>Constraints</strong>) เพื่อให้ข้อมูลมีความถูกต้องสมบูรณ์</p>
+  </div>
+  <div class="card">
+    <h3>วิวัฒนาการของการออกแบบฐานข้อมูล</h3>
+    <div class="hier">
+      <div class="hier-step"><div class="hier-icon">📝</div><div class="hier-text"><h5>Business Rules</h5><p>กฎเกณฑ์ทางธุรกิจ ข้อกำหนดขององค์กร</p></div></div>
+      <div class="hier-arr">↓</div>
+      <div class="hier-step"><div class="hier-icon">🔷</div><div class="hier-text"><h5>ER Diagram</h5><p>แบบจำลองพื้นฐาน - Entity, Attribute, Relationship</p></div></div>
+      <div class="hier-arr">↓</div>
+      <div class="hier-step"><div class="hier-icon">🔶</div><div class="hier-text"><h5>EER Diagram</h5><p>แบบจำลองขั้นสูง - Supertype, Subtype, Inheritance</p></div></div>
+      <div class="hier-arr">↓</div>
+      <div class="hier-step"><div class="hier-icon">🗃️</div><div class="hier-text"><h5>Database Schema</h5><p>ตารางข้อมูลจริง พร้อม Keys &amp; Constraints</p></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- 2 Objectives -->
+<div class="section" id="s-objectives">
+  <div class="section-num">2</div>
+  <h2>วัตถุประสงค์การเรียนรู้</h2>
+  <p class="sub">หลังเรียนจบบทนี้ ผู้เรียนควรจะสามารถ:</p>
+  <div class="card">
+    <ul class="cl">
+      <li>เข้าใจแนวคิดและวิธีพัฒนา <strong>ER Diagram</strong> และ <strong>EER Diagram</strong> ได้อย่างถูกต้อง</li>
+      <li>รู้จักสัญลักษณ์ที่ใช้ในการวาดแผนภาพ เช่น <strong>Chen Notation</strong> และ <strong>Crow's Foot Notation</strong></li>
+      <li>สามารถแปลงกฎเกณฑ์ธุรกิจ (<strong>Business Rules</strong>) มาแสดงในรูปแบบ ERD ได้</li>
+      <li>เข้าใจและสามารถกำหนดข้อบังคับความสัมพันธ์ เช่น <strong>Connectivity</strong> (1:1, 1:M, M:N) และ <strong>Cardinality</strong> (Min, Max) ได้</li>
+      <li>สามารถหาข้อผิดพลาดในการออกแบบและปรับแก้ไขได้อย่างเหมาะสม</li>
+    </ul>
+  </div>
+</div>
+
+<!-- 3 Key Concepts -->
+<div class="section" id="s-keyconcepts">
+  <div class="section-num">3</div>
+  <h2>แนวคิดสำคัญด้าน Database</h2>
+  <p class="sub">Key Concepts ที่ต้องเข้าใจ</p>
+
+  <div class="coll open">
+    <div class="coll-head" onclick="toggleColl(this)">1. Entity (เอนทิตี)<span class="arr">▼</span></div>
+    <div class="coll-body"><div class="coll-inner">
+      <p>คือข้อมูลหลักของวัตถุที่เราต้องการจัดเก็บข้อมูล เช่น นักศึกษา (STUDENT), พนักงาน (EMPLOYEE)</p>
+      <div class="tabs">
+        <div class="tab-btns">
+          <button class="tab-btn active" onclick="switchTab(event,'tp-strong')">Strong Entity</button>
+          <button class="tab-btn" onclick="switchTab(event,'tp-weak')">Weak Entity</button>
+        </div>
+        <div class="tab-pane active" id="tp-strong">
+          <div class="card">
+            <h3>Strong Entity (เอนทิตีปกติ)</h3>
+            <p>เอนทิตีที่สามารถคงอยู่ได้ด้วยตัวเอง มีคุณลักษณะหลัก (<strong>Primary Key</strong>) ของตัวเองอย่างชัดเจน เช่น นักศึกษา, รายวิชา, พนักงาน</p>
+          </div>
+        </div>
+        <div class="tab-pane" id="tp-weak">
+          <div class="card">
+            <h3>Weak Entity (เอนทิตีอ่อนแอ)</h3>
+            <p>เอนทิตีที่ไม่สามารถคงอยู่ได้ด้วยตัวเอง ต้องอาศัยการมีอยู่ของเอนทิตีอื่น (Strong Entity) และไม่มี Primary Key เป็นของตัวเอง เช่น ข้อมูลเวลาเข้าออกงานของพนักงาน (ต้องมีพนักงานก่อนจึงจะมีเวลางานได้) หรือข้อมูลผู้ใต้บังคับบัญชา (Dependent)</p>
+            <div class="box box-amber">
+              <h4>ข้อสังเกต</h4>
+              <p>Weak Entity จะมีเส้นขอบตารางเป็น <strong>เส้นประ (Dashed Line)</strong> ในแผนภาพ ER</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="coll">
+    <div class="coll-head" onclick="toggleColl(this)">2. Attribute (คุณลักษณะ)<span class="arr">▼</span></div>
+    <div class="coll-body"><div class="coll-inner">
+      <p>คือคุณสมบัติหรือรายละเอียดของเอนทิตี เช่น นักศึกษามีคุณลักษณะคือ ชื่อ, นามสกุล, อีเมล</p>
+      <div class="tabs">
+        <div class="tab-btns">
+          <button class="tab-btn active" onclick="switchTab(event,'tp-simple')">Simple</button>
+          <button class="tab-btn" onclick="switchTab(event,'tp-composite')">Composite</button>
+          <button class="tab-btn" onclick="switchTab(event,'tp-single')">Single-valued</button>
+          <button class="tab-btn" onclick="switchTab(event,'tp-multi')">Multi-valued</button>
+          <button class="tab-btn" onclick="switchTab(event,'tp-derived')">Derived</button>
+        </div>
+        <div class="tab-pane active" id="tp-simple">
+          <div class="card"><h3>Simple Attribute</h3><p>แบ่งย่อยไม่ได้แล้ว เช่น ชื่อ, โรงเรียน</p></div>
+        </div>
+        <div class="tab-pane" id="tp-composite">
+          <div class="card"><h3>Composite Attribute</h3><p>แบ่งเป็นส่วนย่อยได้อีก เช่น ชื่อ-นามสกุล (แบ่งเป็นชื่อ และนามสกุลได้), ที่อยู่ (แบ่งเป็น บ้านเลขที่ ถนน แขวง ได้)</p></div>
+        </div>
+        <div class="tab-pane" id="tp-single">
+          <div class="card"><h3>Single-valued Attribute</h3><p>มีค่าได้เพียงค่าเดียว เช่น เลขบัตรประชาชน, วันเกิด</p></div>
+        </div>
+        <div class="tab-pane" id="tp-multi">
+          <div class="card"><h3>Multi-valued Attribute</h3><p>มีได้หลายค่า เช่น เบอร์โทรศัพท์, อีเมล (1 คนมีได้หลายเบอร์/หลายอีเมล) สัญลักษณ์ใน Chen notation จะเป็นวงรีเส้นคู่ การจัดการคืออาจต้องแตกตารางหรือสร้างเอนทิตีใหม่</p></div>
+        </div>
+        <div class="tab-pane" id="tp-derived">
+          <div class="card"><h3>Derived Attribute</h3><p>คุณลักษณะที่ได้มาจากการคำนวณจากคุณลักษณะอื่น เช่น อายุ (คำนวณมาจากวันเกิด) สัญลักษณ์จะเป็นวงรีเส้นประ</p></div>
+        </div>
+      </div>
+      <div class="box box-blue">
+        <h4>Primary Key (คุณลักษณะหลัก/Key Attribute)</h4>
+        <p>ค่าที่มีความเป็นเอกลักษณ์ (Unique) ไม่ซ้ำกัน ใช้สำหรับอ้างอิงข้อมูลแต่ละแถว อาจเป็นค่าเดียว (Single PK) หรือนำหลายแอตทริบิวต์มารวมกัน (Composite PK) ก็ได้</p>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="coll">
+    <div class="coll-head" onclick="toggleColl(this)">3. Relationship (ความสัมพันธ์)<span class="arr">▼</span></div>
+    <div class="coll-body"><div class="coll-inner">
+      <p>ความเกี่ยวข้องระหว่างเอนทิตี โดยต้องพิจารณาทั้ง 2 ทิศทาง</p>
+      <div class="tabs">
+        <div class="tab-btns">
+          <button class="tab-btn active" onclick="switchTab(event,'tp-unary')">Unary</button>
+          <button class="tab-btn" onclick="switchTab(event,'tp-binary')">Binary</button>
+          <button class="tab-btn" onclick="switchTab(event,'tp-ternary')">Ternary</button>
+        </div>
+        <div class="tab-pane active" id="tp-unary">
+          <div class="card"><h3>Unary (ความสัมพันธ์ภายในเอนทิตีเดียวกัน)</h3><p>เช่น พนักงานที่เป็นหัวหน้า ดูแลพนักงานด้วยกันเอง</p></div>
+        </div>
+        <div class="tab-pane" id="tp-binary">
+          <div class="card"><h3>Binary (ความสัมพันธ์แบบสองเอนทิตี)</h3><p>เช่น พนักงาน ทำงานให้ แผนก</p></div>
+        </div>
+        <div class="tab-pane" id="tp-ternary">
+          <div class="card"><h3>Ternary (ความสัมพันธ์แบบสามเอนทิตี)</h3><p>เช่น หมอ สั่งจ่าย ยา ให้กับ คนไข้</p></div>
+        </div>
+      </div>
+      <div class="box box-purple">
+        <h4>Connectivity ประเภทความสัมพันธ์หลัก</h4>
+        <ul>
+          <li><strong>One-to-One (1:1):</strong> ผู้ชาย 1 คน แต่งงานกับ ผู้หญิง 1 คน</li>
+          <li><strong>One-to-Many (1:M):</strong> แผนก 1 แผนก มีพนักงานหลายคน</li>
+          <li><strong>Many-to-Many (M:N):</strong> นักศึกษาหลายคน ลงเรียนได้หลายวิชา</li>
+        </ul>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="coll">
+    <div class="coll-head" onclick="toggleColl(this)">4. Cardinality Constraint (ข้อบังคับปริมาณ)<span class="arr">▼</span></div>
+    <div class="coll-body"><div class="coll-inner">
+      <p>ค่าช่วง (ต่ำสุด, สูงสุด) หรือ <strong>(Min, Max)</strong> ของเอนทิตีที่อนุญาตให้เกิดขึ้นในความสัมพันธ์ เช่น (0, 4) หมายถึงมีได้อย่างน้อย 0 และมากสุด 4</p>
+      <div class="box box-red">
+        <h4>สำคัญ! การใส่ค่า (Min, Max)</h4>
+        <p>ค่า Cardinality จะใส่ที่ <strong>ฝั่งตรงข้าม</strong> ของเอนทิตีที่เกี่ยวข้อง เช่น "ลูกค้า 1 คน สั่งสินค้าได้สูงสุด 10 ชิ้น" ค่า (0, 10) จะไปเขียนที่ฝั่งสินค้า ไม่ใช่ฝั่งลูกค้า</p>
+      </div>
+      <p><strong>Participation (การมีส่วนร่วม):</strong></p>
+      <ul class="cl">
+        <li><strong>Optional (ทางเลือก):</strong> ข้อมูลไม่จำเป็นต้องมี (Min = 0) ในแผนภาพใช้เส้นเดี่ยว</li>
+        <li><strong>Mandatory (บังคับ / Total participation):</strong> จำเป็นต้องมีข้อมูลเกิดขึ้นเสมอ (Min = 1 หรือ NOT NULL) ในแผนภาพจะใช้เส้นคู่ (Double line)</li>
+      </ul>
+    </div></div>
+  </div>
+
+  <div class="coll">
+    <div class="coll-head" onclick="toggleColl(this)">5. Data Integrity (ความสมบูรณ์ของข้อมูล)<span class="arr">▼</span></div>
+    <div class="coll-body"><div class="coll-inner">
+      <p>การใช้ข้อบังคับ (<strong>Constraints</strong>) ต่างๆ ไม่ว่าจะเป็น Connectivity, Cardinality หรือ Participation เพื่อรับรองความถูกต้องของข้อมูลในฐานข้อมูล</p>
+      <div class="box box-green">
+        <h4>สรุป Constraint 3 ตัวหลัก</h4>
+        <ul>
+          <li><strong>Connectivity:</strong> ประเภทความสัมพันธ์ (1:1, 1:M, M:N)</li>
+          <li><strong>Cardinality:</strong> ช่วงต่ำสุด-สูงสุด (Min, Max)</li>
+          <li><strong>Participation:</strong> Optional (0, เส้นเดี่ยว) vs Mandatory (1, เส้นคู่)</li>
+        </ul>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<!-- 4 Terms -->
+<div class="section" id="s-terms">
+  <div class="section-num">4</div>
+  <h2>คำศัพท์สำคัญ</h2>
+  <p class="sub">Terms ที่ต้องจำ</p>
+  <div class="card" style="overflow-x:auto;">
+    <table>
+      <thead><tr><th>คำศัพท์</th><th>ความหมาย</th></tr></thead>
+      <tbody>
+        <tr><td><strong>ERD</strong> (Entity Relationship Diagram)</td><td>แผนภาพจำลองโครงสร้างข้อมูลและความสัมพันธ์ระหว่างข้อมูล</td></tr>
+        <tr><td><strong>EERD</strong> (Enhanced ER Diagram)</td><td>แผนภาพ ER ขั้นสูงที่เพิ่มแนวคิด Supertype/Subtype เพื่อลดความซ้ำซ้อนและลดค่า NULL</td></tr>
+        <tr><td><strong>Supertype</strong> (Superclass)</td><td>เอนทิตีหลัก (ตัวแม่) ที่เก็บ Common Attribute (คุณลักษณะที่ใช้ร่วมกัน)</td></tr>
+        <tr><td><strong>Subtype</strong> (Subclass)</td><td>เอนทิตีย่อย (ตัวลูก) ที่เก็บ Unique Attribute (คุณลักษณะเฉพาะตัว) และสืบทอดคุณสมบัติจากตัวแม่มาทั้งหมด</td></tr>
+        <tr><td><strong>Discriminator</strong></td><td>ตัวแบ่งแยกย่อย Subtype มักแสดงด้วยวงกลมในแผนภาพ ใช้ระบุว่าข้อมูลนี้จะถูกจัดลงใน Subtype ใด</td></tr>
+        <tr><td><strong>Inheritance</strong></td><td>การสืบทอดคุณสมบัติ ทั้ง Primary Key, Attributes และ Relationships จาก Supertype ไปยัง Subtype</td></tr>
+        <tr><td><strong>Disjoint Constraint (D)</strong></td><td>ข้อบังคับแบบ "แบ่งแยก" ข้อมูลของ Supertype จะต้องเป็น Subtype ได้เพียงประเภทเดียวเท่านั้น ห้ามซ้ำซ้อนกัน</td></tr>
+        <tr><td><strong>Overlapping Constraint (O)</strong></td><td>ข้อบังคับแบบ "ซ้ำซ้อนได้" ข้อมูลของ Supertype หนึ่งตัว สามารถเป็น Subtype ได้มากกว่า 1 ประเภทในเวลาเดียวกัน</td></tr>
+        <tr><td><strong>Total Completeness</strong></td><td>ข้อบังคับแบบ "บังคับสมบูรณ์" ข้อมูลทุกแถวในตาราง Supertype จะต้องปรากฏอยู่ในตาราง Subtype อย่างน้อย 1 แห่ง (แสดงด้วยเส้นคู่)</td></tr>
+        <tr><td><strong>Partial Completeness</strong></td><td>ข้อบังคับแบบ "บางส่วน" ข้อมูลใน Supertype อาจจะไม่ต้องไปปรากฏอยู่ใน Subtype เลยก็ได้ (แสดงด้วยเส้นเดี่ยว)</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 5 Relationships & Constraints -->
+<div class="section" id="s-relationships">
+  <div class="section-num">5</div>
+  <h2>ความสัมพันธ์และข้อบังคับ</h2>
+  <p class="sub">Relationships &amp; Constraints</p>
+
+  <div class="coll open">
+    <div class="coll-head" onclick="toggleColl(this)">1. Connectivity (ประเภทความสัมพันธ์)<span class="arr">▼</span></div>
+    <div class="coll-body"><div class="coll-inner">
+      <p>การวาด ER ต้องระบุข้อบังคับของความสัมพันธ์ (Relationship Constraints) ซึ่งประกอบด้วย 3 ส่วนหลัก</p>
+      <div class="er">
+        <div class="entity">
+          <div class="entity-head">1:1 One-to-One</div>
+          <div class="entity-field">ผู้ชาย 1 คน</div>
+          <div class="entity-field" style="justify-content:center; color:var(--muted);">────────</div>
+          <div class="entity-field">แต่งงานกับ</div>
+          <div class="entity-field" style="justify-content:center; color:var(--muted);">────────</div>
+          <div class="entity-field">ผู้หญิง 1 คน</div>
+        </div>
+        <div class="entity purple">
+          <div class="entity-head">1:M One-to-Many</div>
+          <div class="entity-field">แผนก 1 แผนก</div>
+          <div class="entity-field" style="justify-content:center; color:var(--muted);">────────</div>
+          <div class="entity-field">มีพนักงานหลายคน</div>
+        </div>
+        <div class="entity cyan">
+          <div class="entity-head">M:N Many-to-Many</div>
+          <div class="entity-field">นักศึกษาหลายคน</div>
+          <div class="entity-field" style="justify-content:center; color:var(--muted);">────────</div>
+          <div class="entity-field">ลงเรียนหลายวิชา</div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="coll">
+    <div class="coll-head" onclick="toggleColl(this)">2. Cardinality (ช่วงต่ำสุด-สูงสุด)<span class="arr">▼</span></div>
+    <div class="coll-body"><div class="coll-inner">
+      <p>Cardinality คือช่วงต่ำสุดและสูงสุดของการเกิดข้อมูล เขียนในรูป <strong>(Min, Max)</strong></p>
+      <div class="box box-amber">
+        <h4>ตัวอย่าง</h4>
+        <p>นักศึกษา 1 คนอาจมีหนังสือ 0 เล่ม หรือสูงสุด 10 เล่ม จะเขียนฝั่งหนังสือเป็น <strong>(0, 10)</strong></p>
+      </div>
+      <div class="box box-red">
+        <h4>ข้อควรระวัง - ใส่ฝั่งตรงข้าม!</h4>
+        <p>หากบอกว่า "ลูกค้า 1 คน สั่งสินค้าได้สูงสุด 10 ชิ้น" ค่า (0, 10) จะต้องไปเขียนอยู่ที่ <strong>ฝั่งสินค้า</strong> ไม่ใช่ฝั่งลูกค้า เพราะตัวเลขบอกจำนวนของสิ่งนั้นๆ ที่สัมพันธ์กับอีกฝั่ง</p>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="coll">
+    <div class="coll-head" onclick="toggleColl(this)">3. Participation (การมีส่วนร่วม)<span class="arr">▼</span></div>
+    <div class="coll-body"><div class="coll-inner">
+      <div class="tabs">
+        <div class="tab-btns">
+          <button class="tab-btn active" onclick="switchTab(event,'tp-optional')">Optional (ทางเลือก)</button>
+          <button class="tab-btn" onclick="switchTab(event,'tp-mandatory')">Mandatory (บังคับ)</button>
+        </div>
+        <div class="tab-pane active" id="tp-optional">
+          <div class="card">
+            <h3>Optional Participation</h3>
+            <p>ข้อมูลไม่จำเป็นต้องมี (<strong>Min = 0</strong>) เช่น สินค้าที่อาจจะยังไม่มีลูกค้าคนไหนมาจองเลย</p>
+            <p style="margin-top:0.5rem;">ในแผนภาพใช้ <strong>เส้นเดี่ยว</strong></p>
+          </div>
+        </div>
+        <div class="tab-pane" id="tp-mandatory">
+          <div class="card">
+            <h3>Mandatory Participation (Total)</h3>
+            <p>จำเป็นต้องมีข้อมูลเกิดขึ้นเสมอ (<strong>Min = 1</strong> หรือ NOT NULL) เช่น ลูกค้า "จำเป็นต้อง" จองสินค้าออนไลน์</p>
+            <p style="margin-top:0.5rem;">ในแผนภาพจะใช้ <strong>เส้นคู่ (Double line)</strong></p>
+          </div>
+        </div>
+      </div>
+      <div class="box box-red">
+        <h4>ข้อควรระวัง - ห้ามขัดแย้ง!</h4>
+        <p>ถ้า Minimum Cardinality เป็น 1 เช่น (1, M) หมายถึง Mandatory เส้นที่เชื่อมเข้าหาเอนทิตีนั้นจะต้องเป็น <strong>เส้นคู่</strong> ถ้า Minimum เป็น 0 เช่น (0, M) เส้นเชื่อมจะเป็น <strong>เส้นเดี่ยว</strong> ห้ามเขียนขัดแย้งกันเด็ดขาด (เช่น ใส่ 0 แต่ไปขีด 2 เส้น จะโดนหักคะแนน -1 ทันที)</p>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<!-- 6 EER Diagram -->
+<div class="section" id="s-eer">
+  <div class="section-num">6</div>
+  <h2>EER Diagram (Extended/Enhanced ER)</h2>
+  <p class="sub">แบบจำลองขั้นสูง</p>
+
+  <div class="card">
+    <p>ในโลกความเป็นจริง ฐานข้อมูลมีความซับซ้อน หากรวมข้อมูลทุกอย่างไว้ใน Entity เดียวจะทำให้เกิดช่องว่าง (<strong>NULL Value</strong>) จำนวนมาก จึงเกิดแนวคิด EER ขึ้นมา</p>
+  </div>
+
+  <div class="coll open">
+    <div class="coll-head" onclick="toggleColl(this)">ขั้นตอนการสร้าง EER<span class="arr">▼</span></div>
+    <div class="coll-body"><div class="coll-inner">
+      <ul class="cl">
+        <li><strong>ขั้นตอนที่ 1:</strong> กำหนด Supertype และ Subtype (การทำ Data Cluster)</li>
+        <li><strong>ขั้นตอนที่ 2:</strong> หา Common Attributes ไปไว้ที่ Supertype เช่น ธนาคารมีทั้งบัญชีออมทรัพย์และกระแสรายวัน ทั้งคู่มี ชื่อ, นามสกุล, ยอดเงินเหมือนกัน ให้เอาไปไว้ที่ตัวแม่</li>
+        <li><strong>ขั้นตอนที่ 3:</strong> หา Unique Attributes ไปไว้ที่ Subtype ตัวลูก เช่น บัญชีออมทรัพย์มี "ดอกเบี้ย" (Interest) ส่วนกระแสรายวันมี "ค่าธรรมเนียมเช็ค"</li>
+        <li><strong>ขั้นตอนที่ 4:</strong> กำหนดตัวแบ่งแยก (Discriminator) ลงในวงกลม พร้อมกับกำหนดค่า (Discriminator Value)</li>
+        <li><strong>ขั้นตอนที่ 5:</strong> กำหนดเงื่อนไข (Constraints) 2 มิติ คือ Disjoint/Overlap และ Total/Partial</li>
+      </ul>
+    </div></div>
+  </div>
+
+  <!-- Visual EER Example: Account -->
+  <div class="card">
+    <h3>ตัวอย่าง EER: บัญชีธนาคาร</h3>
+    <p>Savings Account และ Current Account เป็น "ชนิดหนึ่ง" ของ Account</p>
+  </div>
+  <div class="eer-visual">
+    <div class="eer-entity super">Account (Supertype)<br><small style="font-weight:400;font-size:0.7rem;color:var(--text2);">Name, Surname, Balance</small></div>
+    <div class="eer-line"></div>
+    <div class="eer-circle">D</div>
+    <div class="eer-line"></div>
+    <div class="eer-branch">
+      <div class="eer-col">
+        <div class="eer-entity sub">Savings Account<br><small style="font-weight:400;font-size:0.7rem;color:var(--text2);">Interest Rate</small></div>
+      </div>
+      <div class="eer-col">
+        <div class="eer-entity sub">Current Account<br><small style="font-weight:400;font-size:0.7rem;color:var(--text2);">Overdraft Limit</small></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Visual EER Example: Book -->
+  <div class="card" style="margin-top:1rem;">
+    <h3>ตัวอย่าง EER: หนังสือ</h3>
+    <p>Comic และ Magazine เป็น "ชนิดหนึ่ง" ของ Book → ใช้ Overlap (O) เพราะนิตยสารการ์ตูนมีอยู่จริง</p>
+  </div>
+  <div class="eer-visual">
+    <div class="eer-entity super">Book (Supertype)<br><small style="font-weight:400;font-size:0.7rem;color:var(--text2);">Title, Price</small></div>
+    <div class="eer-line"></div>
+    <div class="eer-circle">O</div>
+    <div class="eer-line"></div>
+    <div class="eer-branch">
+      <div class="eer-col">
+        <div class="eer-entity sub">Comic<br><small style="font-weight:400;font-size:0.7rem;color:var(--text2);">ISBN</small></div>
+      </div>
+      <div class="eer-col">
+        <div class="eer-entity sub">Magazine<br><small style="font-weight:400;font-size:0.7rem;color:var(--text2);">Volume, Month</small></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 7 Constraints in EER -->
+<div class="section" id="s-eer-constraints">
+  <div class="section-num">7</div>
+  <h2>มิติของ Constraints ใน EER</h2>
+  <p class="sub">สำคัญมาก ออกสอบบ่อย!</p>
+
+  <div class="card">
+    <p>เราพิจารณา 2 มิติควบคู่กัน ทำให้เกิดความสัมพันธ์ 4 รูปแบบ (4 Possibilities)</p>
+  </div>
+
+  <div class="constraint-grid">
+    <div class="constraint-card d">
+      <h4>Disjoint (D) - แบ่งแยก</h4>
+      <p>เป็นได้อย่างใดอย่างหนึ่ง ห้ามซ้ำซ้อนกัน เช่น ยานพาหนะ (Vehicle) แยกระหว่าง รถบัส (Bus) กับ เรือ (Boat) รถบัสไม่มีทางเป็นเรือได้ แบ่งแยกเด็ดขาด</p>
+    </div>
+    <div class="constraint-card o">
+      <h4>Overlapping (O) - ซ้อนทับได้</h4>
+      <p>เป็นได้มากกว่า 1 อย่างซ้อนทับกัน เช่น พนักงาน (Employee) แยกระหว่าง นักศึกษาฝึกงาน พนักงานคนนั้นอาจจะทั้งเรียนและทำงานพร้อมกันได้</p>
+    </div>
+    <div class="constraint-card t">
+      <h4>Total Completeness (เส้นคู่)</h4>
+      <p>บังคับว่าข้อมูลใน Supertype "ทุกตัว" ต้องลงไปอยู่ใน Subtype อย่างน้อย 1 ตัว เช่น ถ้าแบ่ง "คน" (Person) เป็น ชาย (Man) และ หญิง (Woman) คนทุกคนบนโลกต้องตกอยู่ในกลุ่มใดกลุ่มหนึ่งเสมอ</p>
+    </div>
+    <div class="constraint-card p">
+      <h4>Partial Completeness (เส้นเดี่ยว)</h4>
+      <p>ข้อมูลใน Supertype "บางตัว" อาจจะไม่ตรงกับ Subtype ใดเลยก็ได้ เช่น แบ่ง "ยานพาหนะ" เป็น รถยนต์ กับ มอเตอร์ไซค์ แต่ยานพาหนะอาจจะมี รถบรรทุก ด้วย ซึ่งไม่ได้อยู่ใน Subtype ที่วาดไว้</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>สรุป Constraints 4 แบบ</h3>
+    <table>
+      <thead><tr><th>รูปแบบ</th><th>Disjoint/Overlap</th><th>Completeness</th><th>ตัวอย่าง</th></tr></thead>
+      <tbody>
+        <tr><td><strong>D + Total</strong></td><td>แบ่งแยก</td><td>บังคับสมบูรณ์</td><td>คน = ชาย หรือ หญิง (ทุกคนต้องเป็น)</td></tr>
+        <tr><td><strong>D + Partial</strong></td><td>แบ่งแยก</td><td>บางส่วน</td><td>ยานพาหนะ = รถบัส หรือ เรือ (อาจมีอย่างอื่น)</td></tr>
+        <tr><td><strong>O + Total</strong></td><td>ซ้อนทับ</td><td>บังคับสมบูรณ์</td><td>หนังสือ = Comic หรือ Magazine (ทุกเล่มต้องจัด)</td></tr>
+        <tr><td><strong>O + Partial</strong></td><td>ซ้อนทับ</td><td>บางส่วน</td><td>Phone = Smartphone หรือ Analog (บางรุ่นคาบเกี่ยว)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="box box-amber">
+    <h4>Keyword ที่ต้องสังเกตในโจทย์</h4>
+    <ul>
+      <li><strong>"is a type of" / "เป็นชนิดหนึ่งของ"</strong> → บ่งบอกว่าต้องใช้ EER (Superclass/Subclass)</li>
+      <li><strong>"must be" / "จำเป็นต้อง"</strong> → Total Completeness (เส้นคู่)</li>
+      <li><strong>"บางส่วนอาจจะ"</strong> → Partial Completeness (เส้นเดี่ยว)</li>
+    </ul>
+  </div>
+</div>
+
+<!-- 8 Examples -->
+<div class="section" id="s-examples">
+  <div class="section-num">8</div>
+  <h2>ตัวอย่างประกอบ</h2>
+  <p class="sub">การแปลง Business Rules เป็น ER/EER</p>
+
+  <div class="coll open">
+    <div class="coll-head" onclick="toggleColl(this)">ตัวอย่าง 1: หนังสือการ์ตูนและนิตยสาร<span class="arr">▼</span></div>
+    <div class="coll-body"><div class="coll-inner">
+      <div class="box box-blue">
+        <h4>กฎข้อ 1</h4>
+        <p>หนังสือการ์ตูน (Comic) และนิตยสาร (Magazine) เป็น "ชนิดหนึ่ง" (is a type of) ของหนังสือ (Book)</p>
+      </div>
+      <ul class="cl">
+        <li>ประโยคที่มีคำว่า <strong>"is a type of"</strong> หรือ <strong>"เป็นชนิดหนึ่งของ"</strong> บ่งบอกว่าต้องใช้ EER (Superclass/Subclass)</li>
+        <li>โดย Book เป็นตัวแม่ Comic และ Magazine เป็นตัวลูก</li>
+        <li>ตัวแบ่งแยก (Discriminator) คือวงกลมใส่สัญลักษณ์ <strong>O (Overlapping)</strong> เพราะนิตยสารการ์ตูนมีอยู่จริง</li>
+      </ul>
+      <div class="eer-visual">
+        <div class="eer-entity super">Book<br><small style="font-weight:400;font-size:0.7rem;color:var(--text2);">Title, Price</small></div>
+        <div class="eer-line"></div>
+        <div class="eer-circle">O</div>
+        <div class="eer-line"></div>
+        <div class="eer-branch">
+          <div class="eer-col">
+            <div class="eer-entity sub">Comic<br><small style="font-weight:400;font-size:0.7rem;color:var(--text2);">ISBN</small></div>
+          </div>
+          <div class="eer-col">
+            <div class="eer-entity sub">Magazine<br><small style="font-weight:400;font-size:0.7rem;color:var(--text2);">Volume</small></div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="coll">
+    <div class="coll-head" onclick="toggleColl(this)">ตัวอย่าง 2: ผู้ซื้อและหนังสือ<span class="arr">▼</span></div>
+    <div class="coll-body"><div class="coll-inner">
+      <div class="box box-blue">
+        <h4>กฎข้อ 2</h4>
+        <p>ผู้ซื้อ (Buyer) สามารถซื้อ (Buy) หนังสือ (Book) ได้หลายเล่ม</p>
+      </div>
+      <ul class="cl">
+        <li>เป็น ER พื้นฐาน (มี Object - Verb - Object)</li>
+        <li>เกิดเป็นความสัมพันธ์ Many-to-Many หรือ 1-to-Many แล้วแต่บริบท</li>
+      </ul>
+    </div></div>
+  </div>
+
+  <div class="coll">
+    <div class="coll-head" onclick="toggleColl(this)">ตัวอย่าง 3: ลูกค้าจองสินค้าออนไลน์<span class="arr">▼</span></div>
+    <div class="coll-body"><div class="coll-inner">
+      <div class="box box-blue">
+        <h4>กฎข้อ 3</h4>
+        <p>ลูกค้าทุกคน "จำเป็นต้อง" จองสินค้าออนไลน์</p>
+      </div>
+      <ul class="cl">
+        <li>คำว่า <strong>"จำเป็นต้อง"</strong> บ่งบอกค่า Minimum Participation = 1 (Mandatory)</li>
+        <li>จึงต้องวาด 2 เส้นที่ฝั่งการจอง</li>
+        <li>ส่วนลูกค้า 1 คน จองได้หลายชิ้น Max = M ดังนั้น Cardinality ฝั่งสินค้าคือ <strong>(1, M)</strong></li>
+      </ul>
+      <div class="er">
+        <div class="entity">
+          <div class="entity-head">Customer</div>
+          <div class="entity-field"><span class="pk">PK</span> Customer_ID</div>
+          <div class="entity-field">Name</div>
+          <div class="entity-field">Phone</div>
+        </div>
+        <div class="er-link">
+          ⟷<br>
+          <span class="er-label">(1, M) Mandatory</span>
+        </div>
+        <div class="entity cyan">
+          <div class="entity-head">Product</div>
+          <div class="entity-field"><span class="pk">PK</span> Product_ID</div>
+          <div class="entity-field">Product_Name</div>
+          <div class="entity-field">Price</div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="coll">
+    <div class="coll-head" onclick="toggleColl(this)">ตัวอย่าง 4: พนักงานและตำแหน่งงาน<span class="arr">▼</span></div>
+    <div class="coll-body"><div class="coll-inner">
+      <div class="box box-blue">
+        <h4>กฎเกณฑ์ธุรกิจ</h4>
+        <p>พนักงาน (Employee) แบ่งเป็น พนักงานเงินเดือน (Salaried) และ พนักงานรายชั่วโมง (Hourly) - แต่ละคนเป็นได้แค่ประเภทเดียว และพนักงานทุกคนต้องอยู่ในประเภทใดประเภทหนึ่ง</p>
+      </div>
+      <ul class="cl">
+        <li><strong>"แต่ละคนเป็นได้แค่ประเภทเดียว"</strong> → Disjoint (D)</li>
+        <li><strong>"พนักงานทุกคนต้องอยู่ในประเภทใดประเภทหนึ่ง"</strong> → Total Completeness (เส้นคู่)</li>
+      </ul>
+      <div class="eer-visual">
+        <div class="eer-entity super">Employee<br><small style="font-weight:400;font-size:0.7rem;color:var(--text2);">Emp_ID, Name, Type</small></div>
+        <div class="eer-line double"></div>
+        <div class="eer-circle">D</div>
+        <div class="eer-line"></div>
+        <div class="eer-branch">
+          <div class="eer-col">
+            <div class="eer-entity sub">Salaried<br><small style="font-weight:400;font-size:0.7rem;color:var(--text2);">Salary</small></div>
+          </div>
+          <div class="eer-col">
+            <div class="eer-entity sub">Hourly<br><small style="font-weight:400;font-size:0.7rem;color:var(--text2);">Hourly_Rate</small></div>
+          </div>
+        </div>
+      </div>
+    </div></div>
+  </div>
+
+  <div class="coll">
+    <div class="coll-head" onclick="toggleColl(this)">แบบฝึกหัดพร้อมเฉลย<span class="arr">▼</span></div>
+    <div class="coll-body"><div class="coll-inner">
+      <div class="card">
+        <h3>คำถามที่ 1</h3>
+        <p>ในระบบมหาวิทยาลัย การแบ่งระดับปริญญาเป็น ปริญญาตรี (BSc) และ ปริญญาโท (MSc) ควรกำหนด Discriminator เป็นแบบ Disjoint (D) หรือ Overlap (O)? เพราะอะไร?</p>
+        <div class="box box-blue" style="margin-top:0.75rem;">
+          <h4>เฉลย</h4>
+          <p>ควรพิจารณาจาก Business Rule ขององค์กร หากองค์กร (เช่น คณะ ICT) มีหลักสูตร Dual Degree ที่นักศึกษาสามารถเรียนตรีควบโทได้ในเวลาเดียวกัน จะต้องกำหนดเป็น <strong>Overlap (O)</strong> แต่หากองค์กรนั้นนักศึกษา 1 คนเป็นได้แค่ระดับเดียวเท่านั้น จะเป็น <strong>Disjoint (D)</strong></p>
+        </div>
+      </div>
+      <div class="card">
+        <h3>คำถามที่ 2</h3>
+        <p>ประโยคว่า "ลูกค้าทุกคน จำเป็นต้องจองสินค้าออนไลน์" ควรกำหนด Cardinality และ Participation อย่างไรที่ฝั่ง "สินค้า"?</p>
+        <div class="box box-blue" style="margin-top:0.75rem;">
+          <h4>เฉลย</h4>
+          <p>คำว่า "จำเป็นต้องจอง" หมายความว่าลูกค้า 1 คนจองสินค้าอย่างน้อย 1 ชิ้น ดังนั้น Minimum = 1 และจองได้หลายชิ้น Maximum = M ส่งผลให้ Cardinality ฝั่งสินค้าคือ <strong>(1, M)</strong> และเนื่องจาก Minimum เป็น 1 (Mandatory) เส้นความสัมพันธ์ที่ลากจากลูกค้าไปหาสินค้าจะต้องเป็น <strong>2 เส้น (Total Participation)</strong></p>
+        </div>
+      </div>
+      <div class="card">
+        <h3>คำถามที่ 3</h3>
+        <p>"ISBN" ควรเป็น Attribute ของ "Book" (Supertype) หรือ "Comic" (Subtype) ถ้าระบบนี้มี Subtype คือ "Magazine" ด้วย?</p>
+        <div class="box box-blue" style="margin-top:0.75rem;">
+          <h4>เฉลย</h4>
+          <p>เนื่องจาก Comic มี ISBN แต่ Magazine มักจะไม่มี (ใช้เป็น Volume หรือ Month แทน) ดังนั้น ISBN จึงเป็นคุณลักษณะเฉพาะตัว (<strong>Unique Attribute</strong>) ของ Comic จึงต้องนำไปไว้ที่ Subtype (Comic) ส่วนสิ่งที่ทั้งคู่มีเหมือนกันเช่น ราคา (Price) จะถูกยกไปไว้ที่ Supertype (Book) เป็น <strong>Common Attribute</strong></p>
+        </div>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+<!-- 9 Visual ER Diagram -->
+<div class="section" id="s-er">
+  <div class="section-num">9</div>
+  <h2>Visual ER Diagram</h2>
+  <p class="sub">ER Diagram ตัวอย่าง: ระบบลงทะเบียนเรียน</p>
+
+  <div class="card"><h3>ระบบลงทะเบียนเรียน</h3><p>นักศึกษา 1 คน ลงทะเบียนได้หลายวิชา → Many-to-Many → ต้องสร้างตารางเชื่อม</p></div>
+  <div class="er">
+    <div class="entity">
+      <div class="entity-head">นักศึกษา (Student)</div>
+      <div class="entity-field"><span class="pk">PK</span> Student_ID</div>
+      <div class="entity-field">First_Name</div>
+      <div class="entity-field">Last_Name</div>
+      <div class="entity-field">Gender</div>
+      <div class="entity-field">Birthdate</div>
+    </div>
+    <div class="er-link">
+      ⟷<br>
+      <span class="er-label">(0, M) Optional</span>
+    </div>
+    <div class="entity purple">
+      <div class="entity-head">Enrollment</div>
+      <div class="entity-field"><span class="pk">PK</span> Enrollment_ID</div>
+      <div class="entity-field"><span class="fk">FK</span> Student_ID</div>
+      <div class="entity-field"><span class="fk">FK</span> Course_ID</div>
+      <div class="entity-field">Enroll_Date</div>
+      <div class="entity-field">Grade</div>
+    </div>
+    <div class="er-link">
+      ⟷<br>
+      <span class="er-label">(1, M) Mandatory</span>
+    </div>
+    <div class="entity cyan">
+      <div class="entity-head">รายวิชา (Course)</div>
+      <div class="entity-field"><span class="pk">PK</span> Course_ID</div>
+      <div class="entity-field">Course_Name</div>
+      <div class="entity-field">Credits</div>
+      <div class="entity-field">Department</div>
+    </div>
+  </div>
+
+  <!-- EER Example: Employee -->
+  <div class="card" style="margin-top:1rem;">
+    <h3>EER Diagram ตัวอย่าง: ระบบพนักงาน</h3>
+    <p>พนักงานแบ่งเป็น Salaried (D + Total) - เป็นได้แค่ประเภทเดียว และทุกคนต้องอยู่ในกลุ่มใดกลุ่มหนึ่ง</p>
+  </div>
+  <div class="er">
+    <div class="entity amber">
+      <div class="entity-head">Employee (Supertype)</div>
+      <div class="entity-field"><span class="pk">PK</span> Emp_ID</div>
+      <div class="entity-field">Name</div>
+      <div class="entity-field"><strong>Type</strong> (Discriminator)</div>
+    </div>
+    <div class="er-link" style="flex-direction:column;">
+      <span style="font-size:0.8rem;color:var(--amber);font-weight:700;">⬇ D ⬇</span>
+      <span class="er-label">Total (Double Line)</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:0.75rem;">
+      <div class="entity green">
+        <div class="entity-head">Salaried (Subtype)</div>
+        <div class="entity-field"><span class="pk">PK</span> Emp_ID (FK)</div>
+        <div class="entity-field">Salary</div>
+        <div class="entity-field">Benefits</div>
+      </div>
+      <div class="entity pink">
+        <div class="entity-head">Hourly (Subtype)</div>
+        <div class="entity-field"><span class="pk">PK</span> Emp_ID (FK)</div>
+        <div class="entity-field">Hourly_Rate</div>
+        <div class="entity-field">OT_Rate</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sql" style="margin-top:0.75rem;">
+    <div class="sql-head">SQL Query ตัวอย่าง - สร้างตาราง ER</div>
+    <div class="sql-body"><pre><span class="sk">CREATE TABLE</span> Student (
+    Student_ID  <span class="sk">INT PRIMARY KEY</span>,
+    First_Name  <span class="sk">VARCHAR</span>(50),
+    Last_Name   <span class="sk">VARCHAR</span>(50),
+    Gender      <span class="sk">CHAR</span>(1),
+    Birthdate   <span class="sk">DATE</span>
+);
+
+<span class="sk">CREATE TABLE</span> Course (
+    Course_ID   <span class="sk">INT PRIMARY KEY</span>,
+    Course_Name <span class="sk">VARCHAR</span>(100),
+    Credits     <span class="sk">INT</span>
+);
+
+<span class="sk">CREATE TABLE</span> Enrollment (
+    Enrollment_ID <span class="sk">INT PRIMARY KEY</span>,
+    Student_ID    <span class="sk">INT REFERENCES</span> Student(Student_ID),
+    Course_ID     <span class="sk">INT REFERENCES</span> Course(Course_ID),
+    Enroll_Date   <span class="sk">DATE</span>,
+    Grade         <span class="sk">VARCHAR</span>(2)
+);</pre></div>
+  </div>
+
+  <div class="sql">
+    <div class="sql-head">SQL Query ตัวอย่าง - สร้างตาราง EER</div>
+    <div class="sql-body"><pre><span class="sk">CREATE TABLE</span> Employee (
+    Emp_ID   <span class="sk">INT PRIMARY KEY</span>,
+    Name     <span class="sk">VARCHAR</span>(100),
+    Emp_Type <span class="sk">VARCHAR</span>(10)  <span class="sc">-- Discriminator: 'salaried' or 'hourly'</span>
+);
+
+<span class="sk">CREATE TABLE</span> Salaried (
+    Emp_ID    <span class="sk">INT PRIMARY KEY REFERENCES</span> Employee(Emp_ID),
+    Salary    <span class="sk">DECIMAL</span>(10,2),
+    Benefits  <span class="sk">VARCHAR</span>(100)
+);
+
+<span class="sk">CREATE TABLE</span> Hourly (
+    Emp_ID      <span class="sk">INT PRIMARY KEY REFERENCES</span> Employee(Emp_ID),
+    Hourly_Rate <span class="sk">DECIMAL</span>(8,2),
+    OT_Rate     <span class="sk">DECIMAL</span>(8,2)
+);</pre></div>
+  </div>
+</div>
+
+<!-- 10 Flashcards -->
+<div class="section" id="s-flash">
+  <div class="section-num">10</div>
+  <h2>Flashcards</h2>
+  <p class="sub">คลิกเพื่อพลิกการ์ด - ทบทวนคำศัพท์</p>
+  <div class="fc-grid">
+    <div class="fc" onclick="this.classList.toggle('flipped')"><div class="fc-inner"><div class="fc-front"><h4>ERD</h4><p>ER Diagram คืออะไร?</p><span class="fc-hint">คลิกเพื่อพลิก</span></div><div class="fc-back"><h4>ER Diagram</h4><p>แผนภาพจำลองโครงสร้างข้อมูลและความสัมพันธ์ระหว่างข้อมูล ใช้สี่เหลี่ยม = Entity, วงรี = Attribute, สี่เหลี่ยมข้าวหลามตัด = Relationship</p></div></div></div>
+    <div class="fc" onclick="this.classList.toggle('flipped')"><div class="fc-inner"><div class="fc-front"><h4>EERD</h4><p>EER Diagram ต่างจาก ER อย่างไร?</p><span class="fc-hint">คลิกเพื่อพลิก</span></div><div class="fc-back"><h4>EER Diagram</h4><p>แผนภาพ ER ขั้นสูง เพิ่มแนวคิด Supertype/Subtype เพื่อลดความซ้ำซ้อนและลดค่า NULL</p></div></div></div>
+    <div class="fc" onclick="this.classList.toggle('flipped')"><div class="fc-inner"><div class="fc-front"><h4>Strong Entity</h4><p>Strong Entity คืออะไร?</p><span class="fc-hint">คลิกเพื่อพลิก</span></div><div class="fc-back"><h4>Strong Entity</h4><p>เอนทิตีที่อยู่ด้วยตนเองได้ มี Primary Key ของตัวเองชัดเจน เช่น นักศึกษา, พนักงาน</p></div></div></div>
+    <div class="fc" onclick="this.classList.toggle('flipped')"><div class="fc-inner"><div class="fc-front"><h4>Weak Entity</h4><p>Weak Entity คืออะไร?</p><span class="fc-hint">คลิกเพื่อพลิก</span></div><div class="fc-back"><h4>Weak Entity</h4><p>เอนทิตีที่ต้องพึ่งเอนทิตีอื่น ไม่มี PK ของตัวเอง เช่น เวลาเข้าออกงานของพนักงาน</p></div></div></div>
+    <div class="fc" onclick="this.classList.toggle('flipped')"><div class="fc-inner"><div class="fc-front"><h4>Cardinality</h4><p>Cardinality คืออะไร?</p><span class="fc-hint">คลิกเพื่อพลิก</span></div><div class="fc-back"><h4>Cardinality Constraint</h4><p>ช่วงต่ำสุด-สูงสุด (Min, Max) ของเอนทิตีที่อนุญาตให้เกิดขึ้นในความสัมพันธ์ เช่น (0, 10)</p></div></div></div>
+    <div class="fc" onclick="this.classList.toggle('flipped')"><div class="fc-inner"><div class="fc-front"><h4>Disjoint (D)</h4><p>Disjoint Constraint คือ?</p><span class="fc-hint">คลิกเพื่อพลิก</span></div><div class="fc-back"><h4>Disjoint (D)</h4><p>แบ่งแยก ข้อมูลเป็นได้อย่างใดอย่างหนึ่งเท่านั้น เช่น รถบัส หรือ เรือ (ห้ามเป็นทั้งคู่)</p></div></div></div>
+    <div class="fc" onclick="this.classList.toggle('flipped')"><div class="fc-inner"><div class="fc-front"><h4>Overlap (O)</h4><p>Overlap Constraint คือ?</p><span class="fc-hint">คลิกเพื่อพลิก</span></div><div class="fc-back"><h4>Overlap (O)</h4><p>ซ้อนทับได้ ข้อมูลเป็นได้มากกว่า 1 ประเภทพร้อมกัน เช่น นิตยสารการ์ตูน (เป็นได้ทั้ง Comic และ Magazine)</p></div></div></div>
+    <div class="fc" onclick="this.classList.toggle('flipped')"><div class="fc-inner"><div class="fc-front"><h4>Discriminator</h4><p>ตัวแบ่งแยกคืออะไร?</p><span class="fc-hint">คลิกเพื่อพลิก</span></div><div class="fc-back"><h4>Discriminator</h4><p>ตัวแบ่งแยก Subtype มักแสดงด้วยวงกลม ระบุว่าข้อมูลจะถูกจัดลงใน Subtype ใด เช่น EmpType = 'salaried'</p></div></div></div>
+    <div class="fc" onclick="this.classList.toggle('flipped')"><div class="fc-inner"><div class="fc-front"><h4>Inheritance</h4><p>การสืบทอดคืออะไร?</p><span class="fc-hint">คลิกเพื่อพลิก</span></div><div class="fc-back"><h4>Inheritance</h4><p>Subtype ได้ทุกอย่างจาก Supertype ทั้ง Key, Common Attributes และ Relationships กับตารางอื่น</p></div></div></div>
+    <div class="fc" onclick="this.classList.toggle('flipped')"><div class="fc-inner"><div class="fc-front"><h4>Total vs Partial</h4><p>เส้นคู่ vs เส้นเดี่ยว?</p><span class="fc-hint">คลิกเพื่อพลิก</span></div><div class="fc-back"><h4>Completeness Constraint</h4><p>เส้นคู่ = Total ทุกตัวต้องลง Subtype<br>เส้นเดี่ยว = Partial บางตัวไม่ต้องลงก็ได้</p></div></div></div>
+    <div class="fc" onclick="this.classList.toggle('flipped')"><div class="fc-inner"><div class="fc-front"><h4>Connectivity</h4><p>Connectivity คืออะไร?</p><span class="fc-hint">คลิกเพื่อพลิก</span></div><div class="fc-back"><h4>Connectivity</h4><p>ประเภทความสัมพันธ์หลัก: 1:1 (One-to-One), 1:M (One-to-Many), M:N (Many-to-Many)</p></div></div></div>
+    <div class="fc" onclick="this.classList.toggle('flipped')"><div class="fc-inner"><div class="fc-front"><h4>Common vs Unique</h4><p>Attribute ไหนไปไหน?</p><span class="fc-hint">คลิกเพื่อพลิก</span></div><div class="fc-back"><h4>Common → Supertype | Unique → Subtype</h4><p>คุณลักษณะที่ใช้ร่วมกัน → ตัวแม่<br>คุณลักษณะเฉพาะตัว → ตัวลูก</p></div></div></div>
+  </div>
+</div>
+
+<!-- 11 Quiz -->
+<div class="section" id="s-quiz">
+  <div class="section-num">11</div>
+  <h2>Quiz ทดสอบความรู้</h2>
+  <p class="sub">Multiple Choice - ตรวจคำตอบทันที</p>
+  <div id="quizWrap">
+    <div class="quiz-q" data-idx="0" data-correct="1">
+      <h4>ข้อ 1</h4>
+      <p class="qtext">ประโยค "หนังสือการ์ตูน เป็นชนิดหนึ่งของ หนังสือ" บ่งบอกว่าควรใช้แบบจำลองใด?</p>
+      <div class="quiz-opts">
+        <div class="quiz-opt" onclick="pickOpt(this)"><span class="opt-mark">A</span><span>ER Diagram ปกติ</span></div>
+        <div class="quiz-opt" onclick="pickOpt(this)"><span class="opt-mark">B</span><span>EER Diagram (Superclass/Subclass)</span></div>
+        <div class="quiz-opt" onclick="pickOpt(this)"><span class="opt-mark">C</span><span>ไม่ต้องใช้แบบจำลอง</span></div>
+        <div class="quiz-opt" onclick="pickOpt(this)"><span class="opt-mark">D</span><span>File System</span></div>
+      </div>
+      <div class="quiz-exp"><strong>เฉลย: B - EER Diagram</strong><br>คำว่า "เป็นชนิดหนึ่งของ" บ่งบอกว่าต้องใช้ EER (Superclass/Subclass) ทันที</div>
+    </div>
+    <div class="quiz-q" data-idx="1" data-correct="2">
+      <h4>ข้อ 2</h4>
+      <p class="qtext">"ISBN" ควรเป็น Attribute ของ "Book" (Supertype) หรือ "Comic" (Subtype) ถ้าระบบนี้มี Magazine ด้วย?</p>
+      <div class="quiz-opts">
+        <div class="quiz-opt" onclick="pickOpt(this)"><span class="opt-mark">A</span><span>Book (Supertype)</span></div>
+        <div class="quiz-opt" onclick="pickOpt(this)"><span class="opt-mark">B</span><span>ทั้ง Book และ Comic</span></div>
+        <div class="quiz-opt" onclick="pickOpt(this)"><span class="opt-mark">C</span><span>Comic (Subtype) เท่านั้น</span></div>
+        <div class="quiz-opt" onclick="pickOpt(this)"><span class="opt-mark">D</span><span>Magazine (Subtype)</span></div>
+      </div>
+      <div class="quiz-exp"><strong>เฉลย: C - Comic (Subtype)</strong><br>Comic มี ISBN แต่ Magazine ไม่มี (ใช้ Volume แทน) ดังนั้น ISBN เป็น Unique Attribute ของ Comic</div>
+    </div>
+    <div class="quiz-q" data-idx="2" data-correct="0">
+      <h4>ข้อ 3</h4>
+      <p class="qtext">ประโยค "ลูกค้าทุกคน จำเป็นต้องจองสินค้าออนไลน์" ควรใส่ Cardinality ฝั่งสินค้าเป็น?</p>
+      <div class="quiz-opts">
+        <div class="quiz-opt" onclick="pickOpt(this)"><span class="opt-mark">A</span><span>(1, M) + เส้นคู่</span></div>
+        <div class="quiz-opt" onclick="pickOpt(this)"><span class="opt-mark">B</span><span>(0, M) + เส้นเดี่ยว</span></div>
+        <div class="quiz-opt" onclick="pickOpt(this)"><span class="opt-mark">C</span><span>(1, 1) + เส้นคู่</span></div>
+        <div class="quiz-opt" onclick="pickOpt(this)"><span class="opt-mark">D</span><span>(0, 1) + เส้นเดี่ยว</span></div>
+      </div>
+      <div class="quiz-exp"><strong>เฉลย: A - (1, M) + เส้นคู่</strong><br>"จำเป็นต้อง" = Minimum = 1 (Mandatory) และจองได้หลายชิ้น = M เส้นคู่เพราะ Min = 1</div>
+    </div>
+    <div class="quiz-q" data-idx="3" data-correct="1">
+      <h4>ข้อ 4</h4>
+      <p class="qtext">สัญลักษณ์ "D" ในวงกลมของ EER Diagram หมายถึงอะไร?</p>
+      <div class="quiz-opts">
+        <div class="quiz-opt" onclick="pickOpt(this)"><span class="opt-mark">A</span><span>Overlapping - ซ้อนทับได้</span></div>
+        <div class="quiz-opt" onclick="pickOpt(this)"><span class="opt-mark">B</span><span>Disjoint - แบ่งแยก</span></div>
+        <div class="quiz-opt" onclick="pickOpt(this)"><span class="opt-mark">C</span><span>Data - ข้อมูล</span></div>
+        <div class="quiz-opt" onclick="pickOpt(this)"><span class="opt-mark">D</span><span>Default - ค่าเริ่มต้น</span></div>
+      </div>
+      <div class="quiz-exp"><strong>เฉลย: B - Disjoint</strong><br>D = Disjoint แบ่งแยก ข้อมูลเป็นได้อย่างใดอย่างหนึ่งเท่านั้น ห้ามซ้ำซ้อนกัน</div>
+    </div>
+    <div class="quiz-q" data-idx="4" data-correct="2">
+      <h4>ข้อ 5</h4>
+      <p class="qtext">เส้นคู่ (Double Line) ใน EER Diagram หมายถึงอะไร?</p>
+      <div class="quiz-opts">
+        <div class="quiz-opt" onclick="pickOpt(this)"><span class="opt-mark">A</span><span>Partial Completeness</span></div>
+        <div class="quiz-opt" onclick="pickOpt(this)"><span class="opt-mark">B</span><span>Disjoint Constraint</span></div>
+        <div class="quiz-opt" onclick="pickOpt(this)"><span class="opt-mark">C</span><span>Total Completeness</span></div>
+        <div class="quiz-opt" onclick="pickOpt(this)"><span class="opt-mark">D</span><span>Optional Participation</span></div>
+      </div>
+      <div class="quiz-exp"><strong>เฉลย: C - Total Completeness</strong><br>เส้นคู่หมายความว่าข้อมูลทุกตัวใน Supertype ต้องปรากฏใน Subtype อย่างน้อย 1 แห่ง</div>
+    </div>
+    <div class="quiz-q" data-idx="5" data-correct="3">
+      <h4>ข้อ 6</h4>
+      <p class="qtext"> Cardinality (Min, Max) = (0, 10) ควรใส่ที่ฝั่งใดของความสัมพันธ์?</p>
+      <div class="quiz-opts">
+        <div class="quiz-opt" onclick="pickOpt(this)"><span class="opt-mark">A</span><span>ฝั่งเดียวกันกับเอนทิตีที่เกี่ยวข้อง</span></div>
+        <div class="quiz-opt" onclick="pickOpt(this)"><span class="opt-mark">B</span><span>ใส่ทั้ง 2 ฝั่ง</span></div>
+        <div class="quiz-opt" onclick="pickOpt(this)"><span class="opt-mark">C</span><span>ไม่ต้องใส่ที่ไหน</span></div>
+        <div class="quiz-opt" onclick="pickOpt(this)"><span class="opt-mark">D</span><span>ฝั่งตรงข้ามของเอนทิตีที่เกี่ยวข้อง</span></div>
+      </div>
+      <div class="quiz-exp"><strong>เฉลย: D - ฝั่งตรงข้าม</strong><br>ค่า Cardinality จะใส่ที่ฝั่งตรงข้าม เพราะตัวเลขบอกจำนวนของสิ่งนั้นๆ ที่สัมพันธ์กับอีกฝั่ง</div>
+    </div>
+    <button class="quiz-submit" id="quizBtn" onclick="submitQuiz()">ตรวจคำตอบ</button>
+  </div>
+  <div class="quiz-score" id="quizScore">
+    <div class="sv" id="scoreVal">0/6</div>
+    <p style="color:var(--text2);margin-top:0.4rem;">คะแนนของคุณ</p>
+    <button class="btn btn-primary" style="margin-top:0.75rem;" onclick="resetQuiz()">ลองใหม่</button>
+  </div>
+</div>
+
+<!-- 12 Cheat Sheet -->
+<div class="section" id="s-cheat">
+  <div class="section-num">12</div>
+  <h2>Cheat Sheet</h2>
+  <p class="sub">สรุปก่อนสอบ</p>
+  <div class="cheat">
+    <h3>Quick Reference - ER &amp; EER Modeling</h3>
+    <div class="cheat-grid">
+      <div class="cheat-item"><h4>ERD</h4><p>รูปภาพอธิบายธุรกิจ<br>Entity = สี่เหลี่ยม<br>Attribute = วงรี<br>Relationship = สี่เหลี่ยมข้าวหลามตัด</p></div>
+      <div class="cheat-item"><h4>(Min, Max)</h4><p>ใส่ฝั่งตรงข้ามเพื่อบอกปริมาณ<br>Min=0 → เส้นเดี่ยว (Optional)<br>Min=1 → เส้นคู่ (Mandatory)</p></div>
+      <div class="cheat-item"><h4>EERD</h4><p>ใช้เมื่อมีการจัดกลุ่มย่อย (Subclass)<br>Supertype = Common Attributes<br>Subtype = Unique Attributes</p></div>
+      <div class="cheat-item"><h4>วงกลม EER</h4><p>D = เป็นได้อย่างเดียว<br>(เช่น รถบัส หรือ เรือ)<br>O = เป็นหลายอย่างพร้อมกันได้<br>(เช่น นิตยสาร และ การ์ตูน)</p></div>
+      <div class="cheat-item"><h4>เส้นที่วงกลม</h4><p>เส้นเดี่ยว = Partial<br>(ยังมีชนิดอื่นๆ นอกเหนือจากที่วาด)<br>เส้นคู่ = Total<br>(เป็นได้แค่ชนิดที่วาดไว้เท่านั้น)</p></div>
+      <div class="cheat-item"><h4>Inheritance</h4><p>ลูกได้ทุกอย่างจากแม่<br>ทั้ง Key, Common Attributes<br>และความสัมพันธ์กับตารางอื่น</p></div>
+      <div class="cheat-item"><h4>Common Attribute</h4><p>คุณลักษณะที่ใช้ร่วมกัน<br>→ ย้ายไปไว้ที่ Supertype</p></div>
+      <div class="cheat-item"><h4>Unique Attribute</h4><p>คุณลักษณะเฉพาะตัว<br>→ อยู่ที่ Subtype</p></div>
+      <div class="cheat-item"><h4>"is a type of"</h4><p>บ่งบอกว่าต้องใช้ EER<br>Superclass/Subclass ทันที</p></div>
+      <div class="cheat-item"><h4>"must be" / "จำเป็นต้อง"</h4><p>Total Completeness (เส้นคู่)<br>ทุกต้องต้องลง Subtype</p></div>
+      <div class="cheat-item"><h4>"บางส่วนอาจจะ"</h4><p>Partial Completeness (เส้นเดี่ยว)<br>บางตัวไม่ต้องลงก็ได้</p></div>
+      <div class="cheat-item"><h4>Weak Entity</h4><p>ต้องพึ่ง Strong Entity<br>ไม่มี PK ของตัวเอง<br>เส้นขอบเป็นเส้นประ</p></div>
+    </div>
+  </div>
+  <div class="sql">
+    <div class="sql-head">SQL Cheat Sheet - EER Pattern</div>
+    <div class="sql-body"><pre><span class="sc">-- สร้างตาราง Supertype</span>
+<span class="sk">CREATE TABLE</span> Supertype (
+    ID   <span class="sk">INT PRIMARY KEY</span>,
+    Name <span class="sk">VARCHAR</span>(100),
+    Type <span class="sk">VARCHAR</span>(20)  <span class="sc">-- Discriminator</span>
+);
+
+<span class="sc">-- สร้างตาราง Subtype (PK = FK ของ Supertype)</span>
+<span class="sk">CREATE TABLE</span> Subtype_A (
+    ID       <span class="sk">INT PRIMARY KEY REFERENCES</span> Supertype(ID),
+    Unique_A <span class="sk">VARCHAR</span>(50)
+);
+
+<span class="sk">CREATE TABLE</span> Subtype_B (
+    ID       <span class="sk">INT PRIMARY KEY REFERENCES</span> Supertype(ID),
+    Unique_B <span class="sk">VARCHAR</span>(50)
+);
+
+<span class="sc">-- ความสัมพันธ์ M:N ต้องสร้างตารางเชื่อม</span>
+<span class="sk">CREATE TABLE</span> Junction_Table (
+    ID          <span class="sk">INT PRIMARY KEY</span>,
+    Entity_A_ID <span class="sk">INT REFERENCES</span> TableA(ID),
+    Entity_B_ID <span class="sk">INT REFERENCES</span> TableB(ID)
+);</pre></div>
+  </div>
+</div>
+
+<!-- 13 Exam Notes -->
+<div class="section" id="s-exam">
+  <div class="section-num">13</div>
+  <h2>Exam Notes</h2>
+  <p class="sub">เคล็ดลับการเก็งข้อสอบ</p>
+
+  <div class="box box-pink">
+    <h4>1. โครงสร้างข้อสอบ Midterm</h4>
+    <p>คะแนนรวม 120 คะแนน (คิดเป็น 35%)</p>
+    <ul>
+      <li><strong>ข้อ 1 (20 คะแนน):</strong> Principle Concept of Database System (Lecture 1-2)</li>
+      <li><strong>ข้อ 2 (40 คะแนน):</strong> Data Model (Lecture 3)</li>
+      <li><strong>ข้อ 3 (60 คะแนน):</strong> ERD / EERD (Lecture 4-6) - <strong>เป็นข้อที่คะแนนเยอะที่สุด ตัดสินเกรด!</strong></li>
+    </ul>
+    <p style="margin-top:0.4rem;"><strong>กฎการสอบ:</strong> นำกระดาษ A4 เข้าห้องสอบได้ 1 แผ่น (หน้า-หลัง)</p>
+  </div>
+
+  <div class="box box-amber">
+    <h4>2. จุดที่ต้องทำให้ครบเพื่อคะแนนเต็ม (+ Bonus 20 คะแนน)</h4>
+    <ul>
+      <li>ระบุ <strong>Unique Attribute</strong>, <strong>Common Attribute</strong> ให้ถูกที่</li>
+      <li>เขียน <strong>Discriminator Name</strong> และ <strong>Discriminator Value</strong> (เช่น EmpType, 'salary', 'hourly') ให้ครบ</li>
+      <li>ระบุสัญลักษณ์ <strong>O หรือ D</strong> ในวงกลมให้ถูกต้องตามตรรกะธุรกิจ</li>
+      <li>ขีดเส้นที่วงกลม <strong>1 เส้น (Partial) หรือ 2 เส้น (Total)</strong> ให้ถูกต้อง</li>
+      <li>ฝั่ง ER พื้นฐานต้องใส่ <strong>Cardinality (Min, Max)</strong> ให้ถูกต้อง และใส่เส้นระบุ Participation ให้สอดคล้องกัน</li>
+      <li>ถ้าวิเคราะห์โจทย์แล้วเพิ่ม Attribute ที่สมเหตุสมผลเข้าไปเอง (เช่น เพิ่ม Customer Name) จะได้ <strong>คะแนนโบนัส</strong> เพิ่มจุดละ 1 คะแนน</li>
+    </ul>
+  </div>
+
+  <div class="box box-red">
+    <h4>3. ข้อควรระวัง (Pitfalls) - ห้ามพลาด!</h4>
+    <ul>
+      <li><strong>สับสนระหว่าง ER และ EER:</strong> ให้ดูที่รูปประโยค ถ้ามีคำว่า "has", "make", "reserve" ปกติเป็น ER แต่ถ้ามีคำว่า "is a type of", "เป็นชนิดหนึ่งของ", "แบ่งประเภทเป็น" ให้ใช้ EER ทันที</li>
+      <li><strong>ตีความ Cardinality ผิดฝั่ง:</strong> ค่า (Min, Max) ต้องใส่ที่ฝั่งตรงข้าม ห้ามใส่ผิดฝั่งเด็ดขาด</li>
+      <li><strong>Participation ขัดแย้งกับ Cardinality:</strong> ถ้า Min = 1 เส้นต้องเป็นคู่ ถ้า Min = 0 เส้นต้องเป็นเดี่ยว ห้ามขัดแย้งกัน (จะโดนหักคะแนน -1 ทันที)</li>
+      <li><strong>วาง Attribute ผิดที่:</strong> สิ่งที่มีร่วมกันต้อง "เลื่อนขึ้น (Promoted)" ไปอยู่ชั้น Supertype เท่านั้น ห้ามเอามาเขียนซ้ำใน Subtype ทุกตัว</li>
+    </ul>
+  </div>
+</div>
+
+</main>
+
+<button class="btt" id="btt" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<footer class="footer">
+  <p>ER &amp; EER Modeling - การสร้างแบบจำลองข้อมูล ER และ EER</p>
+</footer>
+
+<script>
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+
+const sidebar = $('#sidebar'), overlay = $('#overlay');
+$('#menuBtn').onclick = () => { sidebar.classList.toggle('open'); overlay.classList.toggle('show'); };
+overlay.onclick = () => { sidebar.classList.remove('open'); overlay.classList.remove('show'); };
+$$('.sidebar-nav a').forEach(a => a.addEventListener('click', () => { if(innerWidth<=768){sidebar.classList.remove('open');overlay.classList.remove('show');} }));
+
+const secs = $$('.section'), navAs = $$('.sidebar-nav a');
+const onScroll = () => {
+  let cur = '';
+  secs.forEach(s => { if(scrollY >= s.offsetTop - 80) cur = s.id; });
+  navAs.forEach(a => { a.classList.toggle('active', a.getAttribute('href') === '#' + cur); });
+  const h = document.documentElement.scrollHeight - innerHeight;
+  $('#progress').style.width = (scrollY / h * 100) + '%';
+  $('#btt').classList.toggle('show', scrollY > 400);
+};
+addEventListener('scroll', onScroll);
+
+function toggleColl(h) { h.parentElement.classList.toggle('open'); }
+
+function switchTab(e, id) {
+  const c = e.target.closest('.tabs');
+  c.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  c.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  e.target.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+
+const sData = [
+  {t:'Entity (Strong/Weak)',c:'Strong Entity Weak Entity Primary Key เอนทิตีปกติ เอนทิตีอ่อนแอ',s:'s-keyconcepts'},
+  {t:'Attribute Types',c:'Simple Composite Single-valued Multi-valued Derived Primary Key',s:'s-keyconcepts'},
+  {t:'Relationship Degree',c:'Unary Binary Ternary ความสัมพันธ์ Connectivity',s:'s-keyconcepts'},
+  {t:'Cardinality Constraint',c:'Min Max ช่วงต่ำสุดสูงสุด Cardinality ใส่ฝั่งตรงข้าม',s:'s-keyconcepts'},
+  {t:'Data Integrity',c:'Connectivity Cardinality Participation Constraints',s:'s-keyconcepts'},
+  {t:'Connectivity',c:'1:1 1:M M:N One-to-One One-to-Many Many-to-Many',s:'s-relationships'},
+  {t:'Participation',c:'Optional Mandatory Total Participation เส้นเดี่ยว เส้นคู่',s:'s-relationships'},
+  {t:'EER Diagram',c:'Extended Enhanced ER Supertype Subtype Superclass Subclass',s:'s-eer'},
+  {t:'Disjoint Constraint',c:'D Disjoint แบ่งแยก เป็นได้อย่างเดียว',s:'s-eer-constraints'},
+  {t:'Overlap Constraint',c:'O Overlap ซ้อนทับ เป็นได้หลายอย่าง',s:'s-eer-constraints'},
+  {t:'Total Completeness',c:'เส้นคู่ บังคับสมบูรณ์ ทุกตัวต้องลง Subtype',s:'s-eer-constraints'},
+  {t:'Partial Completeness',c:'เส้นเดี่ยว บางส่วน ไม่ต้องลงก็ได้',s:'s-eer-constraints'},
+  {t:'Discriminator',c:'ตัวแบ่งแยก วงกลม Discriminator Value EmpType',s:'s-eer'},
+  {t:'Inheritance',c:'การสืบทอด Key Common Attributes Relationships',s:'s-eer'},
+  {t:'ER Diagram Example',c:'Student Course Enrollment PK FK Primary Key Foreign Key',s:'s-er'},
+  {t:'EER Example: Employee',c:'Salaried Hourly Supertype Subtype Discriminator D Total',s:'s-er'},
+  {t:'Flashcards',c:'ทบทวนคำศัพท์ EER ER Entity Attribute Relationship',s:'s-flash'},
+  {t:'Cheat Sheet',c:'สรุปก่อนสอบ Quick Reference ER EER Notation',s:'s-cheat'},
+  {t:'Exam Tips',c:'เคล็ดลับ ข้อสอบ Midterm 60 คะแนน ERD EERD Bonus',s:'s-exam'},
+  {t:'Business Rules',c:'is a type of has make reserve แปลงกฎธุรกิจเป็น ER',s:'s-examples'},
+  {t:'Common vs Unique',c:'Common Attribute Supertype Unique Attribute Subtype',s:'s-eer'},
+  {t:'SQL EER',c:'CREATE TABLE Supertype Subtype Discriminator REFERENCES',s:'s-er'},
+];
+const sIn = $('#searchIn'), sDrop = $('#searchDrop');
+sIn.addEventListener('input', e => {
+  const q = e.target.value.toLowerCase().trim();
+  if(q.length < 2){ sDrop.classList.remove('show'); return; }
+  const r = sData.filter(i => i.t.toLowerCase().includes(q) || i.c.toLowerCase().includes(q));
+  if(r.length){
+    sDrop.innerHTML = r.map(i=>`<div class="search-item" onclick="goSec('${i.s}')"><h4>${i.t}</h4><p>${i.c.substring(0,70)}...</p></div>`).join('');
+    sDrop.classList.add('show');
+  } else {
+    sDrop.innerHTML = '<div class="search-item"><p>ไม่พบผลลัพธ์</p></div>';
+    sDrop.classList.add('show');
+  }
+});
+function goSec(id){ sDrop.classList.remove('show'); sIn.value=''; document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'}); }
+document.addEventListener('click', e => { if(!e.target.closest('.search-wrap')) sDrop.classList.remove('show'); });
+
+const answers = {};
+let submitted = false;
+function pickOpt(el){
+  if(submitted) return;
+  const q = el.closest('.quiz-q');
+  q.querySelectorAll('.quiz-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  answers[q.dataset.idx] = Array.from(q.querySelectorAll('.quiz-opt')).indexOf(el);
+}
+function submitQuiz(){
+  if(submitted) return;
+  const qs = $$('.quiz-q');
+  let score=0, ans=0;
+  qs.forEach(q=>{
+    const ci = parseInt(q.dataset.correct);
+    const opts = q.querySelectorAll('.quiz-opt');
+    if(answers[q.dataset.idx] !== undefined){
+      ans++;
+      opts.forEach((o,j)=>{ o.style.pointerEvents='none'; if(j===ci) o.classList.add('correct'); else if(j===answers[q.dataset.idx] && j!==ci) o.classList.add('wrong'); });
+      if(answers[q.dataset.idx]===ci) score++;
+      q.querySelector('.quiz-exp').classList.add('show');
+    }
+  });
+  if(ans < qs.length){ alert('กรุณาตอบคำถามให้ครบทุกข้อ'); return; }
+  submitted = true;
+  $('#quizBtn').style.display='none';
+  const sc = $('#quizScore'); sc.classList.add('show');
+  $('#scoreVal').textContent = (score===qs.length?'🎉 ':'') + score + '/' + qs.length;
+}
+function resetQuiz(){
+  submitted = false;
+  Object.keys(answers).forEach(k=>delete answers[k]);
+  $$('.quiz-opt').forEach(o=>{ o.classList.remove('selected','correct','wrong'); o.style.pointerEvents=''; });
+  $$('.quiz-exp').forEach(e=>e.classList.remove('show'));
+  $('#quizScore').classList.remove('show');
+  $('#quizBtn').style.display='';
+}
+</script>
+</body>
+</html>
